@@ -1,0 +1,144 @@
+import datetime
+
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+
+from mapp.models import CustomUser, AttendanceSession
+from mapp.classes.attendance_service import AttendanceService
+from mapp.classes.logs.logs import Logs
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def api_clock_in(request):
+    """
+    Clock in a user with optional photo for verification.
+    Expected payload:
+    {
+        "timestamp": "2025-11-30T09:00:00",
+        "photo_base64": "data:image/png;base64,iVBORw0K..."
+    }
+    """
+    try:
+        timestamp = request.data.get("timestamp")
+        photo_base64 = request.data.get("photo_base64")  # optional
+
+        if not timestamp:
+            return Response({"status": "error", "message": "missing_timestamp"}, status=400)
+
+        try:
+            timestamp = datetime.datetime.fromisoformat(timestamp)
+        except ValueError:
+            return Response({"status": "error", "message": "invalid_timestamp_format"}, status=400)
+
+        result = AttendanceService.clock_in(
+            user=request.user,
+            timestamp=timestamp,
+            photo_base64=photo_base64
+        )
+
+        return Response(result, status=200)
+
+    except Exception as e:
+        Logs.atuta_technical_logger("api_clock_in_failed", exc_info=e)
+        return Response({"status": "error", "message": "server_error"}, status=500)
+    
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def api_clock_out(request):
+    """
+    Clock out a user.
+    """
+    try:
+        timestamp = request.data.get("timestamp")
+        if not timestamp:
+            return Response({"status": "error", "message": "missing_timestamp"}, status=400)
+
+        timestamp = datetime.datetime.fromisoformat(timestamp)
+
+        result = AttendanceService.clock_out(
+            user=request.user,
+            timestamp=timestamp
+        )
+
+        return Response(result, status=200)
+
+    except Exception as e:
+        Logs.atuta_technical_logger("api_clock_out_failed", exc_info=e)
+        return Response({"status": "error", "message": "server_error"}, status=500)
+
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def api_lunch_in(request):
+    """
+    Record lunch in.
+    """
+    try:
+        timestamp = request.data.get("timestamp")
+        if not timestamp:
+            return Response({"status": "error", "message": "missing_timestamp"}, status=400)
+
+        timestamp = datetime.datetime.fromisoformat(timestamp)
+
+        result = AttendanceService.lunch_in(
+            user=request.user,
+            timestamp=timestamp
+        )
+
+        return Response(result, status=200)
+
+    except Exception as e:
+        Logs.atuta_technical_logger("api_lunch_in_failed", exc_info=e)
+        return Response({"status": "error", "message": "server_error"}, status=500)
+
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def api_lunch_out(request):
+    """
+    Record lunch out.
+    """
+    try:
+        timestamp = request.data.get("timestamp")
+        if not timestamp:
+            return Response({"status": "error", "message": "missing_timestamp"}, status=400)
+
+        timestamp = datetime.datetime.fromisoformat(timestamp)
+
+        result = AttendanceService.lunch_out(
+            user=request.user,
+            timestamp=timestamp
+        )
+
+        return Response(result, status=200)
+
+    except Exception as e:
+        Logs.atuta_technical_logger("api_lunch_out_failed", exc_info=e)
+        return Response({"status": "error", "message": "server_error"}, status=500)
+
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def api_get_total_hours(request):
+    """
+    Calculate total hours for the last active session.
+    """
+    try:
+        session = AttendanceSession.objects.filter(user=request.user).last()
+
+        if not session:
+            return Response({"status": "error", "message": "no_session"}, status=404)
+
+        result = AttendanceService.calculate_total_hours(session)
+
+        return Response(result, status=200)
+
+    except Exception as e:
+        Logs.atuta_technical_logger("api_get_total_hours_failed", exc_info=e)
+        return Response({"status": "error", "message": "server_error"}, status=500)
