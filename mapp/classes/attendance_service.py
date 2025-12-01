@@ -30,7 +30,7 @@ class AttendanceService:
             with transaction.atomic():
 
                 # Locking avoids the race condition
-                existing = cls.objects.select_for_update().filter(
+                existing = AttendanceSession.objects.select_for_update().filter(
                     user=user,
                     clock_in_time__isnull=False,
                     clock_out_time__isnull=True
@@ -63,11 +63,11 @@ class AttendanceService:
                         attendance_data["clock_in_photo"] = file
 
                     except Exception as e:
-                        Logs.error(f"clock_in_photo_save_failed_user_{user.id}", exc_info=e)
+                        Logs.atuta_technical_logger(f"clock_in_photo_save_failed_user_{user.user_id}", exc_info=e)
                         return {"status": "error", "message": "invalid_photo_data"}
 
                 # Actually create session
-                session = cls.objects.create(**attendance_data)
+                session = AttendanceSession.objects.create(**attendance_data)
 
             Logs.atuta_logger(f"User clocked in | user={user.user_id} | {timestamp}")
 
@@ -78,7 +78,7 @@ class AttendanceService:
             }
 
         except Exception as e:
-            Logs.error(f"clock_in_failed_user_{user.id}", exc_info=e)
+            Logs.atuta_technical_logger(f"clock_in_failed_user_{user.user_id}", exc_info=e)
             return {"status": "error", "message": "clock_in_failed"}
 
 
@@ -106,7 +106,7 @@ class AttendanceService:
             }
 
         except Exception as e:
-            Logs.error(f"clock_out_failed_user_{user.id}", exc_info=e)
+            Logs.error(f"clock_out_failed_user_{user.user_id}", exc_info=e)
             return {
                 "status": "error",
                 "message": "clock_out_failed"
@@ -138,7 +138,7 @@ class AttendanceService:
             }
 
         except Exception as e:
-            Logs.error(f"lunch_in_failed_user_{user.id}", exc_info=e)
+            Logs.error(f"lunch_in_failed_user_{user.user_id}", exc_info=e)
             return {
                 "status": "error",
                 "message": "lunch_in_failed"
@@ -169,7 +169,7 @@ class AttendanceService:
             }
 
         except Exception as e:
-            Logs.error(f"lunch_out_failed_user_{user.id}", exc_info=e)
+            Logs.error(f"lunch_out_failed_user_{user.user_id}", exc_info=e)
             return {
                 "status": "error",
                 "message": "lunch_out_failed"
