@@ -1,3 +1,0 @@
-clock_in_failed_user_67591fbb-8a36-435c-ab81-a596b2b2ea2c
-
-Error in file: /Users/isaac/python_projects/morgenroth/morgenrothproject/mapp/classes/attendance_service.py, line: 70, in clock_in - type object 'AttendanceService' has no attribute 'objects'
