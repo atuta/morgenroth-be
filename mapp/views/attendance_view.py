@@ -12,37 +12,46 @@ from mapp.classes.logs.logs import Logs
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def api_clock_in(request):
-    """
-    Clock in a user with optional photo for verification.
-    Expected payload:
-    {
-        "timestamp": "2025-11-30T09:00:00",
-        "photo_base64": "data:image/png;base64,iVBORw0K..."
-    }
-    """
-    try:
-        timestamp = request.data.get("timestamp")
-        photo_base64 = request.data.get("photo_base64")  # optional
+    timestamp = request.data.get("timestamp")
+    photo_base64 = request.data.get("photo_base64") or None
 
-        if not timestamp:
-            return Response({"status": "error", "message": "missing_timestamp"}, status=400)
-
-        try:
-            timestamp = datetime.datetime.fromisoformat(timestamp)
-        except ValueError:
-            return Response({"status": "error", "message": "invalid_timestamp_format"}, status=400)
-
-        result = AttendanceService.clock_in(
-            user=request.user,
-            timestamp=timestamp,
-            photo_base64=photo_base64
+    if not timestamp:
+        return Response(
+            {"status": "error", "message": "missing_timestamp"},
+            status=400
         )
 
-        return Response(result, status=200)
+    # Robust parsing that handles Z suffix and offsets
+    try:
+        timestamp = datetime.datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
+    except Exception:
+        return Response(
+            {"status": "error", "message": "invalid_timestamp_format"},
+            status=400
+        )
 
-    except Exception as e:
-        Logs.atuta_technical_logger("api_clock_in_failed", exc_info=e)
-        return Response({"status": "error", "message": "server_error"}, status=500)
+    result = AttendanceService.clock_in(
+        user=request.user,
+        timestamp=timestamp,
+        photo_base64=photo_base64
+    )
+
+    # proper HTTP status mapping
+    if result["status"] == "success":
+        return Response(result, status=201)
+
+    if result["message"] == "active_session_exists":
+        return Response(result, status=409)
+
+    if result["message"] == "invalid_photo_data":
+        return Response(result, status=422)
+
+    if result["message"] == "missing_timestamp":
+        return Response(result, status=400)
+
+    # Everything else we treat as server failure
+    return Response(result, status=500)
+
     
 
 @api_view(['POST'])

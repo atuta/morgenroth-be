@@ -1,3 +1,5 @@
+from django.db import transaction
+from django.utils import timezone
 import datetime
 import base64
 import uuid
@@ -12,59 +14,72 @@ from mapp.classes.logs.logs import Logs
 class AttendanceService:
 
     @classmethod
-    def clock_in(cls, user, timestamp: datetime, photo_base64: str = None):
+    def clock_in(cls, user, timestamp, photo_base64: str = None):
         """
-        Clock in a user and optionally save a photo for verification.
-        photo_base64: base64-encoded string of the image from camera
+        Create a new attendance session for a user.
+        Enforces single active session, safe timestamp, and safe photo handling.
         """
         try:
-            # Ensure no active session
-            existing = AttendanceSession.objects.filter(
-                user=user,
-                clock_in_time__isnull=False,
-                clock_out_time__isnull=True
-            ).first()
+            # Normalize timestamp
+            if timestamp is None:
+                return {"status": "error", "message": "missing_timestamp"}
 
-            if existing:
-                return {
-                    "status": "error",
-                    "message": "active_session_exists"
+            if timezone.is_naive(timestamp):
+                timestamp = timezone.make_aware(timestamp)
+
+            with transaction.atomic():
+
+                # Locking avoids the race condition
+                existing = cls.objects.select_for_update().filter(
+                    user=user,
+                    clock_in_time__isnull=False,
+                    clock_out_time__isnull=True
+                ).first()
+
+                if existing:
+                    return {"status": "error", "message": "active_session_exists"}
+
+                attendance_data = {
+                    "user": user,
+                    "date": timestamp.date(),
+                    "clock_in_time": timestamp
                 }
 
-            attendance_data = {
-                "user": user,
-                "date": timestamp.date(),
-                "clock_in_time": timestamp
-            }
+                # Optional photo
+                if photo_base64:
+                    try:
+                        # Handles both cases:
+                        # data:image/png;base64,XXXXXXXX
+                        # XXXXXXXXXXXX (raw base64 only)
+                        if ";base64," in photo_base64:
+                            format_part, imgstr = photo_base64.split(";base64,")
+                            ext = format_part.split("/")[-1]
+                        else:
+                            imgstr = photo_base64
+                            ext = "jpg"
 
-            # Handle base64 photo if provided
-            if photo_base64:
-                try:
-                    format, imgstr = photo_base64.split(';base64,')  # in case it has the prefix
-                    ext = format.split('/')[-1]  # e.g., 'image/png'
-                    photo_file = ContentFile(base64.b64decode(imgstr), name=f"{uuid.uuid4()}.{ext}")
-                    attendance_data['clock_in_photo'] = photo_file
-                except Exception as e:
-                    Logs.error(f"clock_in_photo_save_failed_user_{user.id}", exc_info=e)
-                    return {
-                        "status": "error",
-                        "message": "invalid_photo_data"
-                    }
+                        decoded = base64.b64decode(imgstr)
+                        file = ContentFile(decoded, name=f"{uuid.uuid4()}.{ext}")
+                        attendance_data["clock_in_photo"] = file
 
-            AttendanceSession.objects.create(**attendance_data)
+                    except Exception as e:
+                        Logs.error(f"clock_in_photo_save_failed_user_{user.id}", exc_info=e)
+                        return {"status": "error", "message": "invalid_photo_data"}
+
+                # Actually create session
+                session = cls.objects.create(**attendance_data)
 
             Logs.atuta_logger(f"User clocked in | user={user.user_id} | {timestamp}")
+
             return {
                 "status": "success",
-                "message": "clock_in_recorded"
+                "message": "clock_in_recorded",
+                "session_id": str(session.session_id)
             }
 
         except Exception as e:
             Logs.error(f"clock_in_failed_user_{user.id}", exc_info=e)
-            return {
-                "status": "error",
-                "message": "clock_in_failed"
-            }
+            return {"status": "error", "message": "clock_in_failed"}
 
 
     @classmethod
