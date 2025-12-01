@@ -18,19 +18,27 @@ from mapp.classes.logs.logs import Logs
 @permission_classes([IsAuthenticated])
 def api_add_user(request):
     """
-    Create a new user (staff/admin/etc.) with optional phone number.
+    Create a new user (staff/admin/etc.)
     """
     try:
         data = request.data
         email = data.get("email")
         first_name = data.get("first_name")
         last_name = data.get("last_name")
-        role = data.get("role", "staff")
-        password = data.get("password", "changeme123")  # Default password if not provided
-        phone_number = data.get("phone_number")  # Optional phone number
+        role = data.get("role", "subordinate")
+        password = data.get("password", "changeme123")
 
+        phone_number = data.get("phone_number")
+        id_number = data.get("id_number")
+        nssf_number = data.get("nssf_number")
+        shif_sha_number = data.get("shif_sha_number")
+
+        # Basic validation
         if not email or not first_name or not last_name:
-            return Response({"status": "error", "message": "missing_required_fields"}, status=400)
+            return Response(
+                {"status": "error", "message": "missing_required_fields"},
+                status=400
+            )
 
         result = UserService.add_user(
             email=email,
@@ -38,14 +46,20 @@ def api_add_user(request):
             last_name=last_name,
             user_role=role,
             password=password,
-            phone_number=phone_number
+            phone_number=phone_number,
+            id_number=id_number,
+            nssf_number=nssf_number,
+            shif_sha_number=shif_sha_number
         )
 
         return Response(result, status=200 if result["status"] == "success" else 400)
 
     except Exception as e:
         Logs.error("api_add_user_failed", exc_info=e)
-        return Response({"status": "error", "message": "server_error"}, status=500)
+        return Response(
+            {"status": "error", "message": "server_error"},
+            status=500
+        )
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -105,6 +119,7 @@ def api_login(request):
                 "access_token": access_token,
                 "refresh_token": refresh_token,
                 "user_id": user.user_id,
+                "user_role": user.user_role,
                 "full_name": UserService.full_name(user)["message"]["full_name"]
             }
         }, status=200)

@@ -15,12 +15,15 @@ class UserService:
         first_name: str,
         last_name: str,
         password: str,
-        user_role: str = "staff",
+        user_role: str = "subordinate",
         phone_number: str = None,
+        id_number: str = None,
+        nssf_number: str = None,
+        shif_sha_number: str = None,
         **extra_fields
     ):
         """
-        Creates a new CustomUser with optional phone number.
+        Creates a new CustomUser with optional staff fields.
         """
         if not email or not first_name or not last_name or not password:
             return {
@@ -36,6 +39,9 @@ class UserService:
                 password=password,
                 user_role=user_role,
                 phone_number=phone_number,
+                id_number=id_number,
+                nssf_number=nssf_number,
+                shif_sha_number=shif_sha_number,
                 **extra_fields
             )
 
@@ -44,6 +50,7 @@ class UserService:
                 "message": f"user_created_{user.user_id}",
                 "user_id": user.user_id
             }
+
         except IntegrityError as e:
             Logs.error(f"user_creation_failed_{email}", exc_info=e)
             return {
@@ -56,6 +63,7 @@ class UserService:
                 "status": "error",
                 "message": "user_creation_failed"
             }
+
 
 
     @classmethod
