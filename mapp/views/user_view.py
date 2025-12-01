@@ -15,6 +15,66 @@ from mapp.classes.logs.logs import Logs
 
 
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def api_add_user(request):
+    """
+    Create a new user (staff/admin/etc.) with optional phone number.
+    """
+    try:
+        data = request.data
+        email = data.get("email")
+        first_name = data.get("first_name")
+        last_name = data.get("last_name")
+        role = data.get("role", "staff")
+        password = data.get("password", "changeme123")  # Default password if not provided
+        phone_number = data.get("phone_number")  # Optional phone number
+
+        if not email or not first_name or not last_name:
+            return Response({"status": "error", "message": "missing_required_fields"}, status=400)
+
+        result = UserService.add_user(
+            email=email,
+            first_name=first_name,
+            last_name=last_name,
+            user_role=role,
+            password=password,
+            phone_number=phone_number
+        )
+
+        return Response(result, status=200 if result["status"] == "success" else 400)
+
+    except Exception as e:
+        Logs.error("api_add_user_failed", exc_info=e)
+        return Response({"status": "error", "message": "server_error"}, status=500)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def api_change_password(request):
+    """
+    Change password for authenticated user
+    Requires old_password and new_password in the request body
+    """
+    try:
+        data = request.data
+        old_password = data.get("old_password")
+        new_password = data.get("new_password")
+
+        if not old_password or not new_password:
+            return Response({"status": "error", "message": "missing_old_or_new_password"}, status=400)
+
+        result = UserService.change_password(
+            user=request.user,
+            old_password=old_password,
+            new_password=new_password
+        )
+
+        return Response(result, status=200 if result["status"] == "success" else 400)
+
+    except Exception as e:
+        Logs.error("api_change_password_failed", exc_info=e)
+        return Response({"status": "error", "message": "server_error"}, status=500)
+
+@api_view(['POST'])
 @permission_classes([AllowAny])
 def api_login(request):
     """

@@ -35,6 +35,8 @@ urlpatterns = [
 
 
     # User endpoints
+    path('api/add-user/', user_view.api_add_user, name='add_user'),
+    path('api/change-password/', user_view.api_change_password, name='change_password'),
     path('api/top-up-subscription/', user_view.api_top_up_subscription, name='top_up_subscription'),
     path('api/user-full-name/', user_view.api_get_full_name, name='user_full_name'),
     path('api/user-has-permission/', user_view.api_has_permission, name='user_has_permission'),
