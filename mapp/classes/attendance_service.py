@@ -17,10 +17,9 @@ class AttendanceService:
     def clock_in(cls, user, timestamp, photo_base64: str = None):
         """
         Create a new attendance session for a user.
-        Enforces single active session, safe timestamp, and safe photo handling.
+        Each clock-in creates a new record with status 'open'.
         """
         try:
-            # Normalize timestamp
             if timestamp is None:
                 return {"status": "error", "message": "missing_timestamp"}
 
@@ -28,11 +27,10 @@ class AttendanceService:
                 timestamp = timezone.make_aware(timestamp)
 
             with transaction.atomic():
-
-                # Locking avoids the race condition
+                # Ensure no active session
                 existing = AttendanceSession.objects.select_for_update().filter(
                     user=user,
-                    clock_in_time__isnull=False,
+                    status="open",
                     clock_out_time__isnull=True
                 ).first()
 
@@ -42,15 +40,12 @@ class AttendanceService:
                 attendance_data = {
                     "user": user,
                     "date": timestamp.date(),
-                    "clock_in_time": timestamp
+                    "clock_in_time": timestamp,
+                    "status": "open"
                 }
 
-                # Optional photo
                 if photo_base64:
                     try:
-                        # Handles both cases:
-                        # data:image/png;base64,XXXXXXXX
-                        # XXXXXXXXXXXX (raw base64 only)
                         if ";base64," in photo_base64:
                             format_part, imgstr = photo_base64.split(";base64,")
                             ext = format_part.split("/")[-1]
@@ -61,15 +56,13 @@ class AttendanceService:
                         decoded = base64.b64decode(imgstr)
                         file = ContentFile(decoded, name=f"{uuid.uuid4()}.{ext}")
                         attendance_data["clock_in_photo"] = file
-
                     except Exception as e:
                         Logs.atuta_technical_logger(f"clock_in_photo_save_failed_user_{user.user_id}", exc_info=e)
                         return {"status": "error", "message": "invalid_photo_data"}
 
-                # Actually create session
                 session = AttendanceSession.objects.create(**attendance_data)
 
-            Logs.atuta_logger(f"User clocked in | user={user.user_id} | {timestamp}")
+            Logs.atuta_technical_logger(f"User clocked in | user={user.user_id} | session_id={session.session_id}")
 
             return {
                 "status": "success",
@@ -84,15 +77,17 @@ class AttendanceService:
 
     @classmethod
     def clock_out(cls, user, timestamp: datetime.datetime):
+        """
+        Clock out the current open session, mark status as 'closed'.
+        """
         try:
-
             if timezone.is_naive(timestamp):
                 timestamp = timezone.make_aware(timestamp)
 
             with transaction.atomic():
                 session = AttendanceSession.objects.select_for_update().filter(
                     user=user,
-                    clock_in_time__isnull=False,
+                    status="open",
                     clock_out_time__isnull=True
                 ).first()
 
@@ -100,23 +95,20 @@ class AttendanceService:
                     return {"status": "error", "message": "no_active_session"}
 
                 session.clock_out_time = timestamp
+                session.status = "closed"
 
-                # optional: calculate total hours
+                # Calculate total hours
                 delta = session.clock_out_time - session.clock_in_time
                 session.total_hours = round(delta.total_seconds() / 3600, 2)
 
                 session.save()
 
-            Logs.atuta_technical_logger(
-                f"User clocked out | user={user.user_id} | {timestamp}"
-            )
+            Logs.atuta_technical_logger(f"User clocked out | user={user.user_id} | session_id={session.session_id}")
 
             return {"status": "success", "message": "clock_out_recorded"}
 
         except Exception as e:
-            Logs.atuta_technical_logger(
-                f"clock_out_failed_user_{user.user_id}", exc_info=e
-            )
+            Logs.atuta_technical_logger(f"clock_out_failed_user_{user.user_id}", exc_info=e)
             return {"status": "error", "message": "clock_out_failed"}
         
     @classmethod
