@@ -73,15 +73,21 @@ def api_clock_in(request):
     return Response(result, status=500)
 
     
-
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def api_clock_out(request):
     """
-    Clock out a user.
+    Clock out a user with optional notes.
+    Expected payload:
+    {
+        "timestamp": "2025-12-02T17:00:00",
+        "notes": "Leaving early today"  # optional
+    }
     """
     try:
         timestamp = request.data.get("timestamp")
+        notes = request.data.get("notes")  # optional
+
         if not timestamp:
             return Response({"status": "error", "message": "missing_timestamp"}, status=400)
 
@@ -92,7 +98,8 @@ def api_clock_out(request):
 
         result = AttendanceService.clock_out(
             user=request.user,
-            timestamp=timestamp
+            timestamp=timestamp,
+            notes=notes
         )
 
         if result["status"] == "error":
@@ -105,8 +112,6 @@ def api_clock_out(request):
     except Exception as e:
         Logs.atuta_technical_logger("api_clock_out_failed", exc_info=e)
         return Response({"status": "error", "message": "server_error"}, status=500)
-
-
 
 
 @api_view(['POST'])

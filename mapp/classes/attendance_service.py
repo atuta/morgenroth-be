@@ -76,9 +76,9 @@ class AttendanceService:
 
 
     @classmethod
-    def clock_out(cls, user, timestamp: datetime.datetime):
+    def clock_out(cls, user, timestamp: datetime.datetime, notes: str = None):
         """
-        Clock out the current open session, mark status as 'closed'.
+        Clock out the current open session, mark status as 'closed', and optionally save notes.
         """
         try:
             if timezone.is_naive(timestamp):
@@ -97,38 +97,45 @@ class AttendanceService:
                 session.clock_out_time = timestamp
                 session.status = "closed"
 
+                # Save optional notes
+                if notes:
+                    session.notes = notes
+
                 # Calculate total hours
                 delta = session.clock_out_time - session.clock_in_time
                 session.total_hours = round(delta.total_seconds() / 3600, 2)
 
                 session.save()
 
-            Logs.atuta_technical_logger(f"User clocked out | user={user.user_id} | session_id={session.session_id}")
+            Logs.atuta_technical_logger(
+                f"User clocked out | user={user.user_id} | session_id={session.session_id}"
+            )
 
             return {"status": "success", "message": "clock_out_recorded"}
 
         except Exception as e:
-            Logs.atuta_technical_logger(f"clock_out_failed_user_{user.user_id}", exc_info=e)
+            Logs.atuta_technical_logger(
+                f"clock_out_failed_user_{user.user_id}", exc_info=e
+            )
             return {"status": "error", "message": "clock_out_failed"}
+
         
     @classmethod
     def get_current_session(cls, user):
         """
-        Retrieve the user's current active attendance session (clocked in but not clocked out).
+        Retrieve the user's current active attendance session (status=open).
         """
         try:
-
             with transaction.atomic():
                 session = AttendanceSession.objects.select_for_update().filter(
                     user=user,
-                    clock_in_time__isnull=False,
-                    clock_out_time__isnull=True
+                    status="open"
                 ).first()
 
                 if not session:
                     return {"status": "error", "message": "no_active_session"}
 
-            # Optionally serialize session info for frontend
+            # Serialize session data for frontend
             session_data = {
                 "session_id": str(session.session_id),
                 "clock_in_time": session.clock_in_time.isoformat(),
@@ -149,6 +156,7 @@ class AttendanceService:
                 f"get_current_session_failed_user_{user.user_id}", exc_info=e
             )
             return {"status": "error", "message": "get_current_session_failed"}
+
 
 
     @classmethod
