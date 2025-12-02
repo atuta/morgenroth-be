@@ -1,0 +1,8 @@
+Working hours created | day=5, start=15:11, end=18:11, tz=Africa/Nairobi
+
+Working hours created | day=1, start=15:18, end=20:20, tz=Africa/Nairobi
+
+Working hours updated | day=1, start=18:20, end=20:20, tz=Africa/Nairobi
+
+Working hours created | day=7, start=15:16, end=20:22, tz=Africa/Nairobi
+

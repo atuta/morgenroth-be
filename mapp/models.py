@@ -437,6 +437,41 @@ class UserManual(models.Model):
 
     def __str__(self):
         return f"Manual | {self.title}"
+    
+class WorkingHoursConfig(models.Model):
+    class Days(models.IntegerChoices):
+        MONDAY = 1, 'Monday'
+        TUESDAY = 2, 'Tuesday'
+        WEDNESDAY = 3, 'Wednesday'
+        THURSDAY = 4, 'Thursday'
+        FRIDAY = 5, 'Friday'
+        SATURDAY = 6, 'Saturday'
+        SUNDAY = 7, 'Sunday'
+
+    day_of_week = models.PositiveSmallIntegerField(choices=Days.choices)
+
+    start_time = models.TimeField()
+    end_time = models.TimeField()
+
+    # timezone for that config rule
+    timezone = models.CharField(
+        max_length=100,
+        default='Africa/Nairobi'
+    )
+
+    # optional feature: allow disabling a day
+    is_active = models.BooleanField(default=True)
+
+    # audit
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('day_of_week', 'timezone')
+        ordering = ['day_of_week']
+
+    def __str__(self):
+        return f"{self.get_day_of_week_display()} {self.start_time} - {self.end_time}"
 
     
 class ErrorLog(models.Model):
