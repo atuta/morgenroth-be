@@ -65,6 +65,10 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     shif_sha_number = models.CharField(max_length=50, blank=True, null=True)
     photo = models.ImageField(upload_to='staff_photos/', blank=True, null=True)
 
+    # Hourly rate info
+    hourly_rate = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
+    hourly_rate_currency = models.CharField(max_length=10, default="KES")
+
     # Attendance flags
     is_present_today = models.BooleanField(default=False)
     is_on_leave = models.BooleanField(default=False)

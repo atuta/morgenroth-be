@@ -1,0 +1,40 @@
+Working hours retrieved | timezone=Africa/Nairobi
+
+Deduction fetched | name=nssf
+
+Deduction fetched | name=shif_sha
+
+Deduction fetched | name=housing_levy
+
+Deduction updated | name=housing_levy, percentage=0
+
+Deduction fetched | name=nssf
+
+Deduction fetched | name=shif_sha
+
+Deduction fetched | name=housing_levy
+
+Deduction updated | name=shif_sha, percentage=1
+
+Deduction fetched | name=nssf
+
+Deduction fetched | name=shif_sha
+
+Deduction fetched | name=housing_levy
+
+Deduction fetched | name=nssf
+
+Deduction fetched | name=shif_sha
+
+Deduction fetched | name=housing_levy
+
+Working hours retrieved | timezone=Africa/Nairobi
+
+Fetched 3 non-admin users
+
+Fetched 3 non-admin users
+
+Fetched 3 non-admin users
+
+Fetched 3 non-admin users
+

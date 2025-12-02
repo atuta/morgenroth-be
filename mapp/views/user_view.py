@@ -14,6 +14,25 @@ from mapp.classes.user_service import UserService
 from mapp.classes.logs.logs import Logs
 
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def api_get_non_admin_users(request):
+    """
+    Fetch all users whose role is not 'admin'.
+    """
+    try:
+        result = UserService.get_non_admin_users()
+
+        # Return 200 for success, 400 if something went wrong
+        status_code = 200 if result.get("status") == "success" else 400
+
+        return Response(result, status=status_code)
+
+    except Exception as e:
+        Logs.atuta_technical_logger("api_get_non_admin_users_failed", exc_info=e)
+        return Response({"status": "error", "message": "server_error"}, status=500)
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def api_add_user(request):

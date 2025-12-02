@@ -34,3 +34,5 @@ Deduction fetched | name=housing_levy
 
 Deduction updated | name=nssf, percentage=1.7
 
+Deduction created | name=shif_sha, percentage=5
+

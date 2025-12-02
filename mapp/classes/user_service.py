@@ -1,4 +1,5 @@
 import datetime
+from django.forms.models import model_to_dict
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
 
@@ -7,6 +8,35 @@ from mapp.classes.logs.logs import Logs
 
 
 class UserService:
+
+    @classmethod
+    def get_non_admin_users(cls):
+        """
+        Return a list of all users whose role is NOT 'admin'.
+        Handles missing photo field safely.
+        """
+        try:
+            users = CustomUser.objects.exclude(user_role="admin")
+            user_list = []
+
+            for user in users:
+                user_dict = model_to_dict(user)
+                # Safely handle photo field
+                user_dict["photo"] = user.photo.url if user.photo else None
+                user_list.append(user_dict)
+
+            Logs.atuta_logger(f"Fetched {len(user_list)} non-admin users")
+            return {
+                "status": "success",
+                "data": user_list
+            }
+        except Exception as e:
+            Logs.atuta_technical_logger("get_non_admin_users_failed", exc_info=e)
+            return {
+                "status": "error",
+                "message": "failed_to_fetch_users"
+            }
+
 
     @classmethod
     def add_user(
@@ -52,13 +82,13 @@ class UserService:
             }
 
         except IntegrityError as e:
-            Logs.error(f"user_creation_failed_{email}", exc_info=e)
+            Logs.atuta_technical_logger(f"user_creation_failed_{email}", exc_info=e)
             return {
                 "status": "error",
                 "message": "email_already_exists"
             }
         except Exception as e:
-            Logs.error(f"user_creation_failed_{email}", exc_info=e)
+            Logs.atuta_technical_logger(f"user_creation_failed_{email}", exc_info=e)
             return {
                 "status": "error",
                 "message": "user_creation_failed"
@@ -95,7 +125,7 @@ class UserService:
             }
 
         except Exception as e:
-            Logs.error(f"password_change_failed_user_{user.user_id}", exc_info=e)
+            Logs.atuta_technical_logger(f"password_change_failed_user_{user.user_id}", exc_info=e)
             return {
                 "status": "error",
                 "message": "password_change_failed"
