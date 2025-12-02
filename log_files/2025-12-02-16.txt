@@ -24,3 +24,13 @@ Working hours retrieved | timezone=Africa/Nairobi
 
 Working hours retrieved | timezone=Africa/Nairobi
 
+Deduction created | name=nssf, percentage=2
+
+Deduction created | name=housing_levy, percentage=2.5
+
+Deduction fetched | name=nssf
+
+Deduction fetched | name=housing_levy
+
+Deduction updated | name=nssf, percentage=1.7
+
