@@ -1,0 +1,4 @@
+User clocked in | user=67591fbb-8a36-435c-ab81-a596b2b2ea2c | session_id=8bbfa892-f3b2-40d6-aa8c-4c764ecab70a
+
+Retrieved current session | user=67591fbb-8a36-435c-ab81-a596b2b2ea2c | session_id=8bbfa892-f3b2-40d6-aa8c-4c764ecab70a
+

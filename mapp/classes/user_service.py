@@ -1,9 +1,12 @@
 import datetime
+from django.db.models import Max
+from decimal import Decimal
+from django.utils import timezone
 from django.forms.models import model_to_dict
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
 
-from mapp.models import CustomUser
+from mapp.models import CustomUser, AttendanceSession
 from mapp.classes.logs.logs import Logs
 
 

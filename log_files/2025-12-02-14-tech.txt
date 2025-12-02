@@ -1,3 +1,0 @@
-set_working_hours_failed_6
-
-Error in file: /Users/isaac/python_projects/morgenroth/morgenroth_env/lib/python3.12/site-packages/django/db/models/query.py, line: 1039, in _extract_model_params - Invalid field name(s) for model WorkingHoursConfig: 'description'.

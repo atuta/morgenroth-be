@@ -13,7 +13,6 @@ from django.contrib.auth import authenticate
 from mapp.classes.user_service import UserService
 from mapp.classes.logs.logs import Logs
 
-
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def api_get_non_admin_users(request):

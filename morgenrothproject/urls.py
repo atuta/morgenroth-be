@@ -50,6 +50,7 @@ urlpatterns = [
     path('api/lunch-in/', attendance_view.api_lunch_in, name='lunch_in'),
     path('api/lunch-out/', attendance_view.api_lunch_out, name='lunch_out'),
     path('api/total-hours/', attendance_view.api_get_total_hours, name='total_hours'),
+    path('api/get-today-user-time-summary/', attendance_view.api_get_today_user_time_summary, name='get_today_user_time_summary'),
     path('api/attendance/current-session/', attendance_view.api_get_current_session, name='current_session'),
 
 

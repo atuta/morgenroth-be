@@ -11,6 +11,27 @@ from mapp.classes.logs.logs import Logs
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+def api_get_today_user_time_summary(request):
+    """
+    Fetch today's attendance summary for all users with attendance activity.
+    Includes earliest clock-in, latest clock-out, total hours worked,
+    user photo URL, clock-in photo URL, and user role.
+    """
+    try:
+        result = AttendanceService.get_today_user_time_summary()
+
+        # Return 200 for success, 400 if something went wrong
+        status_code = 200 if result.get("status") == "success" else 400
+
+        return Response(result, status=status_code)
+
+    except Exception as e:
+        Logs.atuta_technical_logger("api_get_today_user_time_summary_failed", exc_info=e)
+        return Response({"status": "error", "message": "server_error"}, status=500)
+    
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def api_get_current_session(request):
     """
     Retrieve the user's current active attendance session (clocked in but not clocked out).

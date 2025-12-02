@@ -1,5 +1,6 @@
 from django.db import transaction
 from django.utils import timezone
+from decimal import Decimal
 import datetime
 import base64
 import uuid
@@ -12,6 +13,109 @@ from mapp.classes.logs.logs import Logs
 
 
 class AttendanceService:
+
+    @classmethod
+    def get_today_user_time_summary(cls):
+        """
+        For each user with attendance activity today:
+        - earliest clock in
+        - latest clock out (or 'open')
+        - total hours worked across all sessions
+        - user photo URL
+        - clock-in photo URL of latest session
+        - user role
+        - latest session status (open/closed)
+        """
+        try:
+            today = timezone.localdate()
+
+            # Pull today's sessions
+            sessions = (
+                AttendanceSession.objects
+                .filter(date=today)
+                .select_related("user")
+                .order_by("user", "clock_in_time")
+            )
+
+            user_map = {}
+
+            for session in sessions:
+                user = session.user
+                uid = user.user_id
+
+                if uid not in user_map:
+                    # Safe access to user photo
+                    try:
+                        user_photo_url = user.photo.url if user.photo else None
+                    except Exception:
+                        user_photo_url = None
+
+                    user_map[uid] = {
+                        "user_id": str(uid),
+                        "full_name": user.full_name,
+                        "email": user.email,
+                        "user_role": user.user_role,
+                        "user_photo_url": user_photo_url,
+                        "earliest_clock_in": None,
+                        "latest_clock_out": None,
+                        "total_hours_worked": Decimal("0.00"),
+                        "latest_clock_in_photo_url": None,
+                        "latest_session_status": None,
+                    }
+
+                entry = user_map[uid]
+
+                # Earliest clock-in
+                if session.clock_in_time:
+                    if entry["earliest_clock_in"] is None or session.clock_in_time < entry["earliest_clock_in"]:
+                        entry["earliest_clock_in"] = session.clock_in_time
+
+                # Latest clock-out
+                if session.clock_out_time:
+                    if entry["latest_clock_out"] is None or session.clock_out_time > entry["latest_clock_out"]:
+                        entry["latest_clock_out"] = session.clock_out_time
+                        # Update clock-in photo and status to match latest session
+                        try:
+                            entry["latest_clock_in_photo_url"] = session.clock_in_photo.url if session.clock_in_photo else None
+                        except Exception:
+                            entry["latest_clock_in_photo_url"] = None
+                        entry["latest_session_status"] = session.status
+
+                # If no clock out, keep photo and status of latest session
+                if entry["latest_clock_out"] is None:
+                    try:
+                        entry["latest_clock_in_photo_url"] = session.clock_in_photo.url if session.clock_in_photo else None
+                    except Exception:
+                        entry["latest_clock_in_photo_url"] = None
+                    entry["latest_session_status"] = session.status
+
+                # Sum total hours from sessions with both clock in and out
+                if session.clock_in_time and session.clock_out_time:
+                    diff = session.clock_out_time - session.clock_in_time
+                    hours = Decimal(diff.total_seconds()) / Decimal(3600)
+                    entry["total_hours_worked"] += hours.quantize(Decimal("0.01"))
+
+            # Replace None with 'open' for users who haven't clocked out
+            for entry in user_map.values():
+                if entry["latest_clock_out"] is None:
+                    entry["latest_clock_out"] = "open"
+
+            data = list(user_map.values())
+
+            Logs.atuta_logger(f"Today's attendance summary generated for {len(data)} users")
+
+            return {
+                "status": "success",
+                "message": data,
+            }
+
+        except Exception as e:
+            Logs.atuta_technical_logger("get_today_user_time_summary_failed", exc_info=e)
+            return {
+                "status": "error",
+                "message": "attendance_summary_failed",
+            }
+
 
     @classmethod
     def clock_in(cls, user, timestamp, photo_base64: str = None):
