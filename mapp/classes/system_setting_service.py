@@ -5,6 +5,51 @@ from mapp.classes.logs.logs import Logs
 
 class SystemSettingService:
 
+    @classmethod
+    def get_working_hours(cls, timezone: Optional[str] = "Africa/Nairobi"):
+        """
+        Retrieve all configured working hours for a given timezone.
+        """
+        try:
+            configs = WorkingHoursConfig.objects.filter(
+                timezone=timezone,
+            ).order_by('day_of_week')
+
+            if not configs.exists():
+                return {
+                    "status": "success",
+                    "message": "no_working_hours_found",
+                    "data": []
+                }
+
+            data = [
+                {
+                    "day_of_week": cfg.day_of_week,
+                    "day_name": cfg.get_day_of_week_display(),
+                    "start_time": cfg.start_time.strftime("%H:%M"),
+                    "end_time": cfg.end_time.strftime("%H:%M"),
+                    "timezone": cfg.timezone,
+                    "is_active": cfg.is_active,
+                }
+                for cfg in configs
+            ]
+
+            Logs.atuta_logger(f"Working hours retrieved | timezone={timezone}")
+
+            return {
+                "status": "success",
+                "message": "working_hours_fetched",
+                "data": data,
+            }
+
+        except Exception as e:
+            Logs.atuta_technical_logger("get_working_hours_failed", exc_info=e)
+            return {
+                "status": "error",
+                "message": "working_hours_failed",
+            }
+
+
 
     @classmethod
     def set_working_hours(

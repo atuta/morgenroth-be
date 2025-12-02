@@ -6,6 +6,35 @@ from mapp.classes.system_setting_service import SystemSettingService
 from mapp.classes.logs.logs import Logs
 
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def api_get_working_hours(request):
+    """
+    Get all configured working hours for a given timezone.
+    If no timezone is passed, default is Africa/Nairobi.
+    """
+    try:
+        # Read timezone from query params if provided
+        timezone = request.query_params.get("timezone", "Africa/Nairobi")
+
+        result = SystemSettingService.get_working_hours(timezone=timezone)
+
+        # If service reported an internal/business error
+        if result.get("status") == "error":
+            return Response(result, status=400)
+
+        # Otherwise success
+        return Response(result, status=200)
+
+    except Exception as e:
+        # Logs.atuta_technical_logger("api_get_working_hours_failed", exc_info=e)
+        print(f"Server Error: {e}")
+        return Response(
+            {"status": "error", "message": "server_error"},
+            status=500
+        )
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def api_set_working_hours(request):

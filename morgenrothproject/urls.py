@@ -90,6 +90,7 @@ urlpatterns = [
     path('api/mark-system-message-read/', system_message_view.api_mark_system_message_as_read, name='mark_system_message_read'),
 
     # System setting endpoints
+    path('api/get-working-hours/', system_setting_view.api_get_working_hours, name='get_working_hours'),
     path('api/set-working-hours/', system_setting_view.api_set_working_hours, name='set_working_hours'),
     path('api/set-system-setting/', system_setting_view.api_set_system_setting, name='set_system_setting'),
     path('api/get-system-setting/', system_setting_view.api_get_system_setting, name='get_system_setting'),

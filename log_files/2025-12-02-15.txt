@@ -6,3 +6,13 @@ Working hours updated | day=1, start=18:20, end=20:20, tz=Africa/Nairobi
 
 Working hours created | day=7, start=15:16, end=20:22, tz=Africa/Nairobi
 
+Working hours retrieved | timezone=Africa/Nairobi
+
+Working hours retrieved | timezone=Africa/Nairobi
+
+Working hours retrieved | timezone=Africa/Nairobi
+
+Working hours created | day=3, start=18:56, end=19:56, tz=Africa/Nairobi
+
+Working hours updated | day=7, start=18:56, end=20:58, tz=Africa/Nairobi
+
