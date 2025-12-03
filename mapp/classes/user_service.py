@@ -1,6 +1,6 @@
 import datetime
 from django.db.models import Max
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from django.utils import timezone
 from django.forms.models import model_to_dict
 from django.core.exceptions import ObjectDoesNotExist
@@ -13,6 +13,53 @@ from mapp.classes.logs.logs import Logs
 class UserService:
 
     @classmethod
+    def update_user_fields(cls, user_id, nssf=None, sha=None, hourly_rate=None):
+        """
+        Update a user's NSSF, SHA, and hourly_rate fields only if valid values are provided.
+        Converts inputs to appropriate types before saving.
+        Logs both incoming data and updated fields.
+        """
+        try:
+            # Log all incoming data from frontend
+            Logs.atuta_logger(f"Received update request for user {user_id}: nssf={nssf}, sha={sha}, hourly_rate={hourly_rate}")
+
+            user = CustomUser.objects.get(user_id=user_id)
+            updated_fields = []
+
+            # Only update if values are provided and valid
+            if nssf not in (None, ""):
+                user.nssf_number = str(nssf)
+                updated_fields.append("nssf_number")
+
+            if sha not in (None, ""):
+                user.shif_sha_number = str(sha)
+                updated_fields.append("shif_sha_number")
+
+            if hourly_rate not in (None, ""):
+                try:
+                    user.hourly_rate = Decimal(hourly_rate)
+                    updated_fields.append("hourly_rate")
+                except (InvalidOperation, ValueError):
+                    Logs.atuta_logger(f"Invalid hourly_rate received for user {user_id}: {hourly_rate}")
+                    return {"status": "error", "message": "invalid_hourly_rate"}
+
+            if updated_fields:
+                user.save()
+                Logs.atuta_logger(f"Successfully updated user {user_id} fields: {', '.join(updated_fields)}")
+                return {"status": "success", "message": "user_updated"}
+            else:
+                Logs.atuta_logger(f"No fields to update for user {user_id}")
+                return {"status": "info", "message": "no_fields_to_update"}
+
+        except ObjectDoesNotExist:
+            Logs.atuta_logger(f"User {user_id} not found for update")
+            return {"status": "error", "message": "user_not_found"}
+        except Exception as e:
+            Logs.atuta_technical_logger("update_user_fields_failed", exc_info=e)
+            return {"status": "error", "message": "update_failed"}
+
+
+    @classmethod
     def get_user_details(cls, user_id):
         """
         Get complete user data using user_id.
@@ -21,12 +68,24 @@ class UserService:
         try:
             user = CustomUser.objects.get(user_id=user_id)
 
-            user_data = model_to_dict(user)
-            
-            # Handle image URL
+            # List of fields to include
+            FIELDS_TO_INCLUDE = [
+                "first_name", "last_name", "email", "account", "user_role",
+                "phone_number", "id_number", "nssf_number", "shif_sha_number",
+                "hourly_rate", "hourly_rate_currency", "status",
+                "is_present_today", "is_on_leave"
+            ]
+
+            user_data = model_to_dict(user, fields=FIELDS_TO_INCLUDE)
+
+            # Ensure primary key (UUID) is included
+            user_data["user_id"] = str(user.user_id)
+
+            # Handle photo field safely
             user_data["photo"] = user.photo.url if user.photo else None
 
-            Logs.atuta_logger(f"Fetched details for user {user.email}")
+            # Log the complete fetched data
+            Logs.atuta_logger(f"Fetched details for user {user.email}: {user_data}")
 
             return {
                 "status": "success",
@@ -46,6 +105,8 @@ class UserService:
                 "status": "error",
                 "message": "failed_to_fetch_user"
             }
+
+
 
     @classmethod
     def get_non_admin_users(cls):
