@@ -29,12 +29,12 @@ class AttendanceService:
         try:
             today = timezone.localdate()
 
-            # Pull today's sessions
+            # Pull today's sessions, ordered by user and clock_in_time for processing
             sessions = (
                 AttendanceSession.objects
-                .filter(date=today)
+                .filter(date=today, clock_in_time__isnull=False) # Only sessions with a clock-in time
                 .select_related("user")
-                .order_by("user", "clock_in_time")
+                .order_by("user", "clock_in_time") 
             )
 
             user_map = {}
@@ -44,7 +44,7 @@ class AttendanceService:
                 uid = user.user_id
 
                 if uid not in user_map:
-                    # Safe access to user photo
+                    # Initialize entry (Same as before)
                     try:
                         user_photo_url = user.photo.url if user.photo else None
                     except Exception:
@@ -56,7 +56,9 @@ class AttendanceService:
                         "email": user.email,
                         "user_role": user.user_role,
                         "user_photo_url": user_photo_url,
-                        "earliest_clock_in": None,
+                        "earliest_clock_in": session.clock_in_time, # Initialize with first session's clock_in
+                        # Use a timestamp for comparison
+                        "latest_timestamp": session.clock_in_time, 
                         "latest_clock_out": None,
                         "total_hours_worked": Decimal("0.00"),
                         "latest_clock_in_photo_url": None,
@@ -65,44 +67,43 @@ class AttendanceService:
 
                 entry = user_map[uid]
 
-                # Earliest clock-in
-                if session.clock_in_time:
-                    if entry["earliest_clock_in"] is None or session.clock_in_time < entry["earliest_clock_in"]:
-                        entry["earliest_clock_in"] = session.clock_in_time
+                # 1. Earliest clock-in (Always simple comparison)
+                if session.clock_in_time and session.clock_in_time < entry["earliest_clock_in"]:
+                    entry["earliest_clock_in"] = session.clock_in_time
 
-                # Latest clock-out
-                if session.clock_out_time:
-                    if entry["latest_clock_out"] is None or session.clock_out_time > entry["latest_clock_out"]:
-                        entry["latest_clock_out"] = session.clock_out_time
-                        # Update clock-in photo and status to match latest session
-                        try:
-                            entry["latest_clock_in_photo_url"] = session.clock_in_photo.url if session.clock_in_photo else None
-                        except Exception:
-                            entry["latest_clock_in_photo_url"] = None
-                        entry["latest_session_status"] = session.status
-
-                # If no clock out, keep photo and status of latest session
-                if entry["latest_clock_out"] is None:
-                    try:
-                        entry["latest_clock_in_photo_url"] = session.clock_in_photo.url if session.clock_in_photo else None
-                    except Exception:
-                        entry["latest_clock_in_photo_url"] = None
-                    entry["latest_session_status"] = session.status
-
-                # Sum total hours from sessions with both clock in and out
+                # 2. Total hours calculation (Same as before)
                 if session.clock_in_time and session.clock_out_time:
                     diff = session.clock_out_time - session.clock_in_time
                     hours = Decimal(diff.total_seconds()) / Decimal(3600)
                     entry["total_hours_worked"] += hours.quantize(Decimal("0.01"))
+                
+                # --- CRITICAL FIX START ---
 
-            # Replace None with 'open' for users who haven't clocked out
+                # 3. Determine the latest activity timestamp for this session
+                current_latest_time = session.clock_out_time or session.clock_in_time
+
+                if current_latest_time and current_latest_time >= entry["latest_timestamp"]:
+                    entry["latest_timestamp"] = current_latest_time
+                    
+                    # Update status, clock-out, and photo details based on the NEWEST session
+                    entry["latest_session_status"] = session.status
+                    entry["latest_clock_out"] = session.clock_out_time # Can be None if open
+
+                    try:
+                        entry["latest_clock_in_photo_url"] = session.clock_in_photo.url if session.clock_in_photo else None
+                    except Exception:
+                        entry["latest_clock_in_photo_url"] = None
+
+                # --- CRITICAL FIX END ---
+
+            # 4. Final formatting: Replace None with 'open'
             for entry in user_map.values():
-                if entry["latest_clock_out"] is None:
+                if entry["latest_clock_out"] is None and entry["latest_session_status"] == 'open':
                     entry["latest_clock_out"] = "open"
 
             data = list(user_map.values())
 
-            Logs.atuta_logger(f"Today's attendance summary generated for {len(data)} users")
+            # Logs.atuta_logger(f"Today's attendance summary generated for {len(data)} users")
 
             return {
                 "status": "success",
@@ -110,7 +111,7 @@ class AttendanceService:
             }
 
         except Exception as e:
-            Logs.atuta_technical_logger("get_today_user_time_summary_failed", exc_info=e)
+            # Logs.atuta_technical_logger("get_today_user_time_summary_failed", exc_info=e)
             return {
                 "status": "error",
                 "message": "attendance_summary_failed",
