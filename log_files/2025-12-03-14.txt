@@ -1,0 +1,24 @@
+User data fetched: {'email': 'isaac@gmail.com', 'first_name': 'Isaac', 'last_name': 'Misiani', 'account': 'rxKRe', 'user_role': 'teacher', 'phone_number': '84747447646', 'hourly_rate': Decimal('0.00'), 'hourly_rate_currency': 'KES', 'status': 'active', 'photo': None}
+
+User data fetched: {'email': 'atuta@gmail.com', 'first_name': 'Isaac', 'last_name': 'Atuta', 'account': 'BjMRC', 'user_role': 'teacher', 'phone_number': '098567654', 'hourly_rate': Decimal('0.00'), 'hourly_rate_currency': 'KES', 'status': 'active', 'photo': None}
+
+User data fetched: {'email': 'mugo@gmail.com', 'first_name': 'Francis', 'last_name': 'Mugo', 'account': 'JGnwB', 'user_role': 'teacher', 'phone_number': '123489765', 'hourly_rate': Decimal('0.00'), 'hourly_rate_currency': 'KES', 'status': 'active', 'photo': None}
+
+User data fetched: {'email': 'mumba@gmail.com', 'first_name': 'John', 'last_name': 'Mumba', 'account': 'YAw8M', 'user_role': 'subordinate', 'phone_number': '0736553445', 'hourly_rate': Decimal('0.00'), 'hourly_rate_currency': 'KES', 'status': 'active', 'photo': None}
+
+Successfully fetched 4 non-admin users
+
+User data fetched: {'email': 'isaac@gmail.com', 'first_name': 'Isaac', 'last_name': 'Misiani', 'account': 'rxKRe', 'user_role': 'teacher', 'phone_number': '84747447646', 'hourly_rate': Decimal('0.00'), 'hourly_rate_currency': 'KES', 'status': 'active', 'user_id': 'd407c9d7-7d51-459e-901f-be1c0992ec80', 'photo': None}
+
+User data fetched: {'email': 'atuta@gmail.com', 'first_name': 'Isaac', 'last_name': 'Atuta', 'account': 'BjMRC', 'user_role': 'teacher', 'phone_number': '098567654', 'hourly_rate': Decimal('0.00'), 'hourly_rate_currency': 'KES', 'status': 'active', 'user_id': '8a48185a-ab36-4037-b634-0b779ff3020a', 'photo': None}
+
+User data fetched: {'email': 'mugo@gmail.com', 'first_name': 'Francis', 'last_name': 'Mugo', 'account': 'JGnwB', 'user_role': 'teacher', 'phone_number': '123489765', 'hourly_rate': Decimal('0.00'), 'hourly_rate_currency': 'KES', 'status': 'active', 'user_id': 'e4ee92a6-8575-4459-8fe3-186852f470f3', 'photo': None}
+
+User data fetched: {'email': 'mumba@gmail.com', 'first_name': 'John', 'last_name': 'Mumba', 'account': 'YAw8M', 'user_role': 'subordinate', 'phone_number': '0736553445', 'hourly_rate': Decimal('0.00'), 'hourly_rate_currency': 'KES', 'status': 'active', 'user_id': '1bf8487b-962e-45f2-a75d-5b5638793e56', 'photo': None}
+
+Successfully fetched 4 non-admin users
+
+Successfully fetched 4 non-admin users
+
+Successfully fetched 4 non-admin users
+

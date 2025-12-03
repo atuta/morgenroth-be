@@ -15,6 +15,28 @@ from mapp.classes.logs.logs import Logs
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+def api_get_user_details(request):
+    """
+    Get user details using query param ?user_id=<uuid>
+    """
+    try:
+        user_id = request.GET.get("user_id")
+
+        if not user_id:
+            return Response({"status": "error", "message": "missing_user_id"}, status=400)
+
+        result = UserService.get_user_details(user_id)
+        status_code = 200 if result.get("status") == "success" else 400
+
+        return Response(result, status=status_code)
+
+    except Exception as e:
+        Logs.atuta_technical_logger("api_get_user_details_failed", exc_info=e)
+        return Response({"status": "error", "message": "server_error"}, status=500)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def api_get_non_admin_users(request):
     """
     Fetch all users whose role is not 'admin'.
