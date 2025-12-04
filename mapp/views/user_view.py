@@ -44,6 +44,25 @@ def api_update_user_fields(request):
     except Exception as e:
         # You may want to log the exception for debugging
         return Response({"status": "error", "message": "update_failed"}, status=500)
+    
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def api_get_logged_in_user_details(request):
+    """
+    Get user details for the currently authenticated user
+    """
+    try:
+        user_id = request.user.user_id  # UUID from CustomUser model
+
+        result = UserService.get_user_details(user_id)
+        status_code = 200 if result.get("status") == "success" else 400
+
+        return Response(result, status=status_code)
+
+    except Exception as e:
+        Logs.atuta_technical_logger("api_get_logged_in_user_details_failed", exc_info=e)
+        return Response({"status": "error", "message": "server_error"}, status=500)
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
