@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.conf import settings
+from django.conf.urls.static import static
 from django.urls import path
 from mapp.views import (
     admin_notice_view,
@@ -36,6 +38,7 @@ urlpatterns = [
 
     # User endpoints
     path('api/add-user/', user_view.api_add_user, name='add_user'),
+    path('api/upload-user-photo/', user_view.upload_user_photo, name='upload_user_photo'),
     path('api/update-user-fields/', user_view.api_update_user_fields, name='update_user_fields'),
     path('api/get-logged-in-user-details/', user_view.api_get_logged_in_user_details, name='get_logged_in_user_details'),
     path('api/get-user-details/', user_view.api_get_user_details, name='get_user_details'),
@@ -115,4 +118,7 @@ urlpatterns += [
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

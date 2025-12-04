@@ -9,9 +9,34 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
+from mapp.serializers import UserPhotoSerializer
 
 from mapp.classes.user_service import UserService
 from mapp.classes.logs.logs import Logs
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def upload_user_photo(request):
+    """
+    Upload or update the logged-in user's profile photo.
+    """
+    user = request.user
+    serializer = UserPhotoSerializer(user, data=request.data, partial=True)
+
+    if serializer.is_valid():
+        serializer.save()
+        return Response({
+            "status": "success",
+            "message": "Photo uploaded successfully",
+            "data": {"photo": serializer.data.get("photo")}
+        })
+    else:
+        return Response({
+            "status": "error",
+            "message": "Invalid image",
+            "errors": serializer.errors
+        }, status=400)
 
 
 @api_view(['POST'])
