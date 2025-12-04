@@ -61,16 +61,22 @@ urlpatterns = [
 
 
     # Advance endpoints
-    path('api/create-advance/', advance_view.api_create_advance, name='create_advance'),
-    path('api/get-user-advances/', advance_view.api_get_user_advances, name='get_user_advances'),
+    path('api/advance/get-by-month/', advance_view.api_get_user_advances_by_month, name='user_get_advances_by_month'),
+    path('api/advance/get-all/', advance_view.api_get_all_user_advances, name='user_get_all_advances'),
+    path('api/admin/advance/create/', advance_view.api_admin_create_advance, name='admin_create_advance'),
+    path('api/admin/advance/get-by-month/', advance_view.api_admin_get_user_advances_by_month, name='admin_get_advances_by_month'),
+    path('api/admin/advance/get-all/', advance_view.api_admin_get_all_user_advances, name='admin_get_all_advances'),
 
     # Deduction endpoints
     path('api/set-deduction/', deduction_view.api_set_deduction, name='set_deduction'),
     path('api/get-deduction/', deduction_view.api_get_deduction, name='get_deduction'),
 
     # Overtime endpoints
-    path('api/authorize-overtime/', overtime_view.api_authorize_overtime, name='authorize_overtime'),
-    path('api/get-user-overtime/', overtime_view.api_get_user_overtime, name='get_user_overtime'),
+    path('api/overtime/record/', overtime_view.api_admin_record_overtime, name='admin_record_overtime'),
+    path('api/overtime/get-by-month/', overtime_view.api_get_user_overtime_by_month, name='user_get_overtime_by_month'),
+    path('api/overtime/get-all/', overtime_view.api_get_all_user_overtime, name='user_get_all_overtime'),
+    path('api/admin/overtime/get-by-month/', overtime_view.api_admin_get_user_overtime_by_month, name='admin_get_overtime_by_month'),
+    path('api/admin/overtime/get-all/', overtime_view.api_admin_get_all_user_overtime, name='admin_get_all_overtime'),
 
     # Payroll endpoints
     path('api/generate-monthly-salary/', payroll_view.api_generate_monthly_salary, name='generate_monthly_salary'),

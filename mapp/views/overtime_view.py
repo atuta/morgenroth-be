@@ -1,56 +1,78 @@
-import datetime
-
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from mapp.models import CustomUser
 from mapp.classes.overtime_service import OvertimeService
 from mapp.classes.logs.logs import Logs
 
 
+# ---------------------------
+# Admin-only: Record overtime for any user
+# ---------------------------
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def api_authorize_overtime(request):
+def api_admin_record_overtime(request):
     """
-    Authorize overtime for a user.
+    Admin: Record overtime for a specific user.
+    Expected JSON:
+    {
+        "user_id": "<uuid>",
+        "hours": 2.5,
+        "amount": 1500,
+        "remarks": "optional notes",
+        "month": 11,          # optional, defaults to current month
+        "year": 2025          # optional, defaults to current year
+    }
     """
     try:
-        date = request.data.get("date")
+        user_id = request.data.get("user_id")
         hours = request.data.get("hours")
+        amount = request.data.get("amount")
+        remarks = request.data.get("remarks", "")
+        month = request.data.get("month")
+        year = request.data.get("year")
 
-        if not date or hours is None:
+        if not user_id or hours is None or amount is None:
             return Response({"status": "error", "message": "missing_parameters"}, status=400)
 
         try:
-            date = datetime.date.fromisoformat(date)
+            hours = float(hours)
+            amount = float(amount)
         except ValueError:
-            return Response({"status": "error", "message": "invalid_date"}, status=400)
+            return Response({"status": "error", "message": "invalid_hours_or_amount"}, status=400)
 
         try:
-            hours = float(hours)
-        except ValueError:
-            return Response({"status": "error", "message": "invalid_hours"}, status=400)
+            user = CustomUser.objects.get(user_id=user_id)
+        except CustomUser.DoesNotExist:
+            return Response({"status": "error", "message": "user_not_found"}, status=404)
 
-        result = OvertimeService.authorize_overtime(
-            user=request.user,
-            date=date,
+        result = OvertimeService.record_overtime(
+            user=user,
             hours=hours,
-            approved_by=request.user  # if the current user is the approver
+            amount=amount,
+            remarks=remarks,
+            month=month,
+            year=year,
+            approved_by=request.user  # admin recording
         )
 
-        return Response(result, status=200)
+        return Response(result, status=200 if result["status"] == "success" else 500)
 
     except Exception as e:
-        Logs.atuta_technical_logger("api_authorize_overtime_failed", exc_info=e)
+        Logs.atuta_technical_logger("api_admin_record_overtime_failed", exc_info=e)
         return Response({"status": "error", "message": "server_error"}, status=500)
 
 
-
+# ---------------------------
+# User-facing: Get overtime by month/year
+# ---------------------------
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def api_get_user_overtime(request):
+def api_get_user_overtime_by_month(request):
     """
-    Fetch overtime for a given month/year.
+    Fetch overtime for logged-in user for a specific month/year.
+    Query params: ?month=11&year=2025
     """
     try:
         month = request.GET.get("month")
@@ -65,14 +87,92 @@ def api_get_user_overtime(request):
         except ValueError:
             return Response({"status": "error", "message": "invalid_month_or_year"}, status=400)
 
-        result = OvertimeService.get_user_overtime(
-            user=request.user,
-            month=month,
-            year=year
-        )
-
-        return Response(result, status=200)
+        result = OvertimeService.get_user_overtime(user=request.user, month=month, year=year)
+        return Response(result, status=200 if result["status"] == "success" else 500)
 
     except Exception as e:
-        Logs.atuta_technical_logger("api_get_user_overtime_failed", exc_info=e)
+        Logs.atuta_technical_logger("api_get_user_overtime_by_month_failed", exc_info=e)
+        return Response({"status": "error", "message": "server_error"}, status=500)
+
+
+# ---------------------------
+# User-facing: Get all overtime
+# ---------------------------
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def api_get_all_user_overtime(request):
+    """
+    Fetch all overtime records for logged-in user.
+    """
+    try:
+        result = OvertimeService.get_all_user_overtime(user=request.user)
+        return Response(result, status=200 if result["status"] == "success" else 500)
+
+    except Exception as e:
+        Logs.atuta_technical_logger("api_get_all_user_overtime_failed", exc_info=e)
+        return Response({"status": "error", "message": "server_error"}, status=500)
+
+
+# ---------------------------
+# Admin-facing: Get overtime by month/year for any user
+# ---------------------------
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def api_admin_get_user_overtime_by_month(request):
+    """
+    Admin: Fetch overtime for a specific user by month/year.
+    Query params: ?user_id=<uuid>&month=11&year=2025
+    """
+    try:
+        user_id = request.GET.get("user_id")
+        month = request.GET.get("month")
+        year = request.GET.get("year")
+
+        if not user_id or not month or not year:
+            return Response({"status": "error", "message": "missing_parameters"}, status=400)
+
+        try:
+            month = int(month)
+            year = int(year)
+        except ValueError:
+            return Response({"status": "error", "message": "invalid_month_or_year"}, status=400)
+
+        try:
+            user = CustomUser.objects.get(user_id=user_id)
+        except CustomUser.DoesNotExist:
+            return Response({"status": "error", "message": "user_not_found"}, status=404)
+
+        result = OvertimeService.get_user_overtime(user=user, month=month, year=year)
+        return Response(result, status=200 if result["status"] == "success" else 500)
+
+    except Exception as e:
+        Logs.atuta_technical_logger("api_admin_get_user_overtime_by_month_failed", exc_info=e)
+        return Response({"status": "error", "message": "server_error"}, status=500)
+
+
+# ---------------------------
+# Admin-facing: Get all overtime for any user
+# ---------------------------
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def api_admin_get_all_user_overtime(request):
+    """
+    Admin: Fetch all overtime records for a specific user.
+    Query params: ?user_id=<uuid>
+    """
+    try:
+        user_id = request.GET.get("user_id")
+        if not user_id:
+            return Response({"status": "error", "message": "missing_user_id"}, status=400)
+
+        try:
+            user = CustomUser.objects.get(user_id=user_id)
+        except CustomUser.DoesNotExist:
+            return Response({"status": "error", "message": "user_not_found"}, status=404)
+
+        result = OvertimeService.get_all_user_overtime(user=user)
+        return Response(result, status=200 if result["status"] == "success" else 500)
+
+    except Exception as e:
+        Logs.atuta_technical_logger("api_admin_get_all_user_overtime_failed", exc_info=e)
         return Response({"status": "error", "message": "server_error"}, status=500)

@@ -13,6 +13,12 @@ def generate_account_id():
     characters = ''.join([c for c in string.ascii_letters + string.digits if c not in '10oil'])
     return ''.join(random.choice(characters) for _ in range(5))
 
+def current_month():
+    return timezone.now().month
+
+def current_year():
+    return timezone.now().year
+
 
 # -----------------
 # CustomUser (keeps your existing structure)
@@ -181,8 +187,8 @@ class AdvancePayment(models.Model):
     amount = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'))
 
     # new month/year fields
-    month = models.PositiveSmallIntegerField(default=lambda: timezone.now().month)
-    year = models.PositiveIntegerField(default=lambda: timezone.now().year)
+    month = models.PositiveSmallIntegerField(default=current_month)
+    year = models.PositiveSmallIntegerField(default=current_year)
 
     approved_by = models.ForeignKey(
         "CustomUser",
@@ -214,8 +220,8 @@ class OvertimeAllowance(models.Model):
     user = models.ForeignKey("CustomUser", on_delete=models.CASCADE, related_name="overtimes")
 
     date = models.DateField(default=timezone.now)  # You didn't have this field explicitly earlier. Needed.
-    month = models.PositiveSmallIntegerField(default=lambda: timezone.now().month)
-    year = models.PositiveSmallIntegerField(default=lambda: timezone.now().year)
+    month = models.PositiveSmallIntegerField(default=current_month)
+    year = models.PositiveSmallIntegerField(default=current_year)
 
     hours = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal('0.00'))
     amount = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'))
