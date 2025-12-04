@@ -176,45 +176,72 @@ class VerificationLog(models.Model):
 # -----------------
 class AdvancePayment(models.Model):
     advance_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='advances')
+    user = models.ForeignKey("CustomUser", on_delete=models.CASCADE, related_name='advances')
+
     amount = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'))
-    month = models.PositiveSmallIntegerField()  # 1-12
-    year = models.PositiveIntegerField()
-    approved_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, blank=True, null=True, related_name='approved_advances')
+
+    # new month/year fields
+    month = models.PositiveSmallIntegerField(default=lambda: timezone.now().month)
+    year = models.PositiveIntegerField(default=lambda: timezone.now().year)
+
+    approved_by = models.ForeignKey(
+        "CustomUser",
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        related_name='approved_advances'
+    )
+
+    remarks = models.TextField(blank=True, null=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ['-year', '-month', '-created_at']
         indexes = [
             models.Index(fields=['user', 'year', 'month']),
+            models.Index(fields=['year', 'month']),
         ]
 
     def __str__(self):
         return f"Advance {self.amount} | {self.user.email} | {self.month}/{self.year}"
-
 
 # -----------------
 # 5. OvertimeAllowance
 # -----------------
 class OvertimeAllowance(models.Model):
     overtime_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='overtimes')
-    date = models.DateField()
+    user = models.ForeignKey("CustomUser", on_delete=models.CASCADE, related_name="overtimes")
+
+    date = models.DateField(default=timezone.now)  # You didn't have this field explicitly earlier. Needed.
+    month = models.PositiveSmallIntegerField(default=lambda: timezone.now().month)
+    year = models.PositiveSmallIntegerField(default=lambda: timezone.now().year)
+
     hours = models.DecimalField(max_digits=5, decimal_places=2, default=Decimal('0.00'))
-    approved_by = models.ForeignKey(CustomUser, on_delete=models.SET_NULL, blank=True, null=True, related_name='approved_overtimes')
-    approved_flag = models.BooleanField(default=False)
+    amount = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'))
+
+    approved_by = models.ForeignKey(
+        "CustomUser",
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+        related_name="approved_overtimes"
+    )
+
+    remarks = models.TextField(blank=True, null=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ['-date', '-created_at']
+        ordering = ['-created_at']
         indexes = [
-            models.Index(fields=['user', 'date']),
+            models.Index(fields=['user', 'year', 'month']),
+            models.Index(fields=['year', 'month']),
         ]
 
     def __str__(self):
-        return f"OT {self.hours}h | {self.user.email} | {self.date} | approved={self.approved_flag}"
-
-
+        return f"OT {self.hours}h | {self.amount} | {self.user.email} | {self.month}/{self.year}"
+    
 # -----------------
 # 6. SalaryRecord
 # -----------------
