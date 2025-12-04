@@ -118,7 +118,7 @@ class UserService:
         FIELDS_TO_INCLUDE = [
             'first_name', 'last_name', 'email', 'account', 
             'user_role', 'phone_number', 'hourly_rate', 
-            'hourly_rate_currency', 'status'
+            'hourly_rate_currency', 'photo', 'status'
         ]
         
         try:
