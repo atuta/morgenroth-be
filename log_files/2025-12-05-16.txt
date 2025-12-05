@@ -1,0 +1,204 @@
+Fetched details for user mugo@gmail.com: {'email': 'mugo@gmail.com', 'first_name': 'Francis', 'last_name': 'Mugo', 'account': 'JGnwB', 'user_role': 'teacher', 'phone_number': '123489765', 'id_number': '56677888', 'nssf_number': '4343', 'shif_sha_number': '56565', 'hourly_rate': Decimal('500.00'), 'hourly_rate_currency': 'KES', 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': 'e4ee92a6-8575-4459-8fe3-186852f470f3', 'photo': '/media/staff_photos/cropped_a-photograph-of-a-confident-african-man-_Tyr3jps7QpCbF7wGmC0qcA_QJ_XFQI25J.jpeg'}
+
+Fetched hourly rate for user e4ee92a6-8575-4459-8fe3-186852f470f3 | rate=500.0 KES
+
+Fetched all statutory deductions | count=3
+
+Generated detailed payslip for user e4ee92a6-8575-4459-8fe3-186852f470f3 | 12/2025 | net_pay=-1211.769 KES
+
+Successfully fetched 4 non-admin users
+
+Fetched details for user mugo@gmail.com: {'email': 'mugo@gmail.com', 'first_name': 'Francis', 'last_name': 'Mugo', 'account': 'JGnwB', 'user_role': 'teacher', 'phone_number': '123489765', 'id_number': '56677888', 'nssf_number': '4343', 'shif_sha_number': '56565', 'hourly_rate': Decimal('500.00'), 'hourly_rate_currency': 'KES', 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': 'e4ee92a6-8575-4459-8fe3-186852f470f3', 'photo': '/media/staff_photos/cropped_a-photograph-of-a-confident-african-man-_Tyr3jps7QpCbF7wGmC0qcA_QJ_XFQI25J.jpeg'}
+
+Successfully fetched 4 non-admin users
+
+Fetched details for user mugo@gmail.com: {'email': 'mugo@gmail.com', 'first_name': 'Francis', 'last_name': 'Mugo', 'account': 'JGnwB', 'user_role': 'teacher', 'phone_number': '123489765', 'id_number': '56677888', 'nssf_number': '4343', 'shif_sha_number': '56565', 'hourly_rate': Decimal('500.00'), 'hourly_rate_currency': 'KES', 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': 'e4ee92a6-8575-4459-8fe3-186852f470f3', 'photo': '/media/staff_photos/cropped_a-photograph-of-a-confident-african-man-_Tyr3jps7QpCbF7wGmC0qcA_QJ_XFQI25J.jpeg'}
+
+Fetched hourly rate for user e4ee92a6-8575-4459-8fe3-186852f470f3 | rate=500.0 KES
+
+Fetched all statutory deductions | count=3
+
+Generated detailed payslip for user e4ee92a6-8575-4459-8fe3-186852f470f3 | 12/2025 | net_pay=-1211.769 KES
+
+Fetched details for user mugo@gmail.com: {'email': 'mugo@gmail.com', 'first_name': 'Francis', 'last_name': 'Mugo', 'account': 'JGnwB', 'user_role': 'teacher', 'phone_number': '123489765', 'id_number': '56677888', 'nssf_number': '4343', 'shif_sha_number': '56565', 'hourly_rate': Decimal('500.00'), 'hourly_rate_currency': 'KES', 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': 'e4ee92a6-8575-4459-8fe3-186852f470f3', 'photo': '/media/staff_photos/cropped_a-photograph-of-a-confident-african-man-_Tyr3jps7QpCbF7wGmC0qcA_QJ_XFQI25J.jpeg'}
+
+Successfully fetched 4 non-admin users
+
+Fetched details for user mugo@gmail.com: {'email': 'mugo@gmail.com', 'first_name': 'Francis', 'last_name': 'Mugo', 'account': 'JGnwB', 'user_role': 'teacher', 'phone_number': '123489765', 'id_number': '56677888', 'nssf_number': '4343', 'shif_sha_number': '56565', 'hourly_rate': Decimal('500.00'), 'hourly_rate_currency': 'KES', 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': 'e4ee92a6-8575-4459-8fe3-186852f470f3', 'photo': '/media/staff_photos/cropped_a-photograph-of-a-confident-african-man-_Tyr3jps7QpCbF7wGmC0qcA_QJ_XFQI25J.jpeg'}
+
+Fetched details for user mugo@gmail.com: {'email': 'mugo@gmail.com', 'first_name': 'Francis', 'last_name': 'Mugo', 'account': 'JGnwB', 'user_role': 'teacher', 'phone_number': '123489765', 'id_number': '56677888', 'nssf_number': '4343', 'shif_sha_number': '56565', 'hourly_rate': Decimal('500.00'), 'hourly_rate_currency': 'KES', 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': 'e4ee92a6-8575-4459-8fe3-186852f470f3', 'photo': '/media/staff_photos/cropped_a-photograph-of-a-confident-african-man-_Tyr3jps7QpCbF7wGmC0qcA_QJ_XFQI25J.jpeg'}
+
+Fetched hourly rate for user e4ee92a6-8575-4459-8fe3-186852f470f3 | rate=500.0 KES
+
+Fetched all statutory deductions | count=3
+
+Generated detailed payslip for user e4ee92a6-8575-4459-8fe3-186852f470f3 | 12/2025 | net_pay=-1211.769 KES
+
+Fetched details for user mugo@gmail.com: {'email': 'mugo@gmail.com', 'first_name': 'Francis', 'last_name': 'Mugo', 'account': 'JGnwB', 'user_role': 'teacher', 'phone_number': '123489765', 'id_number': '56677888', 'nssf_number': '4343', 'shif_sha_number': '56565', 'hourly_rate': Decimal('500.00'), 'hourly_rate_currency': 'KES', 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': 'e4ee92a6-8575-4459-8fe3-186852f470f3', 'photo': '/media/staff_photos/cropped_a-photograph-of-a-confident-african-man-_Tyr3jps7QpCbF7wGmC0qcA_QJ_XFQI25J.jpeg'}
+
+User logged in | user_id=67591fbb-8a36-435c-ab81-a596b2b2ea2c
+
+Successfully fetched 4 non-admin users
+
+Fetched details for user mugo@gmail.com: {'email': 'mugo@gmail.com', 'first_name': 'Francis', 'last_name': 'Mugo', 'account': 'JGnwB', 'user_role': 'teacher', 'phone_number': '123489765', 'id_number': '56677888', 'nssf_number': '4343', 'shif_sha_number': '56565', 'hourly_rate': Decimal('500.00'), 'hourly_rate_currency': 'KES', 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': 'e4ee92a6-8575-4459-8fe3-186852f470f3', 'photo': '/media/staff_photos/cropped_a-photograph-of-a-confident-african-man-_Tyr3jps7QpCbF7wGmC0qcA_QJ_XFQI25J.jpeg'}
+
+Fetched hourly rate for user e4ee92a6-8575-4459-8fe3-186852f470f3 | rate=500.0 KES
+
+Fetched all statutory deductions | count=3
+
+Generated detailed payslip for user e4ee92a6-8575-4459-8fe3-186852f470f3 | 12/2025 | net_pay=-1211.769 KES
+
+Successfully fetched 4 non-admin users
+
+Fetched details for user atuta@gmail.com: {'email': 'atuta@gmail.com', 'first_name': 'Isaac', 'last_name': 'Atuta', 'account': 'BjMRC', 'user_role': 'teacher', 'phone_number': '098567654', 'id_number': '555555', 'nssf_number': '1234', 'shif_sha_number': '567878', 'hourly_rate': Decimal('250.00'), 'hourly_rate_currency': 'KES', 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': '8a48185a-ab36-4037-b634-0b779ff3020a', 'photo': '/media/staff_photos/cropped_forex.png'}
+
+Fetched hourly rate for user 8a48185a-ab36-4037-b634-0b779ff3020a | rate=250.0 KES
+
+Fetched all statutory deductions | count=3
+
+Generated detailed payslip for user 8a48185a-ab36-4037-b634-0b779ff3020a | 12/2025 | net_pay=0.0 KES
+
+Fetched details for user mugo@gmail.com: {'email': 'mugo@gmail.com', 'first_name': 'Francis', 'last_name': 'Mugo', 'account': 'JGnwB', 'user_role': 'teacher', 'phone_number': '123489765', 'id_number': '56677888', 'nssf_number': '4343', 'shif_sha_number': '56565', 'hourly_rate': Decimal('500.00'), 'hourly_rate_currency': 'KES', 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': 'e4ee92a6-8575-4459-8fe3-186852f470f3', 'photo': '/media/staff_photos/cropped_a-photograph-of-a-confident-african-man-_Tyr3jps7QpCbF7wGmC0qcA_QJ_XFQI25J.jpeg'}
+
+Fetched details for user atuta@gmail.com: {'email': 'atuta@gmail.com', 'first_name': 'Isaac', 'last_name': 'Atuta', 'account': 'BjMRC', 'user_role': 'teacher', 'phone_number': '098567654', 'id_number': '555555', 'nssf_number': '1234', 'shif_sha_number': '567878', 'hourly_rate': Decimal('250.00'), 'hourly_rate_currency': 'KES', 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': '8a48185a-ab36-4037-b634-0b779ff3020a', 'photo': '/media/staff_photos/cropped_forex.png'}
+
+Fetched hourly rate for user 8a48185a-ab36-4037-b634-0b779ff3020a | rate=250.0 KES
+
+Fetched all statutory deductions | count=3
+
+Generated detailed payslip for user 8a48185a-ab36-4037-b634-0b779ff3020a | 5/2025 | net_pay=0.0 KES
+
+Fetched details for user mugo@gmail.com: {'email': 'mugo@gmail.com', 'first_name': 'Francis', 'last_name': 'Mugo', 'account': 'JGnwB', 'user_role': 'teacher', 'phone_number': '123489765', 'id_number': '56677888', 'nssf_number': '4343', 'shif_sha_number': '56565', 'hourly_rate': Decimal('500.00'), 'hourly_rate_currency': 'KES', 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': 'e4ee92a6-8575-4459-8fe3-186852f470f3', 'photo': '/media/staff_photos/cropped_a-photograph-of-a-confident-african-man-_Tyr3jps7QpCbF7wGmC0qcA_QJ_XFQI25J.jpeg'}
+
+Fetched details for user atuta@gmail.com: {'email': 'atuta@gmail.com', 'first_name': 'Isaac', 'last_name': 'Atuta', 'account': 'BjMRC', 'user_role': 'teacher', 'phone_number': '098567654', 'id_number': '555555', 'nssf_number': '1234', 'shif_sha_number': '567878', 'hourly_rate': Decimal('250.00'), 'hourly_rate_currency': 'KES', 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': '8a48185a-ab36-4037-b634-0b779ff3020a', 'photo': '/media/staff_photos/cropped_forex.png'}
+
+Fetched details for user mugo@gmail.com: {'email': 'mugo@gmail.com', 'first_name': 'Francis', 'last_name': 'Mugo', 'account': 'JGnwB', 'user_role': 'teacher', 'phone_number': '123489765', 'id_number': '56677888', 'nssf_number': '4343', 'shif_sha_number': '56565', 'hourly_rate': Decimal('500.00'), 'hourly_rate_currency': 'KES', 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': 'e4ee92a6-8575-4459-8fe3-186852f470f3', 'photo': '/media/staff_photos/cropped_a-photograph-of-a-confident-african-man-_Tyr3jps7QpCbF7wGmC0qcA_QJ_XFQI25J.jpeg'}
+
+Fetched details for user atuta@gmail.com: {'email': 'atuta@gmail.com', 'first_name': 'Isaac', 'last_name': 'Atuta', 'account': 'BjMRC', 'user_role': 'teacher', 'phone_number': '098567654', 'id_number': '555555', 'nssf_number': '1234', 'shif_sha_number': '567878', 'hourly_rate': Decimal('250.00'), 'hourly_rate_currency': 'KES', 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': '8a48185a-ab36-4037-b634-0b779ff3020a', 'photo': '/media/staff_photos/cropped_forex.png'}
+
+Fetched details for user mugo@gmail.com: {'email': 'mugo@gmail.com', 'first_name': 'Francis', 'last_name': 'Mugo', 'account': 'JGnwB', 'user_role': 'teacher', 'phone_number': '123489765', 'id_number': '56677888', 'nssf_number': '4343', 'shif_sha_number': '56565', 'hourly_rate': Decimal('500.00'), 'hourly_rate_currency': 'KES', 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': 'e4ee92a6-8575-4459-8fe3-186852f470f3', 'photo': '/media/staff_photos/cropped_a-photograph-of-a-confident-african-man-_Tyr3jps7QpCbF7wGmC0qcA_QJ_XFQI25J.jpeg'}
+
+Fetched details for user atuta@gmail.com: {'email': 'atuta@gmail.com', 'first_name': 'Isaac', 'last_name': 'Atuta', 'account': 'BjMRC', 'user_role': 'teacher', 'phone_number': '098567654', 'id_number': '555555', 'nssf_number': '1234', 'shif_sha_number': '567878', 'hourly_rate': Decimal('250.00'), 'hourly_rate_currency': 'KES', 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': '8a48185a-ab36-4037-b634-0b779ff3020a', 'photo': '/media/staff_photos/cropped_forex.png'}
+
+Fetched details for user isaacatuta@gmail.com: {'email': 'isaacatuta@gmail.com', 'first_name': 'Isaac', 'last_name': 'Misiani', 'account': 'rWz24', 'user_role': 'admin', 'phone_number': None, 'id_number': None, 'nssf_number': '3200', 'shif_sha_number': '232323', 'hourly_rate': Decimal('34.00'), 'hourly_rate_currency': 'KES', 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': '67591fbb-8a36-435c-ab81-a596b2b2ea2c', 'photo': '/media/staff_photos/cropped_Screenshot_2025-10-16_at_13.34.29.png'}
+
+Fetched details for user isaacatuta@gmail.com: {'email': 'isaacatuta@gmail.com', 'first_name': 'Isaac', 'last_name': 'Misiani', 'account': 'rWz24', 'user_role': 'admin', 'phone_number': None, 'id_number': None, 'nssf_number': '3200', 'shif_sha_number': '232323', 'hourly_rate': Decimal('34.00'), 'hourly_rate_currency': 'KES', 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': '67591fbb-8a36-435c-ab81-a596b2b2ea2c', 'photo': '/media/staff_photos/cropped_Screenshot_2025-10-16_at_13.34.29.png'}
+
+Fetched hourly rate for user 67591fbb-8a36-435c-ab81-a596b2b2ea2c | rate=34.0 KES
+
+Fetched all statutory deductions | count=3
+
+Generated detailed payslip for user 67591fbb-8a36-435c-ab81-a596b2b2ea2c | 12/2025 | net_pay=613.92474 KES
+
+Successfully fetched 4 non-admin users
+
+Fetched details for user mumba@gmail.com: {'email': 'mumba@gmail.com', 'first_name': 'John', 'last_name': 'Mumba', 'account': 'YAw8M', 'user_role': 'subordinate', 'phone_number': '0736553445', 'id_number': '456788', 'nssf_number': '876589', 'shif_sha_number': '755098', 'hourly_rate': Decimal('250.00'), 'hourly_rate_currency': 'KES', 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': '1bf8487b-962e-45f2-a75d-5b5638793e56', 'photo': '/media/staff_photos/cropped_ai_man.jpg'}
+
+Fetched hourly rate for user 1bf8487b-962e-45f2-a75d-5b5638793e56 | rate=250.0 KES
+
+Fetched all statutory deductions | count=3
+
+Generated detailed payslip for user 1bf8487b-962e-45f2-a75d-5b5638793e56 | 12/2025 | net_pay=0.0 KES
+
+Overtime recorded for user 1bf8487b-962e-45f2-a75d-5b5638793e56 | hours=5.0 | amount=5000.0 | month=12/2025 | remarks=
+
+Successfully fetched 4 non-admin users
+
+Fetched details for user mumba@gmail.com: {'email': 'mumba@gmail.com', 'first_name': 'John', 'last_name': 'Mumba', 'account': 'YAw8M', 'user_role': 'subordinate', 'phone_number': '0736553445', 'id_number': '456788', 'nssf_number': '876589', 'shif_sha_number': '755098', 'hourly_rate': Decimal('250.00'), 'hourly_rate_currency': 'KES', 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': '1bf8487b-962e-45f2-a75d-5b5638793e56', 'photo': '/media/staff_photos/cropped_ai_man.jpg'}
+
+Fetched hourly rate for user 1bf8487b-962e-45f2-a75d-5b5638793e56 | rate=250.0 KES
+
+Fetched all statutory deductions | count=3
+
+Generated detailed payslip for user 1bf8487b-962e-45f2-a75d-5b5638793e56 | 12/2025 | net_pay=4485.0 KES
+
+Advance created for user 1bf8487b-962e-45f2-a75d-5b5638793e56 | amount=200.0 | month=12/2025 | remarks=Sick
+
+Successfully fetched 4 non-admin users
+
+Fetched details for user mumba@gmail.com: {'email': 'mumba@gmail.com', 'first_name': 'John', 'last_name': 'Mumba', 'account': 'YAw8M', 'user_role': 'subordinate', 'phone_number': '0736553445', 'id_number': '456788', 'nssf_number': '876589', 'shif_sha_number': '755098', 'hourly_rate': Decimal('250.00'), 'hourly_rate_currency': 'KES', 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': '1bf8487b-962e-45f2-a75d-5b5638793e56', 'photo': '/media/staff_photos/cropped_ai_man.jpg'}
+
+Fetched hourly rate for user 1bf8487b-962e-45f2-a75d-5b5638793e56 | rate=250.0 KES
+
+Fetched all statutory deductions | count=3
+
+Generated detailed payslip for user 1bf8487b-962e-45f2-a75d-5b5638793e56 | 12/2025 | net_pay=4285.0 KES
+
+Fetched hourly rate for user 1bf8487b-962e-45f2-a75d-5b5638793e56 | rate=250.0 KES
+
+Fetched all statutory deductions | count=3
+
+Generated detailed payslip for user 1bf8487b-962e-45f2-a75d-5b5638793e56 | 12/2025 | net_pay=4285.0 KES
+
+Successfully fetched 4 non-admin users
+
+Fetched details for user mugo@gmail.com: {'email': 'mugo@gmail.com', 'first_name': 'Francis', 'last_name': 'Mugo', 'account': 'JGnwB', 'user_role': 'teacher', 'phone_number': '123489765', 'id_number': '56677888', 'nssf_number': '4343', 'shif_sha_number': '56565', 'hourly_rate': Decimal('500.00'), 'hourly_rate_currency': 'KES', 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': 'e4ee92a6-8575-4459-8fe3-186852f470f3', 'photo': '/media/staff_photos/cropped_a-photograph-of-a-confident-african-man-_Tyr3jps7QpCbF7wGmC0qcA_QJ_XFQI25J.jpeg'}
+
+Fetched details for user mugo@gmail.com: {'email': 'mugo@gmail.com', 'first_name': 'Francis', 'last_name': 'Mugo', 'account': 'JGnwB', 'user_role': 'teacher', 'phone_number': '123489765', 'id_number': '56677888', 'nssf_number': '4343', 'shif_sha_number': '56565', 'hourly_rate': Decimal('500.00'), 'hourly_rate_currency': 'KES', 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': 'e4ee92a6-8575-4459-8fe3-186852f470f3', 'photo': '/media/staff_photos/cropped_a-photograph-of-a-confident-african-man-_Tyr3jps7QpCbF7wGmC0qcA_QJ_XFQI25J.jpeg'}
+
+Fetched hourly rate for user e4ee92a6-8575-4459-8fe3-186852f470f3 | rate=500.0 KES
+
+Fetched all statutory deductions | count=3
+
+Generated detailed payslip for user e4ee92a6-8575-4459-8fe3-186852f470f3 | 12/2025 | net_pay=-1211.769 KES
+
+Fetched hourly rate for user e4ee92a6-8575-4459-8fe3-186852f470f3 | rate=500.0 KES
+
+Fetched all statutory deductions | count=3
+
+Generated detailed payslip for user e4ee92a6-8575-4459-8fe3-186852f470f3 | 12/2025 | net_pay=-1211.769 KES
+
+Overtime recorded for user e4ee92a6-8575-4459-8fe3-186852f470f3 | hours=5.0 | amount=20000.0 | month=12/2025 | remarks=
+
+Successfully fetched 4 non-admin users
+
+Fetched details for user mugo@gmail.com: {'email': 'mugo@gmail.com', 'first_name': 'Francis', 'last_name': 'Mugo', 'account': 'JGnwB', 'user_role': 'teacher', 'phone_number': '123489765', 'id_number': '56677888', 'nssf_number': '4343', 'shif_sha_number': '56565', 'hourly_rate': Decimal('500.00'), 'hourly_rate_currency': 'KES', 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': 'e4ee92a6-8575-4459-8fe3-186852f470f3', 'photo': '/media/staff_photos/cropped_a-photograph-of-a-confident-african-man-_Tyr3jps7QpCbF7wGmC0qcA_QJ_XFQI25J.jpeg'}
+
+Fetched hourly rate for user e4ee92a6-8575-4459-8fe3-186852f470f3 | rate=500.0 KES
+
+Fetched all statutory deductions | count=3
+
+Generated detailed payslip for user e4ee92a6-8575-4459-8fe3-186852f470f3 | 12/2025 | net_pay=16728.231 KES
+
+Advance created for user e4ee92a6-8575-4459-8fe3-186852f470f3 | amount=3000.0 | month=12/2025 | remarks=Journey
+
+Successfully fetched 4 non-admin users
+
+Fetched details for user mugo@gmail.com: {'email': 'mugo@gmail.com', 'first_name': 'Francis', 'last_name': 'Mugo', 'account': 'JGnwB', 'user_role': 'teacher', 'phone_number': '123489765', 'id_number': '56677888', 'nssf_number': '4343', 'shif_sha_number': '56565', 'hourly_rate': Decimal('500.00'), 'hourly_rate_currency': 'KES', 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': 'e4ee92a6-8575-4459-8fe3-186852f470f3', 'photo': '/media/staff_photos/cropped_a-photograph-of-a-confident-african-man-_Tyr3jps7QpCbF7wGmC0qcA_QJ_XFQI25J.jpeg'}
+
+Fetched hourly rate for user e4ee92a6-8575-4459-8fe3-186852f470f3 | rate=500.0 KES
+
+Fetched all statutory deductions | count=3
+
+Generated detailed payslip for user e4ee92a6-8575-4459-8fe3-186852f470f3 | 12/2025 | net_pay=13728.231 KES
+
+Deduction fetched | name=nssf
+
+Deduction fetched | name=shif_sha
+
+Deduction fetched | name=housing_levy
+
+Deduction updated | name=housing_levy, percentage=2.2
+
+Successfully fetched 4 non-admin users
+
+Fetched details for user mugo@gmail.com: {'email': 'mugo@gmail.com', 'first_name': 'Francis', 'last_name': 'Mugo', 'account': 'JGnwB', 'user_role': 'teacher', 'phone_number': '123489765', 'id_number': '56677888', 'nssf_number': '4343', 'shif_sha_number': '56565', 'hourly_rate': Decimal('500.00'), 'hourly_rate_currency': 'KES', 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': 'e4ee92a6-8575-4459-8fe3-186852f470f3', 'photo': '/media/staff_photos/cropped_a-photograph-of-a-confident-african-man-_Tyr3jps7QpCbF7wGmC0qcA_QJ_XFQI25J.jpeg'}
+
+Fetched hourly rate for user e4ee92a6-8575-4459-8fe3-186852f470f3 | rate=500.0 KES
+
+Fetched all statutory deductions | count=3
+
+Generated detailed payslip for user e4ee92a6-8575-4459-8fe3-186852f470f3 | 12/2025 | net_pay=14311.275000000001 KES
+
+User logged in | user_id=67591fbb-8a36-435c-ab81-a596b2b2ea2c
+
+Successfully fetched 4 non-admin users
+
+Fetched details for user mugo@gmail.com: {'email': 'mugo@gmail.com', 'first_name': 'Francis', 'last_name': 'Mugo', 'account': 'JGnwB', 'user_role': 'teacher', 'phone_number': '123489765', 'id_number': '56677888', 'nssf_number': '4343', 'shif_sha_number': '56565', 'hourly_rate': Decimal('500.00'), 'hourly_rate_currency': 'KES', 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': 'e4ee92a6-8575-4459-8fe3-186852f470f3', 'photo': '/media/staff_photos/cropped_a-photograph-of-a-confident-african-man-_Tyr3jps7QpCbF7wGmC0qcA_QJ_XFQI25J.jpeg'}
+
+Fetched hourly rate for user e4ee92a6-8575-4459-8fe3-186852f470f3 | rate=500.0 KES
+
+Fetched all statutory deductions | count=3
+
+Generated detailed payslip for user e4ee92a6-8575-4459-8fe3-186852f470f3 | 12/2025 | net_pay=14311.275000000001 KES
+
