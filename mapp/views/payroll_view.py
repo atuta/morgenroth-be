@@ -79,14 +79,13 @@ def _generate_payslip_pdf(user, data, month, year):
     buffer = BytesIO()
     
     # 1. Setup Document and Styles
-    # Use smaller margins to allow the table to stretch wider
     doc = SimpleDocTemplate(
         buffer,
         pagesize=A4,
         topMargin=1.5*cm,
         bottomMargin=1.5*cm,
-        leftMargin=1.5*cm, # Increased available width
-        rightMargin=1.5*cm, # Increased available width
+        leftMargin=1.5*cm,
+        rightMargin=1.5*cm,
     )
     styles = getSampleStyleSheet()
     
@@ -246,13 +245,12 @@ def _generate_payslip_pdf(user, data, month, year):
         
         # Gross Pay Subtotal - top and bottom line
         ('LINEBELOW', (0, gross_subtotal_row), (-1, gross_subtotal_row), 1, colors.black), 
-        ('FONTNAME', (0, gross_subtotal_row), (-1, gross_subtotal_row), 'Helvetica-Bold'), # Ensure gross pay is bold
+        ('FONTNAME', (0, gross_subtotal_row), (-1, gross_subtotal_row), 'Helvetica-Bold'),
 
         # Net Pay Row (Highlight and thick line)
-        # **FIXED**: Removed SPAN to ensure amount is in its own column
         ('BACKGROUND', (0, net_pay_row), (-1, net_pay_row), colors.HexColor('#CCFFCC')),
         ('LINEBELOW', (0, net_pay_row), (-1, net_pay_row), 2, colors.black),
-        ('FONTNAME', (0, net_pay_row), (-1, net_pay_row), 'Helvetica-Bold'), # Ensure bold font
+        ('FONTNAME', (0, net_pay_row), (-1, net_pay_row), 'Helvetica-Bold'),
     ]
 
     table.setStyle(TableStyle(style_commands))
@@ -308,9 +306,21 @@ def _handle_payslip_generation(request, is_admin_view=False, is_pdf=False):
         # 4. Handle PDF or JSON Response
         if is_pdf:
             buffer = _generate_payslip_pdf(user, data, month, year)
-            response = HttpResponse(buffer, content_type='application/pdf')
+            
+            # --- FIX FOR DOWNLOAD ISSUE START ---
+            pdf_bytes = buffer.getvalue()
+            
+            # Create the response with the byte content
+            response = HttpResponse(pdf_bytes, content_type='application/pdf')
+            
+            # Set the Content-Length header to help the browser start the download
+            response['Content-Length'] = len(pdf_bytes)
+            # --- FIX FOR DOWNLOAD ISSUE END ---
+
+            # Sanitize filename
             filename = f"Payslip_{user.full_name.replace(' ', '_')}_{month}_{year}.pdf"
             response['Content-Disposition'] = f'attachment; filename="{filename}"'
+            
             return response
         else:
             return Response({"status": "success", "message": "Payslip generated successfully", "data": data})
