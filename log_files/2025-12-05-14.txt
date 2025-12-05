@@ -88,3 +88,53 @@ Fetched all statutory deductions | count=3
 
 Generated detailed payslip for user d407c9d7-7d51-459e-901f-be1c0992ec80 | 12/2025 | net_pay=8491.002 KES
 
+Fetched details for user isaac@gmail.com: {'email': 'isaac@gmail.com', 'first_name': 'Isaac', 'last_name': 'Misiani', 'account': 'rxKRe', 'user_role': 'teacher', 'phone_number': '84747447646', 'id_number': None, 'nssf_number': '1235678', 'shif_sha_number': '765489', 'hourly_rate': Decimal('450.00'), 'hourly_rate_currency': 'KES', 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': 'd407c9d7-7d51-459e-901f-be1c0992ec80', 'photo': '/media/staff_photos/cropped_ai_man_tkVcbMj.jpg'}
+
+Advance created for user d407c9d7-7d51-459e-901f-be1c0992ec80 | amount=3000.0 | month=12/2025 | remarks=Sick
+
+Fetched hourly rate for user d407c9d7-7d51-459e-901f-be1c0992ec80 | rate=450.0 KES
+
+Fetched all statutory deductions | count=3
+
+Generated detailed payslip for user d407c9d7-7d51-459e-901f-be1c0992ec80 | 12/2025 | net_pay=5491.002 KES
+
+Advance created for user d407c9d7-7d51-459e-901f-be1c0992ec80 | amount=2000.0 | month=12/2025 | remarks=
+
+Fetched hourly rate for user d407c9d7-7d51-459e-901f-be1c0992ec80 | rate=450.0 KES
+
+Fetched all statutory deductions | count=3
+
+Generated detailed payslip for user d407c9d7-7d51-459e-901f-be1c0992ec80 | 12/2025 | net_pay=3491.0020000000004 KES
+
+User logged in | user_id=e4ee92a6-8575-4459-8fe3-186852f470f3
+
+Fetched details for user mugo@gmail.com: {'email': 'mugo@gmail.com', 'first_name': 'Francis', 'last_name': 'Mugo', 'account': 'JGnwB', 'user_role': 'teacher', 'phone_number': '123489765', 'id_number': '56677888', 'nssf_number': '4343', 'shif_sha_number': '56565', 'hourly_rate': Decimal('500.00'), 'hourly_rate_currency': 'KES', 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': 'e4ee92a6-8575-4459-8fe3-186852f470f3', 'photo': '/media/staff_photos/cropped_a-photograph-of-a-confident-african-man-_Tyr3jps7QpCbF7wGmC0qcA_QJ_XFQI25J.jpeg'}
+
+Fetched hourly rate for user e4ee92a6-8575-4459-8fe3-186852f470f3 | rate=500.0 KES
+
+Fetched all statutory deductions | count=3
+
+Generated detailed payslip for user e4ee92a6-8575-4459-8fe3-186852f470f3 | 12/2025 | net_pay=288.231 KES
+
+Fetched details for user isaac@gmail.com: {'email': 'isaac@gmail.com', 'first_name': 'Isaac', 'last_name': 'Misiani', 'account': 'rxKRe', 'user_role': 'teacher', 'phone_number': '84747447646', 'id_number': None, 'nssf_number': '1235678', 'shif_sha_number': '765489', 'hourly_rate': Decimal('450.00'), 'hourly_rate_currency': 'KES', 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': 'd407c9d7-7d51-459e-901f-be1c0992ec80', 'photo': '/media/staff_photos/cropped_ai_man_tkVcbMj.jpg'}
+
+Advance created for user d407c9d7-7d51-459e-901f-be1c0992ec80 | amount=1200.0 | month=12/2025 | remarks=
+
+Fetched hourly rate for user e4ee92a6-8575-4459-8fe3-186852f470f3 | rate=500.0 KES
+
+Fetched all statutory deductions | count=3
+
+Generated detailed payslip for user e4ee92a6-8575-4459-8fe3-186852f470f3 | 12/2025 | net_pay=288.231 KES
+
+Successfully fetched 4 non-admin users
+
+Fetched details for user mugo@gmail.com: {'email': 'mugo@gmail.com', 'first_name': 'Francis', 'last_name': 'Mugo', 'account': 'JGnwB', 'user_role': 'teacher', 'phone_number': '123489765', 'id_number': '56677888', 'nssf_number': '4343', 'shif_sha_number': '56565', 'hourly_rate': Decimal('500.00'), 'hourly_rate_currency': 'KES', 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': 'e4ee92a6-8575-4459-8fe3-186852f470f3', 'photo': '/media/staff_photos/cropped_a-photograph-of-a-confident-african-man-_Tyr3jps7QpCbF7wGmC0qcA_QJ_XFQI25J.jpeg'}
+
+Advance created for user e4ee92a6-8575-4459-8fe3-186852f470f3 | amount=1500.0 | month=12/2025 | remarks=
+
+Fetched hourly rate for user e4ee92a6-8575-4459-8fe3-186852f470f3 | rate=500.0 KES
+
+Fetched all statutory deductions | count=3
+
+Generated detailed payslip for user e4ee92a6-8575-4459-8fe3-186852f470f3 | 12/2025 | net_pay=-1211.769 KES
+

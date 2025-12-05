@@ -74,7 +74,7 @@ def _generate_payslip_data(user, month: int, year: int):
 def _generate_payslip_pdf(user, data, month, year):
     """
     Helper function to create PDF in memory using a SINGLE Consolidated Table,
-    ensuring full width and clear total presentation.
+    ensuring full width and clear total presentation, and adds a signature block.
     """
     buffer = BytesIO()
     
@@ -93,21 +93,28 @@ def _generate_payslip_pdf(user, data, month, year):
     h1.alignment = 1 
     h1.spaceAfter = 0.5*cm
     
-    h2 = ParagraphStyle(
-        'Header2', 
-        parent=styles['h2'], 
+    # Define a simple bold style based on Normal text (replaces old h2 for sections)
+    bold_style = ParagraphStyle(
+        'BoldNormal', 
+        parent=styles['Normal'], 
         fontName='Helvetica-Bold', 
-        fontSize=12, 
+        fontSize=12,
         spaceAfter=0.1*cm,
         spaceBefore=0.2*cm,
-        textColor=colors.darkblue
+    )
+    
+    # Define a style for the final NET PAY to keep it prominent
+    final_pay_style = ParagraphStyle(
+        'FinalPay', 
+        parent=bold_style, 
+        fontSize=14, 
     )
     
     Story = []
 
     # Title and General Information Header (Retained)
     Story.append(Paragraph(data["organization"], h1))
-    Story.append(Paragraph("<b>OFFICIAL PAYSLIP</b>", h2))
+    Story.append(Paragraph("<b>OFFICIAL PAYSLIP</b>", bold_style))
     Story.append(Paragraph(f"<b>For:</b> {user.full_name} ({user.email})", styles['Normal']))
     Story.append(Paragraph(f"<b>Period:</b> {month}/{year}", styles['Normal']))
     Story.append(Paragraph(f"<b>Hourly Rate:</b> {data['hourly_rate']} {data['currency']}", styles['Normal']))
@@ -115,7 +122,7 @@ def _generate_payslip_pdf(user, data, month, year):
     Story.append(Spacer(1, 0.5*cm))
 
     # Calculate page width for full-width table
-    page_width = A4[0] - 3*cm # A4 width minus 1.5cm left/right margins
+    page_width = A4[0] - 3*cm 
 
     # 2. Build Consolidated Table Data
     
@@ -138,7 +145,7 @@ def _generate_payslip_pdf(user, data, month, year):
     # --- A. EARNINGS SECTION ---
     row_count += 1
     earnings_header_row = row_count
-    table_data.append([Paragraph('<b>A. EARNINGS</b>', h2), '']) 
+    table_data.append([Paragraph('<b>A. EARNINGS</b>', bold_style), '']) 
     
     # Base Pay
     row_count += 1
@@ -151,7 +158,7 @@ def _generate_payslip_pdf(user, data, month, year):
     row_count += 1
     table_data.append([
         f"Overtime Pay",
-        f"{total_overtime:.2f} {currency}" # Shows 0.00 if zero
+        f"{total_overtime:.2f} {currency}" 
     ])
 
     # Gross Pay Subtotal
@@ -166,17 +173,19 @@ def _generate_payslip_pdf(user, data, month, year):
     # --- B. DEDUCTIONS SECTION ---
     row_count += 1
     deduction_header_row = row_count
-    table_data.append([Paragraph('<b>B. STATUTORY DEDUCTIONS</b>', h2), ''])
+    table_data.append([Paragraph('<b>B. STATUTORY DEDUCTIONS</b>', bold_style), ''])
     
     if data.get("deductions_breakdown"):
         for item in data["deductions_breakdown"]:
-            name = item.get("name", "Deduction")
+            raw_name = item.get("name", "Deduction")
+            formatted_name = raw_name.replace('_', ' ').upper()
+            
             percent = item.get("percentage", 0)
             amount = item.get("amount", 0.0)
             
             row_count += 1
             table_data.append([
-                f"{name} ({percent:.1f}%)",
+                f"{formatted_name} ({percent:.1f}%)",
                 f"-{amount:.2f} {currency}"
             ])
     else:
@@ -186,7 +195,7 @@ def _generate_payslip_pdf(user, data, month, year):
     # --- C. ADVANCES SECTION (Always included, even if total is 0) ---
     row_count += 1
     advance_header_row = row_count
-    table_data.append([Paragraph('<b>C. ADVANCES / LOANS</b>', h2), ''])
+    table_data.append([Paragraph('<b>C. ADVANCES / LOANS</b>', bold_style), ''])
     
     if total_advance > 0 and data.get("advance_breakdown"):
         for item in data["advance_breakdown"]:
@@ -205,19 +214,18 @@ def _generate_payslip_pdf(user, data, month, year):
             
     # --- D. NET PAY SUMMARY ---
     row_count += 1
-    table_data.append([Spacer(1, 0.5*cm), Spacer(1, 0.5*cm)])
+    table_data.append([Spacer(1, 0.2*cm), Spacer(1, 0.2*cm)]) 
     
     row_count += 1
     net_pay_row = row_count
     table_data.append([
-        Paragraph('<b>NET PAY (FINAL AMOUNT)</b>', h2),
-        Paragraph(f'<b>{net_pay:.2f} {currency}</b>', h2)
+        Paragraph('<b>NET PAY (FINAL AMOUNT)</b>', final_pay_style),
+        Paragraph(f'<b>{net_pay:.2f} {currency}</b>', final_pay_style)
     ])
 
 
     # 3. Define and Apply Table Style
     
-    # Set the widths to exactly match the page width
     col_widths = [page_width * 0.75, page_width * 0.25] 
     table = Table(table_data, colWidths=col_widths)
     
@@ -225,30 +233,33 @@ def _generate_payslip_pdf(user, data, month, year):
     style_commands = [
         ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#CCCCCC')),
         ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-        ('LEFTPADDING', (0, 0), (-1, -1), 6),
-        ('RIGHTPADDING', (0, 0), (-1, -1), 6),
+        
+        ('LEFTPADDING', (0, 0), (-1, -1), 10),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 10),
+        ('TOPPADDING', (0, 0), (-1, -1), 6), 
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 10), 
 
         # Header Row (Row 0)
         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#EFEFEF')),
         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('ALIGN', (1, 0), (1, -1), 'RIGHT'), # Right align the entire Amount column
+        ('ALIGN', (1, 0), (1, -1), 'RIGHT'), 
 
-        # Section Headers (Use SPAN to merge the description cell across both columns)
+        # Section Headers 
         ('SPAN', (0, earnings_header_row), (1, earnings_header_row)),
-        ('BACKGROUND', (0, earnings_header_row), (-1, earnings_header_row), colors.HexColor('#D9EAD3')),
+        ('BACKGROUND', (0, earnings_header_row), (-1, earnings_header_row), colors.HexColor("#BFDDF0")),
         
         ('SPAN', (0, deduction_header_row), (1, deduction_header_row)),
-        ('BACKGROUND', (0, deduction_header_row), (-1, deduction_header_row), colors.HexColor('#F4CCCC')),
+        ('BACKGROUND', (0, deduction_header_row), (-1, deduction_header_row), colors.HexColor('#CCCCCC')),
         
         ('SPAN', (0, advance_header_row), (1, advance_header_row)),
-        ('BACKGROUND', (0, advance_header_row), (-1, advance_header_row), colors.HexColor('#FFF2CC')),
+        ('BACKGROUND', (0, advance_header_row), (-1, advance_header_row), colors.HexColor('#CCCCCC')),
         
-        # Gross Pay Subtotal - top and bottom line
+        # Gross Pay Subtotal 
         ('LINEBELOW', (0, gross_subtotal_row), (-1, gross_subtotal_row), 1, colors.black), 
         ('FONTNAME', (0, gross_subtotal_row), (-1, gross_subtotal_row), 'Helvetica-Bold'),
 
-        # Net Pay Row (Highlight and thick line)
-        ('BACKGROUND', (0, net_pay_row), (-1, net_pay_row), colors.HexColor('#CCFFCC')),
+        # Net Pay Row
+        ('BACKGROUND', (0, net_pay_row), (-1, net_pay_row), colors.HexColor('#BFDDF0')),
         ('LINEBELOW', (0, net_pay_row), (-1, net_pay_row), 2, colors.black),
         ('FONTNAME', (0, net_pay_row), (-1, net_pay_row), 'Helvetica-Bold'),
     ]
@@ -256,7 +267,33 @@ def _generate_payslip_pdf(user, data, month, year):
     table.setStyle(TableStyle(style_commands))
     Story.append(table)
     
-    # 4. Build PDF
+    
+    # 4. Add Signature Block
+    Story.append(Spacer(1, 1.5*cm)) # Significant space after the main financial table
+
+    # Signature line data, spanning the full width
+    signature_data = [
+        ['Signed By: _________________________________', 'Date: _________________________________']
+    ]
+    
+    sig_col_widths = [page_width / 2.0, page_width / 2.0] # Split the width equally
+    signature_table = Table(signature_data, colWidths=sig_col_widths)
+    
+    # Style the signature block (no borders, simple formatting)
+    signature_table.setStyle(TableStyle([
+        ('ALIGN', (0, 0), (0, 0), 'LEFT'),  # Left side (Signed By) left aligned
+        ('ALIGN', (1, 0), (1, 0), 'RIGHT'), # Right side (Date) right aligned
+        ('FONTNAME', (0, 0), (-1, -1), 'Helvetica'),
+        ('BOTTOMPADDING', (0, 0), (-1, -1), 0),
+        ('TOPPADDING', (0, 0), (-1, -1), 0),
+        ('LEFTPADDING', (0, 0), (-1, -1), 0),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 0),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+    ]))
+    
+    Story.append(signature_table)
+
+    # 5. Build PDF
     doc.build(Story)
     buffer.seek(0)
     return buffer
@@ -287,6 +324,7 @@ def _handle_payslip_generation(request, is_admin_view=False, is_pdf=False):
                 status=status.HTTP_400_BAD_REQUEST
             )
         try:
+            # Note: This user object is an instance of CustomUser, which has the full_name property.
             user = get_object_or_404(CustomUser, user_id=user_id)
         except Http404:
              return Response(
@@ -317,7 +355,7 @@ def _handle_payslip_generation(request, is_admin_view=False, is_pdf=False):
             response['Content-Length'] = len(pdf_bytes)
             # --- FIX FOR DOWNLOAD ISSUE END ---
 
-            # Sanitize filename
+            # Sanitize filename (Uses user.full_name from the CustomUser model)
             filename = f"Payslip_{user.full_name.replace(' ', '_')}_{month}_{year}.pdf"
             response['Content-Disposition'] = f'attachment; filename="{filename}"'
             
