@@ -79,12 +79,10 @@ urlpatterns = [
     path('api/admin/overtime/get-all/', overtime_view.api_admin_get_all_user_overtime, name='admin_get_all_overtime'),
 
     # Payroll endpoints
-    path('api/generate-monthly-salary/', payroll_view.api_generate_monthly_salary, name='generate_monthly_salary'),
-    path('api/calculate-net-salary/', payroll_view.api_calculate_net_salary, name='calculate_net_salary'),
-    path('api/generate-salary-slip/', payroll_view.api_generate_salary_slip, name='generate_salary_slip'),
-    path('api/get-salary-slip/', payroll_view.api_get_salary_slip, name='get_salary_slip'),
-    path('api/generate-payment-report/', payroll_view.api_generate_payment_report, name='generate_payment_report'),
-    path('api/get-payment-summary/', payroll_view.api_get_payment_summary, name='get_payment_summary'),
+    path('api/generate-user-payslip/', payroll_view.generate_user_payslip, name='generate_user_payslip'),
+    path('api/generate-user-payslip-pdf/', payroll_view.generate_user_payslip_pdf, name='generate_user_payslip_pdf'),
+    path('api/admin/generate-user-payslip/', payroll_view.admin_generate_user_payslip, name='admin_generate_user_payslip'),
+    path('api/admin/generate-user-payslip-pdf/', payroll_view.admin_generate_user_payslip_pdf, name='admin_generate_user_payslip_pdf'),
 
     # Rate endpoints
     path('api/set-rate/', rate_view.api_set_rate, name='set_rate'),
