@@ -9,6 +9,69 @@ from mapp.classes.attendance_service import AttendanceService
 from mapp.classes.logs.logs import Logs
 
 
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def api_admin_get_user_attendance_history(request):
+    """
+    Admin/staff fetches attendance records for any user.
+    user_id must be supplied in request.data or query string.
+    Optional filters: start_date, end_date
+    """
+    try:
+        # Accept user_id either way — flexible
+        user_id = request.data.get("user_id") or request.GET.get("user_id")
+
+        if not user_id:
+            return Response(
+                {"status": "error", "message": "user_id_required"},
+                status=400
+            )
+
+        start_date = request.GET.get("start_date")
+        end_date = request.GET.get("end_date")
+
+        result = AttendanceService.get_user_attendance_history(
+            user_id=user_id,
+            start_date=start_date,
+            end_date=end_date
+        )
+
+        status_code = 200 if result.get("status") == "success" else 400
+        return Response(result, status=status_code)
+
+    except Exception as e:
+        Logs.atuta_technical_logger("api_admin_get_user_attendance_history_failed", exc_info=e)
+        return Response({"status": "error", "message": "server_error"}, status=500)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def api_get_user_attendance_history(request):
+    """
+    Authenticated user fetches their own attendance history.
+    Optional filters: start_date, end_date
+    """
+    try:
+        start_date = request.GET.get("start_date")  # optional
+        end_date = request.GET.get("end_date")      # optional
+
+        user_id = request.user.user_id  # Force logged-in user only
+
+        result = AttendanceService.get_user_attendance_history(
+            user_id=user_id,
+            start_date=start_date,
+            end_date=end_date
+        )
+
+        status_code = 200 if result.get("status") == "success" else 400
+        return Response(result, status=status_code)
+
+    except Exception as e:
+        Logs.atuta_technical_logger("api_get_user_attendance_history_failed", exc_info=e)
+        return Response({"status": "error", "message": "server_error"}, status=500)
+
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def api_get_today_user_time_summary(request):

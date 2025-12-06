@@ -15,6 +15,58 @@ from mapp.classes.logs.logs import Logs
 class AttendanceService:
 
     @classmethod
+    def get_user_attendance_history(cls, user_id, start_date=None, end_date=None):
+        """
+        Returns attendance sessions for a user.
+        Optional date filters:
+            start_date, end_date -> filter by date range
+        """
+        try:
+            sessions = AttendanceSession.objects.filter(user__user_id=user_id)
+
+            # Optional filtering
+            if start_date:
+                sessions = sessions.filter(date__gte=start_date)
+            if end_date:
+                sessions = sessions.filter(date__lte=end_date)
+
+            sessions = sessions.select_related("user").order_by("-date", "-created_at")
+
+            data = []
+
+            for session in sessions:
+
+                try:
+                    clock_in_photo_url = session.clock_in_photo.url if session.clock_in_photo else None
+                except Exception:
+                    clock_in_photo_url = None
+
+                data.append({
+                    "session_id": str(session.session_id),
+                    "date": session.date,
+                    "clock_in_time": session.clock_in_time,
+                    "lunch_in": session.lunch_in,
+                    "lunch_out": session.lunch_out,
+                    "clock_out_time": session.clock_out_time,
+                    "total_hours": session.total_hours,
+                    "status": session.status,
+                    "notes": session.notes,
+                    "clock_in_photo_url": clock_in_photo_url,
+                })
+
+            return {
+                "status": "success",
+                "message": data,
+            }
+
+        except Exception:
+            return {
+                "status": "error",
+                "message": "user_attendance_fetch_failed",
+            }
+
+
+    @classmethod
     def get_today_user_time_summary(cls):
         """
         For each user with attendance activity today:

@@ -6,6 +6,73 @@ from mapp.models import CustomUser
 from mapp.classes.advance_service import AdvanceService
 from mapp.classes.logs.logs import Logs
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def api_admin_get_user_advances(request):
+    """
+    Admin fetches advance payments for any user.
+    user_id must be supplied via request.data or query param.
+    Optional query params: start_date, end_date
+    """
+    try:
+        user_id = request.data.get("user_id") or request.GET.get("user_id")
+        if not user_id:
+            return Response({"status": "error", "message": "user_id_required"}, status=400)
+
+        start_date = request.GET.get("start_date")
+        end_date = request.GET.get("end_date")
+
+        result = AdvanceService.get_user_advances(user_id=user_id, start_date=start_date, end_date=end_date)
+
+        status_code = 200 if result.get("status") == "success" else 400
+        return Response(result, status=status_code)
+
+    except Exception as e:
+        Logs.atuta_technical_logger("api_admin_get_user_advances_failed", exc_info=e)
+        return Response({"status": "error", "message": "server_error"}, status=500)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def api_get_user_advances(request):
+    """
+    Authenticated user fetches their own advances.
+    Optional query params: start_date, end_date
+    """
+    try:
+        start_date = request.GET.get("start_date")
+        end_date = request.GET.get("end_date")
+        user_id = request.user.user_id
+
+        result = AdvanceService.get_user_advances(user_id=user_id, start_date=start_date, end_date=end_date)
+
+        status_code = 200 if result.get("status") == "success" else 400
+        return Response(result, status=status_code)
+
+    except Exception as e:
+        Logs.atuta_technical_logger("api_get_user_advances_failed", exc_info=e)
+        return Response({"status": "error", "message": "server_error"}, status=500)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def api_get_all_advances(request):
+    """
+    Admin/staff fetches all advance payments.
+    Optional query params: start_date, end_date
+    """
+    try:
+        start_date = request.GET.get("start_date")
+        end_date = request.GET.get("end_date")
+
+        result = AdvanceService.get_all_advances(start_date=start_date, end_date=end_date)
+
+        status_code = 200 if result.get("status") == "success" else 400
+        return Response(result, status=status_code)
+
+    except Exception as e:
+        Logs.atuta_technical_logger("api_get_all_advances_failed", exc_info=e)
+        return Response({"status": "error", "message": "server_error"}, status=500)
 
 # ---------------------------
 # Admin-only: Create advance for any user

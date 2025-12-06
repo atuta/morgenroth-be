@@ -1,0 +1,2 @@
+Fetched details for user mugo@gmail.com: {'email': 'mugo@gmail.com', 'first_name': 'Francis', 'last_name': 'Mugo', 'account': 'JGnwB', 'user_role': 'teacher', 'phone_number': '123489765', 'id_number': '56677888', 'nssf_number': '4343', 'shif_sha_number': '56565', 'hourly_rate': Decimal('500.00'), 'hourly_rate_currency': 'KES', 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': 'e4ee92a6-8575-4459-8fe3-186852f470f3', 'photo': '/media/staff_photos/cropped_a-photograph-of-a-confident-african-man-_Tyr3jps7QpCbF7wGmC0qcA_QJ_XFQI25J.jpeg'}
+

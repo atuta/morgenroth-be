@@ -1,0 +1,4 @@
+Retrieved current session | user=67591fbb-8a36-435c-ab81-a596b2b2ea2c | session_id=6127e8e8-9e74-4997-b54f-26d2a2f2ce5b
+
+Retrieved current session | user=67591fbb-8a36-435c-ab81-a596b2b2ea2c | session_id=6127e8e8-9e74-4997-b54f-26d2a2f2ce5b
+

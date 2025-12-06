@@ -59,8 +59,17 @@ urlpatterns = [
     path('api/get-today-user-time-summary/', attendance_view.api_get_today_user_time_summary, name='get_today_user_time_summary'),
     path('api/attendance/current-session/', attendance_view.api_get_current_session, name='current_session'),
 
+    # New ones ↓
+    path('api/attendance/history/', attendance_view.api_get_user_attendance_history, name='user_attendance_history'),
+    path('api/attendance/admin/history/', attendance_view.api_admin_get_user_attendance_history, name='admin_user_attendance_history'),
+
 
     # Advance endpoints
+    # New ones ↓
+    path('api/advances/all/', advance_view.api_get_all_advances, name='all_advances'),
+    path('api/advances/user/', advance_view.api_get_user_advances, name='user_advances'),
+    path('api/advances/admin/user/', advance_view.api_admin_get_user_advances, name='admin_user_advances'),
+
     path('api/advance/get-by-month/', advance_view.api_get_user_advances_by_month, name='user_get_advances_by_month'),
     path('api/advance/get-all/', advance_view.api_get_all_user_advances, name='user_get_all_advances'),
     path('api/admin/advance/create/', advance_view.api_admin_create_advance, name='admin_create_advance'),
@@ -77,6 +86,12 @@ urlpatterns = [
     path('api/overtime/get-all/', overtime_view.api_get_all_user_overtime, name='user_get_all_overtime'),
     path('api/admin/overtime/get-by-month/', overtime_view.api_admin_get_user_overtime_by_month, name='admin_get_overtime_by_month'),
     path('api/admin/overtime/get-all/', overtime_view.api_admin_get_all_user_overtime, name='admin_get_all_overtime'),
+
+    # New
+    path('api/overtimes/all/', overtime_view.api_get_all_overtimes, name='all_overtimes'),
+    path('api/overtimes/user/', overtime_view.api_get_user_overtimes, name='user_overtimes'),
+    path('api/overtimes/admin/user/', overtime_view.api_admin_get_user_overtimes, name='admin_user_overtimes'),
+
 
     # Payroll endpoints
     path('api/generate-user-payslip/', payroll_view.generate_user_payslip, name='generate_user_payslip'),

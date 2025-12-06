@@ -8,6 +8,99 @@ from mapp.classes.logs.logs import Logs
 class OvertimeService:
 
     @classmethod
+    def get_all_overtimes(cls, start_date=None, end_date=None):
+        """
+        Returns all overtime allowance records.
+        Optional filters:
+            start_date: YYYY-MM-DD string or date object
+            end_date: YYYY-MM-DD string or date object
+        """
+        try:
+            overtimes = OvertimeAllowance.objects.select_related("user", "approved_by").all()
+
+            # Optional date filtering
+            if start_date:
+                overtimes = overtimes.filter(created_at__date__gte=start_date)
+            if end_date:
+                overtimes = overtimes.filter(created_at__date__lte=end_date)
+
+            data = []
+
+            for ot in overtimes:
+                record = {
+                    "overtime_id": str(ot.overtime_id),
+                    "user_id": str(ot.user.user_id),
+                    "user_full_name": ot.user.full_name,
+                    "user_email": ot.user.email,
+                    "date": ot.date,
+                    "month": ot.month,
+                    "year": ot.year,
+                    "hours": ot.hours,
+                    "amount": ot.amount,
+                    "approved_by": ot.approved_by.full_name if ot.approved_by else None,
+                    "remarks": ot.remarks,
+                    "created_at": ot.created_at,
+                }
+                data.append(record)
+
+            return {
+                "status": "success",
+                "message": data,
+            }
+
+        except Exception as e:
+            Logs.atuta_technical_logger("get_all_overtimes_failed", exc_info=e)
+            return {
+                "status": "error",
+                "message": "overtime_fetch_failed",
+            }
+
+    @classmethod
+    def get_user_overtimes(cls, user_id, start_date=None, end_date=None):
+        """
+        Returns all overtime allowance records for a specific user.
+        Optional filters:
+            start_date: YYYY-MM-DD string or date object
+            end_date: YYYY-MM-DD string or date object
+        """
+        try:
+            overtimes = OvertimeAllowance.objects.filter(user__user_id=user_id).select_related("approved_by")
+
+            # Optional date filtering
+            if start_date:
+                overtimes = overtimes.filter(created_at__date__gte=start_date)
+            if end_date:
+                overtimes = overtimes.filter(created_at__date__lte=end_date)
+
+            data = []
+
+            for ot in overtimes:
+                record = {
+                    "overtime_id": str(ot.overtime_id),
+                    "date": ot.date,
+                    "month": ot.month,
+                    "year": ot.year,
+                    "hours": ot.hours,
+                    "amount": ot.amount,
+                    "approved_by": ot.approved_by.full_name if ot.approved_by else None,
+                    "remarks": ot.remarks,
+                    "created_at": ot.created_at,
+                }
+                data.append(record)
+
+            return {
+                "status": "success",
+                "message": data,
+            }
+
+        except Exception as e:
+            Logs.atuta_technical_logger("get_user_overtimes_failed", exc_info=e)
+            return {
+                "status": "error",
+                "message": "user_overtime_fetch_failed",
+            }
+
+    @classmethod
     def record_overtime(
         cls,
         user: CustomUser,

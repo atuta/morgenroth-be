@@ -9,6 +9,96 @@ from django.db.models import Sum
 class AdvanceService:
 
     @classmethod
+    def get_user_advances(cls, user_id, start_date=None, end_date=None):
+        """
+        Returns all advance payments for a specific user.
+        Optional filters:
+            start_date: YYYY-MM-DD string or date object
+            end_date: YYYY-MM-DD string or date object
+        """
+        try:
+            advances = AdvancePayment.objects.filter(user__user_id=user_id).select_related("approved_by")
+
+            # Optional date filtering
+            if start_date:
+                advances = advances.filter(created_at__date__gte=start_date)
+            if end_date:
+                advances = advances.filter(created_at__date__lte=end_date)
+
+            data = []
+
+            for adv in advances:
+                record = {
+                    "advance_id": str(adv.advance_id),
+                    "amount": adv.amount,
+                    "month": adv.month,
+                    "year": adv.year,
+                    "approved_by": adv.approved_by.full_name if adv.approved_by else None,
+                    "remarks": adv.remarks,
+                    "created_at": adv.created_at,
+                }
+                data.append(record)
+
+            return {
+                "status": "success",
+                "message": data,
+            }
+
+        except Exception as e:
+            Logs.atuta_technical_logger("get_user_advances_failed", exc_info=e)
+            return {
+                "status": "error",
+                "message": "user_advance_fetch_failed",
+            }
+
+
+    @classmethod
+    def get_all_advances(cls, start_date=None, end_date=None):
+        """
+        Returns all advance payments.
+        Optional filters:
+            start_date: YYYY-MM-DD string or date object
+            end_date: YYYY-MM-DD string or date object
+        """
+        try:
+            advances = AdvancePayment.objects.select_related("user", "approved_by").all()
+
+            # Apply optional date filtering
+            if start_date:
+                advances = advances.filter(created_at__date__gte=start_date)
+            if end_date:
+                advances = advances.filter(created_at__date__lte=end_date)
+
+            data = []
+
+            for adv in advances:
+                record = {
+                    "advance_id": str(adv.advance_id),
+                    "user_id": str(adv.user.user_id),
+                    "user_full_name": adv.user.full_name,
+                    "user_email": adv.user.email,
+                    "amount": adv.amount,
+                    "month": adv.month,
+                    "year": adv.year,
+                    "approved_by": adv.approved_by.full_name if adv.approved_by else None,
+                    "remarks": adv.remarks,
+                    "created_at": adv.created_at,
+                }
+                data.append(record)
+
+            return {
+                "status": "success",
+                "message": data,
+            }
+
+        except Exception as e:
+            Logs.atuta_technical_logger("get_all_advances_failed", exc_info=e)
+            return {
+                "status": "error",
+                "message": "advance_fetch_failed",
+            }
+
+    @classmethod
     def create_advance(
         cls,
         user: CustomUser,
