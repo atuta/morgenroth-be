@@ -1,0 +1,8 @@
+Fetched details for user mumba@gmail.com: {'email': 'mumba@gmail.com', 'first_name': 'John', 'last_name': 'Mumba', 'account': 'eRaAp', 'user_role': 'teacher', 'phone_number': '0723156635', 'id_number': '23657895', 'nssf_number': '5676NSSF7', 'shif_sha_number': 'SHA12345', 'hourly_rate': Decimal('250.00'), 'hourly_rate_currency': 'KES', 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': 'f9e161fb-9670-4b1d-81c5-441cf453609a', 'photo': '/media/staff_photos/cropped_MAS_0152.jpg'}
+
+Fetched details for user mumba@gmail.com: {'email': 'mumba@gmail.com', 'first_name': 'John', 'last_name': 'Mumba', 'account': 'eRaAp', 'user_role': 'teacher', 'phone_number': '0723156635', 'id_number': '23657895', 'nssf_number': '5676NSSF7', 'shif_sha_number': 'SHA12345', 'hourly_rate': Decimal('250.00'), 'hourly_rate_currency': 'KES', 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': 'f9e161fb-9670-4b1d-81c5-441cf453609a', 'photo': '/media/staff_photos/cropped_MAS_0152.jpg'}
+
+User logged in | user_id=f9e161fb-9670-4b1d-81c5-441cf453609a
+
+User logged in | user_id=f9e161fb-9670-4b1d-81c5-441cf453609a
+

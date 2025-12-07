@@ -1,0 +1,8 @@
+User clocked in | user=67591fbb-8a36-435c-ab81-a596b2b2ea2c | session_id=a3e0302c-4595-4fce-b37b-c3b60f76f914
+
+Retrieved current session | user=67591fbb-8a36-435c-ab81-a596b2b2ea2c | session_id=a3e0302c-4595-4fce-b37b-c3b60f76f914
+
+Retrieved current session | user=67591fbb-8a36-435c-ab81-a596b2b2ea2c | session_id=a3e0302c-4595-4fce-b37b-c3b60f76f914
+
+User clocked out | user=67591fbb-8a36-435c-ab81-a596b2b2ea2c | session_id=a3e0302c-4595-4fce-b37b-c3b60f76f914
+

@@ -1,0 +1,4 @@
+Retrieved current session | user=67591fbb-8a36-435c-ab81-a596b2b2ea2c | session_id=58937c11-cebb-4c85-ba5c-5792bb04eafc
+
+User clocked out | user=67591fbb-8a36-435c-ab81-a596b2b2ea2c | session_id=58937c11-cebb-4c85-ba5c-5792bb04eafc
+

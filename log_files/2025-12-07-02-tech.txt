@@ -1,0 +1,14 @@
+User clocked in | user=f9e161fb-9670-4b1d-81c5-441cf453609a | session_id=46c397d4-edc6-4ef3-b861-4843cfa143da
+
+Retrieved current session | user=f9e161fb-9670-4b1d-81c5-441cf453609a | session_id=46c397d4-edc6-4ef3-b861-4843cfa143da
+
+get_user_advances_failed
+
+Error in file: /Users/isaac/python_projects/morgenroth/morgenroth_env/lib/python3.12/site-packages/django/db/models/fields/__init__.py, line: 1491, in to_python - ['“2025-11-31” value has the correct format (YYYY-MM-DD) but it is an invalid date.']
+get_user_advances_failed
+
+Error in file: /Users/isaac/python_projects/morgenroth/morgenroth_env/lib/python3.12/site-packages/django/db/models/fields/__init__.py, line: 1491, in to_python - ['“2025-06-31” value has the correct format (YYYY-MM-DD) but it is an invalid date.']
+Retrieved current session | user=f9e161fb-9670-4b1d-81c5-441cf453609a | session_id=46c397d4-edc6-4ef3-b861-4843cfa143da
+
+Retrieved current session | user=f9e161fb-9670-4b1d-81c5-441cf453609a | session_id=46c397d4-edc6-4ef3-b861-4843cfa143da
+
