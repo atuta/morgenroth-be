@@ -1,16 +1,210 @@
 import datetime
-from django.db.models import Max
+from django.db.models import Max, Sum
 from decimal import Decimal, InvalidOperation
 from django.utils import timezone
 from django.forms.models import model_to_dict
 from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
 
-from mapp.models import CustomUser, AttendanceSession
+from mapp.models import CustomUser, AttendanceSession, OvertimeAllowance, AdvancePayment, StatutoryDeduction
 from mapp.classes.logs.logs import Logs
 
 
 class UserService:
+
+    @classmethod
+    def admin_dashboard_metrics(cls, month=None, year=None):
+        """
+        Returns a combined dashboard summary:
+        1. Payroll metrics:
+           - total_salary: sum of all users' salary (hours * rate + overtime - statutory deductions)
+           - total_advance: sum of all advances
+           - total_net_due: total_salary - total_advance
+        2. Attendance statistics:
+           - all_users_count
+           - present_count
+           - absent_count
+           - on_leave_count
+           - lists of users for each category
+        Defaults to current month/year if none provided.
+        """
+        if month is None or year is None:
+            today = timezone.now()
+            month = month or today.month
+            year = year or today.year
+
+        try:
+            # --- Payroll Metrics ---
+            total_salary = Decimal("0.00")
+            users = CustomUser.objects.all()
+            statutory_deductions = StatutoryDeduction.objects.all()
+
+            for user in users:
+                # Sum hours worked in the month
+                attendance_hours = AttendanceSession.objects.filter(
+                    user=user,
+                    date__year=year,
+                    date__month=month,
+                    total_hours__isnull=False
+                ).aggregate(total_hours=Sum('total_hours'))['total_hours'] or Decimal("0.00")
+
+                gross_salary = Decimal(attendance_hours) * user.hourly_rate
+
+                # Add overtime
+                overtime_total = OvertimeAllowance.objects.filter(
+                    user=user,
+                    year=year,
+                    month=month
+                ).aggregate(total_amount=Sum('amount'))['total_amount'] or Decimal("0.00")
+
+                gross_salary += Decimal(overtime_total)
+
+                # Apply statutory deductions
+                total_deduction = sum((gross_salary * d.percentage / 100) for d in statutory_deductions)
+                net_salary = gross_salary - total_deduction
+
+                total_salary += net_salary
+
+            # Total advance payments
+            total_advance = AdvancePayment.objects.filter(
+                year=year,
+                month=month
+            ).aggregate(total=Sum('amount'))['total'] or Decimal("0.00")
+
+            total_net_due = total_salary - total_advance
+
+            payroll_metrics = {
+                "total_salary": round(total_salary, 2),
+                "total_advance": round(total_advance, 2),
+                "total_net_due": round(total_net_due, 2),
+                "month": month,
+                "year": year
+            }
+
+            # --- Attendance Statistics ---
+            all_users_qs = users
+            present_qs = all_users_qs.filter(is_present_today=True)
+            on_leave_qs = all_users_qs.filter(is_on_leave=True)
+            absent_qs = all_users_qs.filter(is_present_today=False, is_on_leave=False)
+
+            attendance_metrics = {
+                "all_users_count": all_users_qs.count(),
+                "present_count": present_qs.count(),
+                "absent_count": absent_qs.count(),
+                "on_leave_count": on_leave_qs.count(),
+                "all_users": list(all_users_qs.values("user_id", "first_name", "last_name", "is_present_today", "is_on_leave")),
+                "present_users": list(present_qs.values("user_id", "first_name", "last_name")),
+                "absent_users": list(absent_qs.values("user_id", "first_name", "last_name")),
+                "on_leave_users": list(on_leave_qs.values("user_id", "first_name", "last_name")),
+            }
+
+            return {
+                "status": "success",
+                "payroll_metrics": payroll_metrics,
+                "attendance_metrics": attendance_metrics
+            }
+
+        except Exception as e:
+            Logs.atuta_technical_logger("admin_dashboard_metrics_failed", exc_info=e)
+            return {"status": "error", "message": "admin_dashboard_metrics_failed"}
+
+    @classmethod
+    def monthly_pay_metrics(cls, month=None, year=None):
+        """
+        Returns a summary of payroll metrics for the given month/year:
+        - total_salary: sum of all users' salary (hours * rate + overtime - statutory deductions)
+        - total_advance: sum of all advances
+        - total_net_due: total_salary - total_advance
+        Defaults to current month/year if not provided.
+        """
+        if month is None or year is None:
+            today = timezone.now()
+            month = month or today.month
+            year = year or today.year
+
+        try:
+            total_salary = Decimal("0.00")
+            users = CustomUser.objects.all()
+            statutory_deductions = StatutoryDeduction.objects.all()
+
+            for user in users:
+                # Sum hours worked in the month
+                attendance = AttendanceSession.objects.filter(
+                    user=user,
+                    date__year=year,
+                    date__month=month,
+                    total_hours__isnull=False
+                ).aggregate(total_hours=Sum('total_hours'))['total_hours'] or Decimal("0.00")
+
+                gross_salary = Decimal(attendance) * user.hourly_rate
+
+                # Add total overtime for the month
+                overtime_total = OvertimeAllowance.objects.filter(
+                    user=user,
+                    year=year,
+                    month=month
+                ).aggregate(total_amount=Sum('amount'))['total_amount'] or Decimal("0.00")
+
+                gross_salary += Decimal(overtime_total)
+
+                # Apply statutory deductions individually
+                total_deduction = Decimal("0.00")
+                for deduction in statutory_deductions:
+                    total_deduction += (gross_salary * deduction.percentage / 100)
+
+                net_salary = gross_salary - total_deduction
+
+                total_salary += net_salary
+
+            # Total advances for the month
+            total_advance = AdvancePayment.objects.filter(
+                year=year,
+                month=month
+            ).aggregate(total=Sum('amount'))['total'] or Decimal("0.00")
+
+            total_net_due = total_salary - total_advance
+
+            return {
+                "month": month,
+                "year": year,
+                "total_salary": round(total_salary, 2),
+                "total_advance": round(total_advance, 2),
+                "total_net_due": round(total_net_due, 2)
+            }
+
+        except Exception as e:
+            Logs.atuta_technical_logger("monthly_pay_metrics_failed", exc_info=e)
+            return {"status": "error", "message": "monthly_pay_metrics_failed"}
+
+    @classmethod
+    def attendance_statistics(cls):
+        """
+        Returns a summary dictionary of users:
+        - all_users: total count of users
+        - present_today: list of users present today
+        - absent_today: list of users absent today (not on leave)
+        - on_leave: list of users currently on leave
+        """
+        try:
+            all_users_qs = CustomUser.objects.all()
+            present_qs = all_users_qs.filter(is_present_today=True)
+            on_leave_qs = all_users_qs.filter(is_on_leave=True)
+            absent_qs = all_users_qs.filter(is_present_today=False, is_on_leave=False)
+
+            return {
+                "all_users_count": all_users_qs.count(),
+                "present_count": present_qs.count(),
+                "absent_count": absent_qs.count(),
+                "on_leave_count": on_leave_qs.count(),
+                "all_users": list(all_users_qs.values("user_id", "first_name", "last_name", "is_present_today", "is_on_leave")),
+                "present_users": list(present_qs.values("user_id", "first_name", "last_name")),
+                "absent_users": list(absent_qs.values("user_id", "first_name", "last_name")),
+                "on_leave_users": list(on_leave_qs.values("user_id", "first_name", "last_name")),
+            }
+
+        except Exception as e:
+            Logs.atuta_technical_logger("attendance_statistics_failed", exc_info=e)
+            return {"status": "error", "message": "attendance_statistics_failed"}
 
     @classmethod
     def update_user_leave_status(cls, user_id, is_on_leave=None):

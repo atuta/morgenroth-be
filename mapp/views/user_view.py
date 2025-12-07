@@ -14,6 +14,38 @@ from mapp.serializers import UserPhotoSerializer
 from mapp.classes.user_service import UserService
 from mapp.classes.logs.logs import Logs
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def api_admin_dashboard_metrics(request):
+    """
+    Returns combined metrics for the admin dashboard:
+    - Attendance statistics
+    - Monthly payroll metrics (salary, advance, net due)
+    Accepts optional 'month' and 'year' as URL query parameters; defaults to current month/year.
+    Example: /api/admin-dashboard-metrics/?month=12&year=2025
+    """
+    try:
+        month = request.GET.get("month")
+        year = request.GET.get("year")
+
+        # Convert to int if provided
+        if month is not None:
+            try:
+                month = int(month)
+            except ValueError:
+                return Response({"status": "error", "message": "invalid_month"}, status=400)
+
+        if year is not None:
+            try:
+                year = int(year)
+            except ValueError:
+                return Response({"status": "error", "message": "invalid_year"}, status=400)
+
+        result = UserService.admin_dashboard_metrics(month=month, year=year)
+        return Response(result, status=200)
+
+    except Exception as e:
+        return Response({"status": "error", "message": "admin_dashboard_metrics_failed"}, status=500)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])

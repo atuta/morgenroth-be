@@ -37,6 +37,7 @@ urlpatterns = [
 
 
     # User endpoints
+    path('api/admin-dashboard-metrics/', user_view.api_admin_dashboard_metrics, name='admin_dashboard_metrics'),
     path('api/add-user/', user_view.api_add_user, name='add_user'),
     path('api/update-user-leave-status/', user_view.api_update_user_leave_status, name='update_user_leave_status'),
     path('api/upload-user-photo/', user_view.upload_user_photo, name='upload_user_photo'),
