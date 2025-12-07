@@ -13,6 +13,50 @@ from mapp.classes.logs.logs import Logs
 class UserService:
 
     @classmethod
+    def update_user_leave_status(cls, user_id, is_on_leave=None):
+        """
+        Update a user's is_on_leave status if a valid boolean value is provided.
+        Logs both incoming data and updated status.
+        """
+        try:
+            # Log incoming data
+            Logs.atuta_logger(f"Received leave status update for user {user_id}: is_on_leave={is_on_leave}")
+
+            user = CustomUser.objects.get(user_id=user_id)
+
+            if is_on_leave is None:
+                Logs.atuta_logger(f"No leave status provided for user {user_id}")
+                return {"status": "info", "message": "no_status_provided"}
+
+            # Ensure boolean type
+            if isinstance(is_on_leave, str):
+                is_on_leave_lower = is_on_leave.lower()
+                if is_on_leave_lower in ("true", "1", "yes"):
+                    is_on_leave = True
+                elif is_on_leave_lower in ("false", "0", "no"):
+                    is_on_leave = False
+                else:
+                    Logs.atuta_logger(f"Invalid is_on_leave value received for user {user_id}: {is_on_leave}")
+                    return {"status": "error", "message": "invalid_status_value"}
+
+            elif not isinstance(is_on_leave, bool):
+                Logs.atuta_logger(f"Invalid is_on_leave type for user {user_id}: {type(is_on_leave)}")
+                return {"status": "error", "message": "invalid_status_type"}
+
+            user.is_on_leave = is_on_leave
+            user.save()
+
+            Logs.atuta_logger(f"Successfully updated leave status for user {user_id} to {is_on_leave}")
+            return {"status": "success", "message": "leave_status_updated"}
+
+        except ObjectDoesNotExist:
+            Logs.atuta_logger(f"User {user_id} not found for leave status update")
+            return {"status": "error", "message": "user_not_found"}
+        except Exception as e:
+            Logs.atuta_technical_logger("update_user_leave_status_failed", exc_info=e)
+            return {"status": "error", "message": "update_failed"}
+
+    @classmethod
     def update_user_fields(cls, user_id, nssf=None, sha=None, hourly_rate=None):
         """
         Update a user's NSSF, SHA, and hourly_rate fields only if valid values are provided.

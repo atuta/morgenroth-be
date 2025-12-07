@@ -17,6 +17,34 @@ from mapp.classes.logs.logs import Logs
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+def api_update_user_leave_status(request):
+    """
+    Admin updates a specific user's leave status.
+    Only a valid is_on_leave value will be updated.
+    """
+    try:
+        # Get user_id from request data
+        user_id = request.data.get("user_id")
+        if not user_id:
+            return Response({"status": "error", "message": "user_id_required"}, status=400)
+
+        is_on_leave = request.data.get("is_on_leave")
+
+        result = UserService.update_user_leave_status(
+            user_id=user_id,
+            is_on_leave=is_on_leave
+        )
+
+        status_code = 200 if result.get("status") == "success" else 400
+        return Response(result, status=status_code)
+
+    except Exception as e:
+        # Log exception if needed
+        return Response({"status": "error", "message": "update_failed"}, status=500)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def upload_user_photo(request):
     """
     Upload or update the logged-in user's profile photo.
