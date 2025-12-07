@@ -175,10 +175,15 @@ class AttendanceService:
         """
         Create a new attendance session for a user.
         Each clock-in creates a new record with status 'open'.
+        Users on leave cannot clock in.
+        Updates user's is_present_today to True on successful clock-in.
         """
         try:
             if timestamp is None:
                 return {"status": "error", "message": "missing_timestamp"}
+
+            if user.is_on_leave:
+                return {"status": "error", "message": "user_on_leave"}
 
             if timezone.is_naive(timestamp):
                 timestamp = timezone.make_aware(timestamp)
@@ -217,7 +222,12 @@ class AttendanceService:
                         Logs.atuta_technical_logger(f"clock_in_photo_save_failed_user_{user.user_id}", exc_info=e)
                         return {"status": "error", "message": "invalid_photo_data"}
 
+                # Create attendance session
                 session = AttendanceSession.objects.create(**attendance_data)
+
+                # Mark user as present today
+                user.is_present_today = True
+                user.save(update_fields=["is_present_today"])
 
             Logs.atuta_technical_logger(f"User clocked in | user={user.user_id} | session_id={session.session_id}")
 
@@ -235,7 +245,8 @@ class AttendanceService:
     @classmethod
     def clock_out(cls, user, timestamp: datetime.datetime, notes: str = None):
         """
-        Clock out the current open session, mark status as 'closed', and optionally save notes.
+        Clock out the current open session, mark status as 'closed', optionally save notes,
+        and update user's is_present_today to False.
         """
         try:
             if timezone.is_naive(timestamp):
@@ -263,6 +274,10 @@ class AttendanceService:
                 session.total_hours = round(delta.total_seconds() / 3600, 2)
 
                 session.save()
+
+                # Update user's present status
+                user.is_present_today = False
+                user.save(update_fields=["is_present_today"])
 
             Logs.atuta_technical_logger(
                 f"User clocked out | user={user.user_id} | session_id={session.session_id}"

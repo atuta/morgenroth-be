@@ -1,4 +1,0 @@
-Successfully fetched 4 non-admin users
-
-Fetched details for user isaac@gmail.com: {'email': 'isaac@gmail.com', 'first_name': 'Isaac', 'last_name': 'Misiani', 'account': 'rxKRe', 'user_role': 'teacher', 'phone_number': '84747447646', 'id_number': None, 'nssf_number': '1235678', 'shif_sha_number': '765489', 'hourly_rate': Decimal('15.00'), 'hourly_rate_currency': 'KES', 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': 'd407c9d7-7d51-459e-901f-be1c0992ec80', 'photo': '/media/staff_photos/cropped_MAS_0152.jpg'}
-

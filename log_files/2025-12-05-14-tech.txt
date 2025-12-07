@@ -1,6 +1,0 @@
-generate_user_payslip_pdf_failed_user_d407c9d7-7d51-459e-901f-be1c0992ec80_12_2025
-
-Error in file: /Users/isaac/python_projects/morgenroth/morgenrothproject/mapp/views/payroll_view.py, line: 148, in create_data_table - 'TableStyle' object is not subscriptable
-generate_user_payslip_pdf_failed_user_d407c9d7-7d51-459e-901f-be1c0992ec80_12_2025
-
-Error in file: /Users/isaac/python_projects/morgenroth/morgenrothproject/mapp/views/payroll_view.py, line: 148, in create_data_table - 'TableStyle' object is not subscriptable

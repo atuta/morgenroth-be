@@ -1,8 +1,0 @@
-Retrieved current session | user=67591fbb-8a36-435c-ab81-a596b2b2ea2c | session_id=6127e8e8-9e74-4997-b54f-26d2a2f2ce5b
-
-User clocked out | user=67591fbb-8a36-435c-ab81-a596b2b2ea2c | session_id=6127e8e8-9e74-4997-b54f-26d2a2f2ce5b
-
-Retrieved current session | user=d407c9d7-7d51-459e-901f-be1c0992ec80 | session_id=caeafa2f-df30-4333-8568-39a4f2f16ddf
-
-User clocked out | user=d407c9d7-7d51-459e-901f-be1c0992ec80 | session_id=caeafa2f-df30-4333-8568-39a4f2f16ddf
-

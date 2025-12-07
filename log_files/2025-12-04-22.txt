@@ -1,2 +1,0 @@
-Successfully fetched 4 non-admin users
-

@@ -1,0 +1,8 @@
+User clocked in | user=f9e161fb-9670-4b1d-81c5-441cf453609a | session_id=2eecb280-eca6-4096-b89a-6f6f85b68a96
+
+Retrieved current session | user=f9e161fb-9670-4b1d-81c5-441cf453609a | session_id=2eecb280-eca6-4096-b89a-6f6f85b68a96
+
+Retrieved current session | user=f9e161fb-9670-4b1d-81c5-441cf453609a | session_id=2eecb280-eca6-4096-b89a-6f6f85b68a96
+
+User clocked out | user=f9e161fb-9670-4b1d-81c5-441cf453609a | session_id=2eecb280-eca6-4096-b89a-6f6f85b68a96
+
