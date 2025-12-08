@@ -24,63 +24,85 @@ def current_year():
 # CustomUser (keeps your existing structure)
 # -----------------
 class CustomUserManager(BaseUserManager):
-    def create_user(self, email, first_name, last_name, password=None, **extra_fields):
-        if not email:
-            raise ValueError("Email must be set")
-        email = self.normalize_email(email)
-        user = self.model(email=email, first_name=first_name, last_name=last_name, **extra_fields)
+    def create_user(self, username, first_name, last_name, phone_number, password=None, **extra_fields):
+        if not phone_number:
+            raise ValueError("Phone number is required")
+
+        if not username:
+            raise ValueError("Username is required")
+
+        # Normalize email if provided
+        email = extra_fields.get('email')
+        if email:
+            email = self.normalize_email(email)
+            extra_fields['email'] = email
+
+        user = self.model(
+            username=username,
+            first_name=first_name,
+            last_name=last_name,
+            phone_number=phone_number,
+            **extra_fields
+        )
+
         if not user.account:
             user.account = generate_account_id()
+
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, email, first_name, last_name, password=None, **extra_fields):
+
+    def create_superuser(self, username, first_name, last_name, phone_number, password=None, **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
         extra_fields.setdefault('user_role', 'admin')
 
         if extra_fields.get('is_staff') is not True:
-            raise ValueError('Superuser must have is_staff=True.')
+            raise ValueError("Superuser must have is_staff=True.")
         if extra_fields.get('is_superuser') is not True:
-            raise ValueError('Superuser must have is_superuser=True.')
+            raise ValueError("Superuser must have is_superuser=True.")
 
-        return self.create_user(email, first_name, last_name, password, **extra_fields)
+        return self.create_user(username, first_name, last_name, phone_number, password, **extra_fields)
 
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
-    """User model for the Clock-In System"""
     user_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    email = models.EmailField(unique=True, max_length=100)
+
+    # Login fields
+    username = models.CharField(max_length=150, unique=True, null=True, blank=True)
+    email = models.EmailField(max_length=100, unique=True, null=True, blank=True)
+    phone_number = models.CharField(max_length=20, unique=True)  # REQUIRED FIELD
+
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
+
     account = models.CharField(max_length=50, unique=True, blank=True, null=True)
 
-    # Role
+    # Roles
     USER_ROLE_CHOICES = [
         ('admin', 'Admin'),
         ('office', 'Office'),
         ('teaching', 'Teaching'),
         ('subordinate', 'Subordinate'),
     ]
-    user_role = models.CharField(max_length=20, choices=USER_ROLE_CHOICES, default='staff')
+    user_role = models.CharField(max_length=20, choices=USER_ROLE_CHOICES, default='subordinate')
 
     # Staff info
-    phone_number = models.CharField(max_length=20, blank=True, null=True)
-    id_number = models.CharField(max_length=50, blank=True, null=True)
-    nssf_number = models.CharField(max_length=50, blank=True, null=True)
-    shif_sha_number = models.CharField(max_length=50, blank=True, null=True)
-    photo = models.ImageField(upload_to='staff_photos/', blank=True, null=True)
+    id_number = models.CharField(max_length=50, null=True, blank=True)
+    nssf_number = models.CharField(max_length=50, null=True, blank=True)
+    shif_sha_number = models.CharField(max_length=50, null=True, blank=True)
+    photo = models.ImageField(upload_to='staff_photos/', null=True, blank=True)
 
-    # Hourly rate info
+    # Work info
     hourly_rate = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
     hourly_rate_currency = models.CharField(max_length=10, default="KES")
 
-    # Attendance flags
+    # Attendance
     is_present_today = models.BooleanField(default=False)
     is_on_leave = models.BooleanField(default=False)
 
-    # Account status
+    # Status
     STATUS_CHOICES = [
         ('active', 'Active'),
         ('suspended', 'Suspended'),
@@ -89,19 +111,18 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     ]
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
 
-    # Django required flags
+    # Django permissions
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     date_joined = models.DateTimeField(default=timezone.now)
 
-    # Django login settings
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['first_name', 'last_name']
+    USERNAME_FIELD = 'username'
+    REQUIRED_FIELDS = ['first_name', 'last_name', 'phone_number']
 
     objects = CustomUserManager()
 
     def __str__(self):
-        return f"{self.first_name} {self.last_name} ({self.email})"
+        return f"{self.first_name} {self.last_name} ({self.phone_number})"
 
     @property
     def full_name(self):

@@ -1,0 +1,58 @@
+Fetched details for user mumba@gmail.com: {'email': 'mumba@gmail.com', 'first_name': 'John', 'last_name': 'Mumba', 'account': 'eRaAp', 'user_role': 'teacher', 'phone_number': '0723156635', 'id_number': '23657895', 'nssf_number': '5676NSSF7', 'shif_sha_number': 'SHA12345', 'hourly_rate': Decimal('250.00'), 'hourly_rate_currency': 'KES', 'is_present_today': False, 'is_on_leave': True, 'status': 'active', 'user_id': 'f9e161fb-9670-4b1d-81c5-441cf453609a', 'photo': '/media/staff_photos/cropped_MAS_0152.jpg'}
+
+Fetched details for user mumba@gmail.com: {'email': 'mumba@gmail.com', 'first_name': 'John', 'last_name': 'Mumba', 'account': 'eRaAp', 'user_role': 'teacher', 'phone_number': '0723156635', 'id_number': '23657895', 'nssf_number': '5676NSSF7', 'shif_sha_number': 'SHA12345', 'hourly_rate': Decimal('250.00'), 'hourly_rate_currency': 'KES', 'is_present_today': False, 'is_on_leave': True, 'status': 'active', 'user_id': 'f9e161fb-9670-4b1d-81c5-441cf453609a', 'photo': '/media/staff_photos/cropped_MAS_0152.jpg'}
+
+Fetched details for user mumba@gmail.com: {'email': 'mumba@gmail.com', 'first_name': 'John', 'last_name': 'Mumba', 'account': 'eRaAp', 'user_role': 'teacher', 'phone_number': '0723156635', 'id_number': '23657895', 'nssf_number': '5676NSSF7', 'shif_sha_number': 'SHA12345', 'hourly_rate': Decimal('250.00'), 'hourly_rate_currency': 'KES', 'is_present_today': False, 'is_on_leave': True, 'status': 'active', 'user_id': 'f9e161fb-9670-4b1d-81c5-441cf453609a', 'photo': '/media/staff_photos/cropped_MAS_0152.jpg'}
+
+User logged in | user_id=9a8ded5b-7c12-486d-bd90-933f53cfaddc
+
+User logged in | user_id=9a8ded5b-7c12-486d-bd90-933f53cfaddc
+
+Fetched details for user isaacatuta@gmail.com: {'email': 'isaacatuta@gmail.com', 'first_name': 'Isaac', 'last_name': 'Misiani', 'account': 'BYNsm', 'user_role': 'admin', 'phone_number': None, 'id_number': None, 'nssf_number': None, 'shif_sha_number': None, 'hourly_rate': Decimal('0.00'), 'hourly_rate_currency': 'KES', 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': '9a8ded5b-7c12-486d-bd90-933f53cfaddc', 'photo': None}
+
+User logged in | user_id=05a87ecd-2427-4281-a21d-3d4917bd8912
+
+Fetched details for user mumba@gmail.com: {'email': 'mumba@gmail.com', 'first_name': 'John', 'last_name': 'Mumba', 'account': '3vX3y', 'user_role': 'teaching', 'phone_number': '0756876545', 'id_number': '223344', 'nssf_number': None, 'shif_sha_number': None, 'hourly_rate': Decimal('0.00'), 'hourly_rate_currency': 'KES', 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': '05a87ecd-2427-4281-a21d-3d4917bd8912', 'photo': None}
+
+Fetched details for user mumba@gmail.com: {'email': 'mumba@gmail.com', 'first_name': 'John', 'last_name': 'Mumba', 'account': '3vX3y', 'user_role': 'teaching', 'phone_number': '0756876545', 'id_number': '223344', 'nssf_number': None, 'shif_sha_number': None, 'hourly_rate': Decimal('0.00'), 'hourly_rate_currency': 'KES', 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': '05a87ecd-2427-4281-a21d-3d4917bd8912', 'photo': None}
+
+Fetched details for user mumba@gmail.com: {'email': 'mumba@gmail.com', 'first_name': 'John', 'last_name': 'Mumba', 'account': '3vX3y', 'user_role': 'teaching', 'phone_number': '0756876545', 'id_number': '223344', 'nssf_number': None, 'shif_sha_number': None, 'hourly_rate': Decimal('0.00'), 'hourly_rate_currency': 'KES', 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': '05a87ecd-2427-4281-a21d-3d4917bd8912', 'photo': None}
+
+Fetched details for user isaacatuta@gmail.com: {'email': 'isaacatuta@gmail.com', 'first_name': 'Isaac', 'last_name': 'Misiani', 'account': 'BYNsm', 'user_role': 'admin', 'phone_number': None, 'id_number': None, 'nssf_number': None, 'shif_sha_number': None, 'hourly_rate': Decimal('0.00'), 'hourly_rate_currency': 'KES', 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': '9a8ded5b-7c12-486d-bd90-933f53cfaddc', 'photo': None}
+
+User logged in | user_id=9a8ded5b-7c12-486d-bd90-933f53cfaddc
+
+User logged in | user_id=05a87ecd-2427-4281-a21d-3d4917bd8912
+
+Fetched details for user mumba@gmail.com: {'email': 'mumba@gmail.com', 'first_name': 'John', 'last_name': 'Mumba', 'account': '3vX3y', 'user_role': 'teaching', 'phone_number': '0756876545', 'id_number': '223344', 'nssf_number': None, 'shif_sha_number': None, 'hourly_rate': Decimal('0.00'), 'hourly_rate_currency': 'KES', 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': '05a87ecd-2427-4281-a21d-3d4917bd8912', 'photo': None}
+
+User logged in | user_id=9a8ded5b-7c12-486d-bd90-933f53cfaddc
+
+User logged in | user_id=05a87ecd-2427-4281-a21d-3d4917bd8912
+
+User logged in | user_id=9a8ded5b-7c12-486d-bd90-933f53cfaddc
+
+Working hours retrieved | timezone=Africa/Nairobi
+
+Deduction fetched | name=nssf
+
+Deduction fetched | name=shif_sha
+
+Deduction fetched | name=housing_levy
+
+Working hours retrieved | timezone=Africa/Nairobi
+
+Deduction fetched | name=nssf
+
+Deduction fetched | name=shif_sha
+
+Deduction fetched | name=housing_levy
+
+Working hours retrieved | timezone=Africa/Nairobi
+
+Fetched details for user isaacatuta@gmail.com: {'email': 'isaacatuta@gmail.com', 'first_name': 'Isaac', 'last_name': 'Misiani', 'account': 'BYNsm', 'user_role': 'admin', 'phone_number': None, 'id_number': None, 'nssf_number': None, 'shif_sha_number': None, 'hourly_rate': Decimal('0.00'), 'hourly_rate_currency': 'KES', 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': '9a8ded5b-7c12-486d-bd90-933f53cfaddc', 'photo': None}
+
+User logged in | user_id=9a8ded5b-7c12-486d-bd90-933f53cfaddc
+
+User logged in | user_id=05a87ecd-2427-4281-a21d-3d4917bd8912
+

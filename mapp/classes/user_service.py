@@ -406,22 +406,30 @@ class UserService:
         **extra_fields
     ):
         """
-        Creates a new CustomUser with optional staff fields.
+        Creates a new CustomUser with auto-generated username and optional staff fields.
         """
-        if not email or not first_name or not last_name or not password:
-            return {
-                "status": "error",
-                "message": "missing_required_fields"
-            }
+        if not first_name or not last_name or not password:
+            return {"status": "error", "message": "missing_required_fields"}
+
+        # Generate username
+        base_username = f"{first_name}{last_name}".replace(" ", "").lower()
+        username = base_username
+
+        # Ensure uniqueness
+        counter = 1
+        while CustomUser.objects.filter(username=username).exists():
+            username = f"{base_username}{counter}"
+            counter += 1
 
         try:
             user = CustomUser.objects.create_user(
-                email=email,
                 first_name=first_name,
                 last_name=last_name,
+                phone_number=phone_number,
                 password=password,
                 user_role=user_role,
-                phone_number=phone_number,
+                username=username,         # <── auto inserted here
+                email=email,
                 id_number=id_number,
                 nssf_number=nssf_number,
                 shif_sha_number=shif_sha_number,
@@ -431,21 +439,17 @@ class UserService:
             return {
                 "status": "success",
                 "message": f"user_created_{user.user_id}",
-                "user_id": user.user_id
+                "user_id": user.user_id,
+                "username": user.username     # Return for login usage
             }
 
         except IntegrityError as e:
             Logs.atuta_technical_logger(f"user_creation_failed_{email}", exc_info=e)
-            return {
-                "status": "error",
-                "message": "email_already_exists"
-            }
+            return {"status": "error", "message": "email_or_phone_exists"}
+
         except Exception as e:
             Logs.atuta_technical_logger(f"user_creation_failed_{email}", exc_info=e)
-            return {
-                "status": "error",
-                "message": "user_creation_failed"
-            }
+            return {"status": "error", "message": "user_creation_failed"}
 
 
 

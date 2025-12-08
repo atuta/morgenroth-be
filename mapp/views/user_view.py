@@ -210,7 +210,7 @@ def api_add_user(request):
         shif_sha_number = data.get("shif_sha_number")
 
         # Basic validation
-        if not email or not first_name or not last_name:
+        if not phone_number or not first_name or not last_name:
             return Response(
                 {"status": "error", "message": "missing_required_fields"},
                 status=400
