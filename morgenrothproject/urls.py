@@ -16,7 +16,8 @@ from mapp.views import (
     system_setting_view,
     user_manual_view,
     user_view,
-    verification_view
+    verification_view,
+    generate_payroll_report
 )
 
 from rest_framework_simplejwt.views import (
@@ -100,6 +101,7 @@ urlpatterns = [
     path('api/generate-user-payslip-pdf/', payroll_view.generate_user_payslip_pdf, name='generate_user_payslip_pdf'),
     path('api/admin/generate-user-payslip/', payroll_view.admin_generate_user_payslip, name='admin_generate_user_payslip'),
     path('api/admin/generate-user-payslip-pdf/', payroll_view.admin_generate_user_payslip_pdf, name='admin_generate_user_payslip_pdf'),
+    path('api/admin/generate-payroll-report/', generate_payroll_report.api_generate_payroll_report, name='generate_payroll_report'),
 
     # Rate endpoints
     path('api/set-rate/', rate_view.api_set_rate, name='set_rate'),
