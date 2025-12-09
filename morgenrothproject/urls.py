@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import path
-from mapp.views import (
+from mapp.app_views import (
     admin_notice_view,
     attendance_view,
     advance_view,
@@ -16,8 +16,7 @@ from mapp.views import (
     system_setting_view,
     user_manual_view,
     user_view,
-    verification_view,
-    generate_payroll_report
+    verification_view
 )
 
 from rest_framework_simplejwt.views import (
@@ -25,6 +24,8 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
     TokenVerifyView,
 )
+
+from mapp.app_views import generate_payroll_report_view
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -101,7 +102,7 @@ urlpatterns = [
     path('api/generate-user-payslip-pdf/', payroll_view.generate_user_payslip_pdf, name='generate_user_payslip_pdf'),
     path('api/admin/generate-user-payslip/', payroll_view.admin_generate_user_payslip, name='admin_generate_user_payslip'),
     path('api/admin/generate-user-payslip-pdf/', payroll_view.admin_generate_user_payslip_pdf, name='admin_generate_user_payslip_pdf'),
-    path('api/admin/generate-payroll-report/', generate_payroll_report.api_generate_payroll_report, name='generate_payroll_report'),
+    path('api/admin/generate-payroll-report/', generate_payroll_report_view.api_generate_payroll_report, name='api_generate_payroll_report'),
 
     # Rate endpoints
     path('api/set-rate/', rate_view.api_set_rate, name='set_rate'),

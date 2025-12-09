@@ -194,7 +194,7 @@ class UserService:
                     f"advances_items={advance_breakdown} | "
                     f"overtime_items={overtime_breakdown}"
                 )
-                Logs.atuta_technical_logger(f"payroll_user_debug: {log_msg}")
+                # Logs.atuta_technical_logger(f"payroll_user_debug: {log_msg}")
 
                 # --- Store per user ---
                 final_output.append({
@@ -233,7 +233,7 @@ class UserService:
                 f"advances_items={len(overall_advances)} | "
                 f"overtime_items={len(overall_overtime)}"
             )
-            Logs.atuta_logger(f"payroll_summary_debug: {summary_msg}")
+            # Logs.atuta_logger(f"payroll_summary_debug: {summary_msg}")
 
             payroll = {
                 "status": "success",
@@ -247,7 +247,7 @@ class UserService:
                     "overtime_items": overall_overtime
                 }
             }
-            Logs.atuta_logger(payroll)
+            # Logs.atuta_logger(payroll)
             return payroll
 
         except Exception as e:
