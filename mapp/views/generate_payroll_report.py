@@ -8,7 +8,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 # ReportLab Imports
-from reportlab.lib.pagesizes import A4
+from reportlab.lib.pagesizes import A4, landscape
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 from reportlab.lib import colors
@@ -25,7 +25,7 @@ def api_generate_payroll_report(request):
     """
     Generate company payroll report for a date range.
     Returns JSON or PDF depending on 'format' query parameter.
-    
+
     Required query params:
         - start_date (YYYY-MM-DD)
         - end_date   (YYYY-MM-DD)
@@ -67,7 +67,7 @@ def api_generate_payroll_report(request):
             pdf_buffer = BytesIO()
             doc = SimpleDocTemplate(
                 pdf_buffer,
-                pagesize=A4,
+                pagesize=landscape(A4),
                 topMargin=1.5*cm,
                 bottomMargin=1.5*cm,
                 leftMargin=1.5*cm,
@@ -92,7 +92,7 @@ def api_generate_payroll_report(request):
             Story.append(Paragraph(f"Period: {start_date} to {end_date}", normal_style))
             Story.append(Spacer(1, 0.5*cm))
 
-            # --- Employee Payroll Table ---
+            # --- Main Summary Table ---
             table_data = [
                 [
                     Paragraph("<b>Employee</b>", normal_style),
@@ -106,15 +106,16 @@ def api_generate_payroll_report(request):
             currency = report_data.get("currency", "KES")
 
             for emp in report_data.get("employees", []):
+                summary = emp['summary']
                 table_data.append([
-                    emp.get("full_name", "N/A"),
-                    f"{emp.get('gross_pay', 0.0):.2f} {currency}",
-                    f"{emp.get('total_deductions', 0.0):.2f} {currency}",
-                    f"{emp.get('total_advance', 0.0):.2f} {currency}",
-                    f"{emp.get('net_pay', 0.0):.2f} {currency}",
+                    emp['user']['full_name'],
+                    f"{summary['gross_pay']:.2f} {currency}",
+                    f"{summary['total_deductions']:.2f} {currency}",
+                    f"{summary['total_advance']:.2f} {currency}",
+                    f"{summary['net_pay']:.2f} {currency}",
                 ])
 
-            # Optional: Add totals row
+            # Optional: Totals row
             totals = report_data.get("totals", {})
             table_data.append([
                 Paragraph("<b>Totals</b>", bold_style),
@@ -125,10 +126,8 @@ def api_generate_payroll_report(request):
             ])
 
             # Table column widths
-            page_width = A4[0] - 3*cm
-            col_widths = [6*cm, 3*cm, 3*cm, 3*cm, 3*cm]
-
-            table = Table(table_data, colWidths=col_widths)
+            col_widths = [8*cm, 4*cm, 4*cm, 4*cm, 4*cm]
+            table = Table(table_data, colWidths=col_widths, repeatRows=1)
             table.setStyle(TableStyle([
                 ('GRID', (0,0), (-1,-1), 0.5, colors.HexColor('#CCCCCC')),
                 ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#EFEFEF')),
@@ -137,15 +136,61 @@ def api_generate_payroll_report(request):
                 ('FONTNAME', (0,-1), (-1,-1), 'Helvetica-Bold'),
                 ('BACKGROUND', (0,-1), (-1,-1), colors.HexColor('#BFDDF0')),
             ]))
-
             Story.append(table)
+            Story.append(Spacer(1, 0.5*cm))
+
+            # --- Detailed Tables per Employee ---
+            for emp in report_data.get("employees", []):
+                Story.append(Paragraph(f"Details for {emp['user']['full_name']}", bold_style))
+                Story.append(Spacer(1, 0.2*cm))
+
+                # Function to build a mini-table
+                def build_mini_table(title, items, columns):
+                    if not items:
+                        return
+                    Story.append(Paragraph(title, bold_style))
+                    mini_data = [columns]
+                    for item in items:
+                        row = [str(item.get(col.lower(), "")) for col in columns]
+                        mini_data.append(row)
+                    mini_table = Table(mini_data, colWidths=[5*cm if i==0 else 4*cm for i in range(len(columns))])
+                    mini_table.setStyle(TableStyle([
+                        ('GRID', (0,0), (-1,-1), 0.5, colors.grey),
+                        ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#EFEFEF')),
+                        ('ALIGN', (1,1), (-1,-1), 'RIGHT')
+                    ]))
+                    Story.append(mini_table)
+                    Story.append(Spacer(1, 0.3*cm))
+
+                # Attendance Table
+                build_mini_table(
+                    "Attendance",
+                    emp.get("attendance", []),
+                    ["Date", "Hours", "Pay", "Notes"]
+                )
+                # Overtime Table
+                build_mini_table(
+                    "Overtime",
+                    emp.get("overtime", []),
+                    ["Date", "Hours", "Amount", "Remarks"]
+                )
+                # Deductions Table
+                build_mini_table(
+                    "Deductions",
+                    emp.get("deductions", []),
+                    ["Name", "Percentage", "Amount"]
+                )
+                # Advances Table
+                build_mini_table(
+                    "Advance Payments",
+                    emp.get("advances", []),
+                    ["Date", "Amount", "Remarks", "Approved_by"]
+                )
+                Story.append(Spacer(1, 0.5*cm))
 
             # Optional: Signature block
-            Story.append(Spacer(1, 1.5*cm))
-            signature_data = [
-                ['Signed By: ________________________', 'Date: ________________________']
-            ]
-            sig_table = Table(signature_data, colWidths=[page_width/2, page_width/2])
+            signature_data = [['Signed By: ________________________', 'Date: ________________________']]
+            sig_table = Table(signature_data, colWidths=[(landscape(A4)[0]-3*cm)/2]*2)
             sig_table.setStyle(TableStyle([
                 ('ALIGN', (0,0), (0,0), 'LEFT'),
                 ('ALIGN', (1,0), (1,0), 'RIGHT'),
@@ -158,11 +203,9 @@ def api_generate_payroll_report(request):
             # Build PDF
             doc.build(Story)
             pdf_buffer.seek(0)
-
             response = HttpResponse(pdf_buffer, content_type='application/pdf')
             response['Content-Disposition'] = f'attachment; filename="Payroll_Report_{start_date}_{end_date}.pdf"'
             response['Content-Length'] = pdf_buffer.getbuffer().nbytes
-
             return response
 
         else:

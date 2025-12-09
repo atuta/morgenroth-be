@@ -19,7 +19,7 @@ class UserService:
         """
         Return payslip data for ALL users within a date range.
         Output → one record per user summarised + nested breakdowns.
-        Also logs per-user payroll details with full line items and final summary totals.
+        Also logs per-user payroll details and final summary totals.
         """
 
         try:
@@ -183,6 +183,7 @@ class UserService:
                 overall_advances.extend(advance_breakdown)
                 overall_overtime.extend(overtime_breakdown)
 
+                # --- Enhanced Debug log per user ---
                 # --- Enhanced Debug log per user with full items ---
                 log_msg = (
                     f"Payroll for user {user.full_name} | "
@@ -218,17 +219,23 @@ class UserService:
                     "advances": advance_breakdown
                 })
 
-            # --- Final summary log with full items ---
+            # --- Final summary log after processing all users ---
             summary_msg = (
                 f"Payroll Summary | total_users={len(users)} | "
-                f"totals={overall_totals} | "
-                f"deductions_items={overall_deductions} | "
-                f"advances_items={overall_advances} | "
-                f"overtime_items={overall_overtime}"
+                f"total_hours={overall_totals['total_hours']} | "
+                f"total_base_pay={overall_totals['total_base_pay']} | "
+                f"total_overtime={overall_totals['total_overtime']} | "
+                f"gross_pay={overall_totals['gross_pay']} | "
+                f"total_deductions={overall_totals['total_deductions']} | "
+                f"total_advance={overall_totals['total_advance']} | "
+                f"net_pay={overall_totals['net_pay']} | "
+                f"deductions_items={len(overall_deductions)} | "
+                f"advances_items={len(overall_advances)} | "
+                f"overtime_items={len(overall_overtime)}"
             )
-            Logs.atuta_technical_logger(f"payroll_summary_debug: {summary_msg}")
+            Logs.atuta_logger(f"payroll_summary_debug: {summary_msg}")
 
-            return {
+            payroll = {
                 "status": "success",
                 "message": {
                     "start_date": start_date_parsed,
@@ -240,11 +247,12 @@ class UserService:
                     "overtime_items": overall_overtime
                 }
             }
+            Logs.atuta_logger(payroll)
+            return payroll
 
         except Exception as e:
             Logs.atuta_technical_logger("payslip_range_error", exc_info=e)
             return {"status": "error", "message": "range_generation_failed"}
-
 
 
 
