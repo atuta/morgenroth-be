@@ -19,6 +19,7 @@ class UserService:
         """
         Return payslip data for ALL users within a date range.
         Output → one record per user summarised + nested breakdowns.
+        Also logs per-user payroll details and final summary totals.
         """
 
         try:
@@ -46,6 +47,20 @@ class UserService:
 
             users = CustomUser.objects.all()
             final_output = []
+
+            # --- Initialize overall totals ---
+            overall_totals = {
+                "total_hours": 0,
+                "total_base_pay": 0,
+                "total_overtime": 0,
+                "gross_pay": 0,
+                "total_deductions": 0,
+                "total_advance": 0,
+                "net_pay": 0
+            }
+            overall_deductions = []
+            overall_advances = []
+            overall_overtime = []
 
             # Fetch global deductions once
             deductions_result = PayrollService.get_all_deductions()
@@ -129,7 +144,7 @@ class UserService:
                 if not deductions_list:
                     deductions_breakdown.append({"name": "None", "percentage": 0, "amount": 0})
 
-                # --- Advance Payments (fixed: include all times within day) ---
+                # --- Advance Payments ---
                 advances_qs = AdvancePayment.objects.filter(
                     user=user,
                     created_at__range=[start_datetime, end_datetime]
@@ -154,17 +169,30 @@ class UserService:
                 # --- Net Pay ---
                 net = gross - total_deductions - total_advance
 
-                # --- Debug log per user ---
+                # --- Update overall totals ---
+                overall_totals["total_hours"] += total_hours
+                overall_totals["total_base_pay"] += total_base_pay
+                overall_totals["total_overtime"] += total_overtime
+                overall_totals["gross_pay"] += gross
+                overall_totals["total_deductions"] += total_deductions
+                overall_totals["total_advance"] += total_advance
+                overall_totals["net_pay"] += net
+
+                # --- Update overall line-item lists ---
+                overall_deductions.extend(deductions_breakdown)
+                overall_advances.extend(advance_breakdown)
+                overall_overtime.extend(overtime_breakdown)
+
+                # --- Enhanced Debug log per user ---
+                # --- Enhanced Debug log per user with full items ---
                 log_msg = (
                     f"Payroll for user {user.full_name} | "
                     f"attendance={attendance_qs.count()} | "
-                    f"overtime={overtime_qs.count()} | "
-                    f"advances={advances_qs.count()} | "
-                    f"hourly_rate={hourly_rate} | "
-                    f"gross={gross} | "
-                    f"deductions={total_deductions} | "
-                    f"advance={total_advance} | "
-                    f"net_pay={net}"
+                    f"hourly_rate={hourly_rate} | gross={gross} | "
+                    f"deductions_total={total_deductions} | advance_total={total_advance} | net_pay={net} | "
+                    f"deductions_items={deductions_breakdown} | "
+                    f"advances_items={advance_breakdown} | "
+                    f"overtime_items={overtime_breakdown}"
                 )
                 Logs.atuta_technical_logger(f"payroll_user_debug: {log_msg}")
 
@@ -191,18 +219,39 @@ class UserService:
                     "advances": advance_breakdown
                 })
 
+            # --- Final summary log after processing all users ---
+            summary_msg = (
+                f"Payroll Summary | total_users={len(users)} | "
+                f"total_hours={overall_totals['total_hours']} | "
+                f"total_base_pay={overall_totals['total_base_pay']} | "
+                f"total_overtime={overall_totals['total_overtime']} | "
+                f"gross_pay={overall_totals['gross_pay']} | "
+                f"total_deductions={overall_totals['total_deductions']} | "
+                f"total_advance={overall_totals['total_advance']} | "
+                f"net_pay={overall_totals['net_pay']} | "
+                f"deductions_items={len(overall_deductions)} | "
+                f"advances_items={len(overall_advances)} | "
+                f"overtime_items={len(overall_overtime)}"
+            )
+            Logs.atuta_technical_logger(f"payroll_summary_debug: {summary_msg}")
+
             return {
                 "status": "success",
                 "message": {
                     "start_date": start_date_parsed,
                     "end_date": end_date_parsed,
-                    "employees": final_output
+                    "employees": final_output,
+                    "totals": overall_totals,
+                    "deductions_items": overall_deductions,
+                    "advances_items": overall_advances,
+                    "overtime_items": overall_overtime
                 }
             }
 
         except Exception as e:
             Logs.atuta_technical_logger("payslip_range_error", exc_info=e)
             return {"status": "error", "message": "range_generation_failed"}
+
 
 
     @classmethod
