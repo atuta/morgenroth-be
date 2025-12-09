@@ -17,7 +17,6 @@ from mapp.classes.logs.logs import Logs
 # Helper function to format snake_case to ALL UPPERCASE (e.g., housing_levy -> HOUSING LEVY)
 def format_deduction_name(name):
     """Converts snake_case string to ALL UPPERCASE with spaces."""
-    # --- FIX: Changed .title() to .upper() ---
     return name.replace('_', ' ').upper()
 
 
@@ -31,6 +30,7 @@ def build_detail_table(header_text, detail_items, currency, NormalStyle, NormalR
 
     Story = []
     detail_data = []
+    style_commands = []
     
     if header_text == "Deductions":
         detail_header = [Paragraph("Name", DetailStyle), Paragraph("Rate", DetailStyle), Paragraph("Amount", DetailHeaderRightStyle)]
@@ -38,15 +38,15 @@ def build_detail_table(header_text, detail_items, currency, NormalStyle, NormalR
         
         detail_data = [
             [
-                # --- APPLYING THE UPPERCASE FORMATTING ---
                 Paragraph(format_deduction_name(item["name"]), NormalStyle),
                 Paragraph(f"{item.get('percentage', 0):.2f}%", NormalStyle),
                 Paragraph(f"{item['amount']:.2f} {currency}", NormalRightStyle),
             ] for item in detail_items if item.get('amount', 0) > 0
         ]
-        style_commands = []
+        # Amount is the last column (index -1), handled below
         
     elif header_text == "Overtime":
+        # Amount is the 3rd column (index 2), Remarks is the last column
         detail_header = [Paragraph("Date", DetailStyle), Paragraph("Hours", DetailStyle), Paragraph("Amount", DetailHeaderRightStyle), Paragraph("Remarks", DetailStyle)]
         col_widths = [0.2 * width, 0.15 * width, 0.25 * width, 0.4 * width]
         
@@ -61,6 +61,7 @@ def build_detail_table(header_text, detail_items, currency, NormalStyle, NormalR
         style_commands = [('ALIGN', (2, 1), (2, -1), 'RIGHT')]
         
     elif header_text == "Advances":
+        # Amount is the 2nd column (index 1), Approved By is the last column
         detail_header = [Paragraph("Date", DetailStyle), Paragraph("Amount", DetailHeaderRightStyle), Paragraph("Remarks", DetailStyle), Paragraph("Approved By", DetailStyle)]
         col_widths = [0.2 * width, 0.2 * width, 0.3 * width, 0.3 * width]
         
@@ -77,11 +78,12 @@ def build_detail_table(header_text, detail_items, currency, NormalStyle, NormalR
     if not detail_data:
         return []
 
-    Story.append(Paragraph(f"<b>--- {header_text} DETAILS ---</b>", DetailStyle)) # Updated header here too
+    Story.append(Paragraph(f"<b>--- {header_text.upper()} DETAILS ---</b>", DetailStyle))
     detail_data.insert(0, detail_header)
 
     detail_table = Table(detail_data, colWidths=col_widths)
     
+    # Base styles for all detail tables
     base_styles = [
         ('GRID', (0, 0), (-1, -1), 0.25, colors.lightgrey),
         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#F5F5F5")),
@@ -91,9 +93,11 @@ def build_detail_table(header_text, detail_items, currency, NormalStyle, NormalR
         ('BOTTOMPADDING', (0, 0), (-1, -1), 2),
     ]
     
+    # Add manual alignment commands for Overtime and Advances
     if header_text in ["Overtime", "Advances"]:
         base_styles.extend(style_commands)
         
+    # Crucial: Apply right alignment to the last column for Deductions
     if header_text == "Deductions":
         base_styles.append(('ALIGN', (-1, 1), (-1, -1), 'RIGHT')) 
 
@@ -111,7 +115,7 @@ def api_generate_payroll_report(request):
     start_date = request.GET.get("start_date")
     end_date = request.GET.get("end_date")
 
-    # ... (Date and Validation Logic Omitted) ...
+    # --- Initial Validation ---
     if not start_date or not end_date: return HttpResponse("start_date & end_date are required", status=400)
     try:
         start_date_obj = datetime.datetime.strptime(start_date, "%Y-%m-%d").date()
@@ -120,13 +124,14 @@ def api_generate_payroll_report(request):
     if end_date_obj < start_date_obj: return HttpResponse("end_date cannot be before start_date", status=400)
 
     try:
+        # Step: Fetch report data
         report_data = UserService.generate_payroll_report(start_date_obj, end_date_obj)
         report_message = report_data.get("message", {}) 
         employees = report_message.get("employees", [])
         totals = report_message.get("totals", {})
         currency = report_data.get("currency", "KES") 
 
-        # ==================== PDF BUILDING ====================
+        # ==================== PDF BUILDING SETUP ====================
         buffer = BytesIO()
         
         LEFT_MARGIN = 1.5 * cm
@@ -134,6 +139,7 @@ def api_generate_payroll_report(request):
         AVAILABLE_WIDTH = landscape(A4)[0] - LEFT_MARGIN - RIGHT_MARGIN
         EMPLOYEE_COL_RATIO = 0.35
         MONEY_COL_RATIO = (1.0 - EMPLOYEE_COL_RATIO) / 4
+        
         col_widths = [
             EMPLOYEE_COL_RATIO * AVAILABLE_WIDTH, MONEY_COL_RATIO * AVAILABLE_WIDTH,
             MONEY_COL_RATIO * AVAILABLE_WIDTH, MONEY_COL_RATIO * AVAILABLE_WIDTH,
@@ -151,6 +157,7 @@ def api_generate_payroll_report(request):
         Bold = ParagraphStyle('Bold', parent=styles['Normal'], fontName='Helvetica-Bold', fontSize=11)
         Normal_Right = ParagraphStyle('Normal_Right', parent=styles['Normal'], alignment=2) 
         Bold_Right = ParagraphStyle('Bold_Right', parent=Bold, alignment=2)
+        Bold_Right_Header = ParagraphStyle('Bold_Right_Header', parent=Bold, alignment=2) # Used for 'Net Pay' Title
         Normal = styles['Normal']
         DetailHeaderRightStyle = ParagraphStyle('DetailHeaderRight', parent=Bold, fontSize=8, alignment=2, textColor=colors.darkgrey)
         DetailStyle = ParagraphStyle('Detail', parent=styles['Normal'], fontName='Helvetica-Bold', fontSize=8, textColor=colors.darkgrey)
@@ -161,14 +168,22 @@ def api_generate_payroll_report(request):
         Story.append(Paragraph(f"Period: {start_date} → {end_date}", Normal))
         Story.append(Spacer(1, 0.5*cm))
 
-        # --- MAIN TABLE & LOOP ---
+        # --- MAIN TABLE CONSTRUCTION ---
         header = ["Employee", "Gross Pay", "Deductions", "Advances", "Net Pay"]
-        table_data = [[Paragraph(f"<b>{h}</b>", Bold) for h in header]]
+        
+        # 1. Header Row (Applying Bold_Right_Header to the last column)
+        table_data = [[
+            Paragraph(f"<b>{header[0]}</b>", Bold),
+            Paragraph(f"<b>{header[1]}</b>", Bold),
+            Paragraph(f"<b>{header[2]}</b>", Bold),
+            Paragraph(f"<b>{header[3]}</b>", Bold),
+            Paragraph(f"<b>{header[4]}</b>", Bold_Right_Header),
+        ]]
         
         for emp in employees:
             s = emp["summary"]
             
-            # 1. Main Summary Row
+            # 2. Main Summary Row
             summary_row = [
                 Paragraph(emp["user"]["full_name"], Bold),
                 Paragraph(f"{s['gross_pay']:.2f} {currency}", Normal_Right),
@@ -177,7 +192,7 @@ def api_generate_payroll_report(request):
                 Paragraph(f"{s['net_pay']:.2f} {currency}", Bold_Right),
             ]
             
-            # 2. Build Nested Details
+            # 3. Build Nested Details
             detail_cell_contents = []
             detail_width = AVAILABLE_WIDTH * 0.9 
             
@@ -198,7 +213,7 @@ def api_generate_payroll_report(request):
                 table_data.extend(detail_row)
 
 
-        # Totals row
+        # 4. Totals row (Uses Bold_Right for final alignment)
         table_data.append([
             Paragraph("<b>TOTALS</b>", Bold),
             Paragraph(f"{totals.get('gross_pay', 0):.2f} {currency}", Bold_Right),
@@ -207,16 +222,18 @@ def api_generate_payroll_report(request):
             Paragraph(f"{totals.get('net_pay', 0):.2f} {currency}", Bold_Right),
         ])
 
-        # ... (Table styling and application logic remains the same) ...
+        # 5. Table Styling and SPAN Logic
         style_list = [
             ('GRID',(0,0),(-1,-1),0.5,colors.grey),
             ('BACKGROUND',(0,0),(-1,0),colors.HexColor("#E6E6E6")),
             ('BACKGROUND',(0,-1),(-1,-1),colors.HexColor("#B4E1FA")),
             ('FONTNAME',(0,0),(-1,0),'Helvetica-Bold'),
             ('FONTNAME',(0,-1),(-1,-1),'Helvetica-Bold'),
+            # Ensure the Net Pay column (index -1) content is right aligned 
             ('ALIGN', (-1, 1), (-1, -2), 'RIGHT'), 
         ]
 
+        # Dynamic SPAN for detail rows
         for i in range(1, len(table_data) - 1): 
             if isinstance(table_data[i][0], list): 
                 style_list.append(('SPAN', (0, i), (-1, i)))
@@ -232,7 +249,7 @@ def api_generate_payroll_report(request):
         Story.append(table)
         Story.append(Spacer(1, 0.5*cm))
         
-        # ... (File save and HTTP response logic) ...
+        # 6. Build PDF, Save, and Return HTTP Response
         doc.build(Story)
         
         reports_dir = os.path.join(settings.BASE_DIR, "payroll_reports")
@@ -254,7 +271,7 @@ def api_generate_payroll_report(request):
         return response
 
     except Exception as e:
-        import traceback
+        # Robust Error Handling
         error_message = f"An unexpected error occurred during PDF generation: {e}"
         Logs.atuta_technical_logger(error_message, exc_info=e) 
         return HttpResponse(
