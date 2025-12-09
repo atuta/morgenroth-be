@@ -10,11 +10,11 @@ Fetched hourly rate for user 254cb3d3-22f5-4887-9351-f6168af4a9b7 | rate=170.0 K
 
 Fetched hourly rate for user eb3f74a2-1aa0-4135-be00-96177e45f334 | rate=0.0 KES
 
-10. Attempting to build PDF document.
+Fetched all statutory deductions | count=3
 
-11. PDF built successfully.
+Fetched hourly rate for user c069ae5c-6a12-4256-b280-0e13b0d29214 | rate=150.0 KES
 
-12. PDF saved locally at: /Users/isaac/python_projects/morgenroth/morgenrothproject/payroll_reports/Payroll_Report_2025-12-09_2025-12-09.pdf
+Fetched hourly rate for user 254cb3d3-22f5-4887-9351-f6168af4a9b7 | rate=170.0 KES
 
-13. Payroll report HTTP response generated and returned.
+Fetched hourly rate for user eb3f74a2-1aa0-4135-be00-96177e45f334 | rate=0.0 KES
 
