@@ -1,5 +1,6 @@
 import datetime
 from django.db.models import Max, Sum
+from django.utils.dateparse import parse_date
 from decimal import Decimal, InvalidOperation
 from django.utils import timezone
 from django.forms.models import model_to_dict
@@ -11,6 +12,165 @@ from mapp.classes.logs.logs import Logs
 
 
 class UserService:
+
+    @classmethod
+    def generate_payroll_report(cls, start_date: str, end_date: str):
+        """
+        Return payslip data for ALL users within a date range.
+        Output → one record per user summarised + nested breakdowns.
+        """
+
+        try:
+            start_date = parse_date(start_date)
+            end_date   = parse_date(end_date)
+
+            if not start_date or not end_date:
+                return {"status": "error", "message": "invalid_date_range"}
+
+            users = CustomUser.objects.all()
+            final_output = []
+
+            # Fetch global deductions once
+            deductions_result = cls.get_all_deductions()
+            deductions_list = deductions_result["message"] if deductions_result["status"] == "success" else []
+
+            for user in users:
+
+                # 1. Hourly Rate
+                rate_result = cls.get_hourly_rate(user)
+                if rate_result["status"] != "success":
+                    continue
+
+                hourly_rate = rate_result["message"]["hourly_rate"]
+                currency    = rate_result["message"]["currency"]
+
+                # 2. Attendance
+                attendance = AttendanceSession.objects.filter(
+                    user=user,
+                    date__range=[start_date, end_date],
+                    status='closed'
+                ).order_by("date")
+
+                attendance_breakdown = []
+                total_hours = 0
+                total_base_pay = 0
+
+                for a in attendance:
+                    h = float(a.total_hours or 0)
+                    p = h * hourly_rate
+                    total_hours += h
+                    total_base_pay += p
+                    attendance_breakdown.append({
+                        "date": a.date.strftime("%Y-%m-%d"),
+                        "hours": h,
+                        "pay": float(p),
+                        "notes": a.notes or ""
+                    })
+
+                if not attendance.exists():
+                    attendance_breakdown.append({"date": None, "hours": 0, "pay": 0, "notes": ""})
+
+                # 3. Overtime
+                overtime = OvertimeAllowance.objects.filter(
+                    user=user,
+                    date__range=[start_date, end_date]
+                ).order_by("date")
+
+                overtime_breakdown = []
+                total_overtime = 0
+
+                for o in overtime:
+                    amount = float(o.amount or 0)
+                    total_overtime += amount
+                    overtime_breakdown.append({
+                        "date": o.date.strftime("%Y-%m-%d"),
+                        "hours": float(o.hours),
+                        "amount": amount,
+                        "remarks": o.remarks or ""
+                    })
+
+                if not overtime.exists():
+                    overtime_breakdown.append({"date": None, "hours": 0, "amount": 0, "remarks": ""})
+
+                # 4. Gross Pay
+                gross = total_base_pay + total_overtime
+
+                # 5. Deductions
+                deductions_breakdown = []
+                total_deductions = 0
+
+                for d in deductions_list:
+                    amount = gross * (d["percentage"] / 100)
+                    total_deductions += amount
+                    deductions_breakdown.append({
+                        "name": d["name"],
+                        "percentage": d["percentage"],
+                        "amount": float(amount)
+                    })
+
+                if not deductions_list:
+                    deductions_breakdown.append({"name": "None", "percentage": 0, "amount": 0})
+
+                # 6. Advance Payments
+                advances = AdvancePayment.objects.filter(
+                    user=user,
+                    created_at__range=[start_date, end_date]
+                )
+
+                advance_breakdown = []
+                total_advance = 0
+
+                for ad in advances:
+                    amt = float(ad.amount or 0)
+                    total_advance += amt
+                    advance_breakdown.append({
+                        "date": ad.created_at.strftime("%Y-%m-%d"),
+                        "amount": amt,
+                        "remarks": ad.remarks,
+                        "approved_by": ad.approved_by.full_name if ad.approved_by else None
+                    })
+
+                if not advances.exists():
+                    advance_breakdown.append({"date": None, "amount": 0, "remarks": "", "approved_by": None})
+
+                # 7. Net Pay
+                net = gross - total_deductions - total_advance
+
+                # STORE PER USER RESULT
+                final_output.append({
+                    "user": {
+                        "id": str(user.user_id),
+                        "full_name": user.full_name,
+                        "email": user.email
+                    },
+                    "currency": currency,
+                    "summary": {
+                        "total_hours": float(total_hours),
+                        "total_base_pay": float(total_base_pay),
+                        "total_overtime": float(total_overtime),
+                        "gross_pay": float(gross),
+                        "total_deductions": float(total_deductions),
+                        "total_advance": float(total_advance),
+                        "net_pay": float(net)
+                    },
+                    "attendance": attendance_breakdown,
+                    "overtime": overtime_breakdown,
+                    "deductions": deductions_breakdown,
+                    "advances": advance_breakdown
+                })
+
+            return {
+                "status": "success",
+                "message": {
+                    "start_date": start_date,
+                    "end_date": end_date,
+                    "employees": final_output
+                }
+            }
+
+        except Exception as e:
+            Logs.atuta_technical_logger("payslip_range_error", exc_info=e)
+            return {"status": "error", "message": "range_generation_failed"}
 
     @classmethod
     def admin_dashboard_metrics(cls, month=None, year=None):
