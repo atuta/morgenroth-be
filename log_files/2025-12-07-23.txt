@@ -1,2 +1,0 @@
-Fetched details for user isaacatuta@gmail.com: {'email': 'isaacatuta@gmail.com', 'first_name': 'Isaac', 'last_name': 'Misiani', 'account': 'KXnIp', 'user_role': 'admin', 'phone_number': None, 'id_number': None, 'nssf_number': None, 'shif_sha_number': None, 'hourly_rate': Decimal('0.00'), 'hourly_rate_currency': 'KES', 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': '9e9133dd-23e4-492f-b4eb-0ed6c6efc002', 'photo': None}
-

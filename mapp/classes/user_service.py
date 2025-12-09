@@ -1,6 +1,7 @@
 import datetime
 from django.db.models import Max, Sum
 from django.utils.dateparse import parse_date
+from datetime import datetime as dt_datetime, date as dt_date, time as dt_time
 from decimal import Decimal, InvalidOperation
 from django.utils import timezone
 from django.forms.models import model_to_dict
@@ -8,46 +9,63 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db import IntegrityError
 
 from mapp.models import CustomUser, AttendanceSession, OvertimeAllowance, AdvancePayment, StatutoryDeduction
+from mapp.classes.payroll_service import PayrollService
 from mapp.classes.logs.logs import Logs
 
 
 class UserService:
-
     @classmethod
-    def generate_payroll_report(cls, start_date: str, end_date: str):
+    def generate_payroll_report(cls, start_date, end_date):
         """
         Return payslip data for ALL users within a date range.
         Output → one record per user summarised + nested breakdowns.
         """
 
         try:
-            start_date = parse_date(start_date)
-            end_date   = parse_date(end_date)
+            # --- Safe date parsing ---
+            if isinstance(start_date, (dt_datetime, dt_date)):
+                start_date_parsed = start_date
+            elif isinstance(start_date, str):
+                start_date_parsed = parse_date(start_date)
+            else:
+                return {"status": "error", "message": "invalid_start_date"}
 
-            if not start_date or not end_date:
+            if isinstance(end_date, (dt_datetime, dt_date)):
+                end_date_parsed = end_date
+            elif isinstance(end_date, str):
+                end_date_parsed = parse_date(end_date)
+            else:
+                return {"status": "error", "message": "invalid_end_date"}
+
+            if not start_date_parsed or not end_date_parsed:
                 return {"status": "error", "message": "invalid_date_range"}
+
+            # Expand to full day for datetime fields
+            start_datetime = dt_datetime.combine(start_date_parsed, dt_time.min)
+            end_datetime = dt_datetime.combine(end_date_parsed, dt_time.max)
 
             users = CustomUser.objects.all()
             final_output = []
 
             # Fetch global deductions once
-            deductions_result = cls.get_all_deductions()
-            deductions_list = deductions_result["message"] if deductions_result["status"] == "success" else []
+            deductions_result = PayrollService.get_all_deductions()
+            deductions_list = deductions_result.get("message") if deductions_result.get("status") == "success" else []
 
             for user in users:
 
-                # 1. Hourly Rate
-                rate_result = cls.get_hourly_rate(user)
-                if rate_result["status"] != "success":
-                    continue
+                # --- Hourly Rate ---
+                rate_result = PayrollService.get_hourly_rate(user)
+                if rate_result.get("status") != "success":
+                    hourly_rate = 0
+                    currency = "KES"
+                else:
+                    hourly_rate = rate_result["message"]["hourly_rate"]
+                    currency = rate_result["message"]["currency"]
 
-                hourly_rate = rate_result["message"]["hourly_rate"]
-                currency    = rate_result["message"]["currency"]
-
-                # 2. Attendance
-                attendance = AttendanceSession.objects.filter(
+                # --- Attendance ---
+                attendance_qs = AttendanceSession.objects.filter(
                     user=user,
-                    date__range=[start_date, end_date],
+                    date__range=[start_date_parsed, end_date_parsed],
                     status='closed'
                 ).order_by("date")
 
@@ -55,7 +73,7 @@ class UserService:
                 total_hours = 0
                 total_base_pay = 0
 
-                for a in attendance:
+                for a in attendance_qs:
                     h = float(a.total_hours or 0)
                     p = h * hourly_rate
                     total_hours += h
@@ -67,19 +85,19 @@ class UserService:
                         "notes": a.notes or ""
                     })
 
-                if not attendance.exists():
+                if not attendance_qs.exists():
                     attendance_breakdown.append({"date": None, "hours": 0, "pay": 0, "notes": ""})
 
-                # 3. Overtime
-                overtime = OvertimeAllowance.objects.filter(
+                # --- Overtime ---
+                overtime_qs = OvertimeAllowance.objects.filter(
                     user=user,
-                    date__range=[start_date, end_date]
+                    date__range=[start_date_parsed, end_date_parsed]
                 ).order_by("date")
 
                 overtime_breakdown = []
                 total_overtime = 0
 
-                for o in overtime:
+                for o in overtime_qs:
                     amount = float(o.amount or 0)
                     total_overtime += amount
                     overtime_breakdown.append({
@@ -89,54 +107,68 @@ class UserService:
                         "remarks": o.remarks or ""
                     })
 
-                if not overtime.exists():
+                if not overtime_qs.exists():
                     overtime_breakdown.append({"date": None, "hours": 0, "amount": 0, "remarks": ""})
 
-                # 4. Gross Pay
+                # --- Gross Pay ---
                 gross = total_base_pay + total_overtime
 
-                # 5. Deductions
+                # --- Deductions ---
                 deductions_breakdown = []
                 total_deductions = 0
 
                 for d in deductions_list:
-                    amount = gross * (d["percentage"] / 100)
+                    amount = gross * (d.get("percentage", 0) / 100)
                     total_deductions += amount
                     deductions_breakdown.append({
-                        "name": d["name"],
-                        "percentage": d["percentage"],
+                        "name": d.get("name"),
+                        "percentage": d.get("percentage"),
                         "amount": float(amount)
                     })
 
                 if not deductions_list:
                     deductions_breakdown.append({"name": "None", "percentage": 0, "amount": 0})
 
-                # 6. Advance Payments
-                advances = AdvancePayment.objects.filter(
+                # --- Advance Payments (fixed: include all times within day) ---
+                advances_qs = AdvancePayment.objects.filter(
                     user=user,
-                    created_at__range=[start_date, end_date]
+                    created_at__range=[start_datetime, end_datetime]
                 )
 
                 advance_breakdown = []
                 total_advance = 0
 
-                for ad in advances:
+                for ad in advances_qs:
                     amt = float(ad.amount or 0)
                     total_advance += amt
                     advance_breakdown.append({
                         "date": ad.created_at.strftime("%Y-%m-%d"),
                         "amount": amt,
-                        "remarks": ad.remarks,
+                        "remarks": ad.remarks or "",
                         "approved_by": ad.approved_by.full_name if ad.approved_by else None
                     })
 
-                if not advances.exists():
+                if not advances_qs.exists():
                     advance_breakdown.append({"date": None, "amount": 0, "remarks": "", "approved_by": None})
 
-                # 7. Net Pay
+                # --- Net Pay ---
                 net = gross - total_deductions - total_advance
 
-                # STORE PER USER RESULT
+                # --- Debug log per user ---
+                log_msg = (
+                    f"Payroll for user {user.full_name} | "
+                    f"attendance={attendance_qs.count()} | "
+                    f"overtime={overtime_qs.count()} | "
+                    f"advances={advances_qs.count()} | "
+                    f"hourly_rate={hourly_rate} | "
+                    f"gross={gross} | "
+                    f"deductions={total_deductions} | "
+                    f"advance={total_advance} | "
+                    f"net_pay={net}"
+                )
+                Logs.atuta_technical_logger(f"payroll_user_debug: {log_msg}")
+
+                # --- Store per user ---
                 final_output.append({
                     "user": {
                         "id": str(user.user_id),
@@ -162,8 +194,8 @@ class UserService:
             return {
                 "status": "success",
                 "message": {
-                    "start_date": start_date,
-                    "end_date": end_date,
+                    "start_date": start_date_parsed,
+                    "end_date": end_date_parsed,
                     "employees": final_output
                 }
             }
@@ -171,6 +203,7 @@ class UserService:
         except Exception as e:
             Logs.atuta_technical_logger("payslip_range_error", exc_info=e)
             return {"status": "error", "message": "range_generation_failed"}
+
 
     @classmethod
     def admin_dashboard_metrics(cls, month=None, year=None):

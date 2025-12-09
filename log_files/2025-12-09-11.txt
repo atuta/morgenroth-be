@@ -1,2 +1,0 @@
-Fetched details for user isaacs@gmail.com: {'email': 'isaacs@gmail.com', 'phone_number': '0721267768', 'first_name': 'John', 'last_name': 'Mumba', 'account': 'pS4np', 'user_role': 'office', 'id_number': '25678923', 'nssf_number': None, 'shif_sha_number': None, 'hourly_rate': Decimal('0.00'), 'hourly_rate_currency': 'KES', 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': 'c069ae5c-6a12-4256-b280-0e13b0d29214', 'photo': None}
-

@@ -1,0 +1,40 @@
+Fetched all statutory deductions | count=3
+
+Fetched hourly rate for user eb3f74a2-1aa0-4135-be00-96177e45f334 | rate=0.0 KES
+
+Fetched hourly rate for user c069ae5c-6a12-4256-b280-0e13b0d29214 | rate=150.0 KES
+
+Fetched hourly rate for user 254cb3d3-22f5-4887-9351-f6168af4a9b7 | rate=170.0 KES
+
+Successfully fetched 2 non-admin users
+
+Fetched details for user None: {'email': None, 'phone_number': '0786452564', 'first_name': 'Grace', 'last_name': 'Auma', 'account': 'PkA5H', 'user_role': 'teaching', 'id_number': '12345678', 'nssf_number': 'NSSF7654', 'shif_sha_number': 'SHA87697', 'hourly_rate': Decimal('170.00'), 'hourly_rate_currency': 'KES', 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': '254cb3d3-22f5-4887-9351-f6168af4a9b7', 'photo': None}
+
+Advance created for user 254cb3d3-22f5-4887-9351-f6168af4a9b7 | amount=2.0 | month=12/2025 | remarks=250
+
+Fetched all statutory deductions | count=3
+
+Fetched hourly rate for user eb3f74a2-1aa0-4135-be00-96177e45f334 | rate=0.0 KES
+
+Fetched hourly rate for user c069ae5c-6a12-4256-b280-0e13b0d29214 | rate=150.0 KES
+
+Fetched hourly rate for user 254cb3d3-22f5-4887-9351-f6168af4a9b7 | rate=170.0 KES
+
+Fetched details for user None: {'email': None, 'phone_number': '0786452564', 'first_name': 'Grace', 'last_name': 'Auma', 'account': 'PkA5H', 'user_role': 'teaching', 'id_number': '12345678', 'nssf_number': 'NSSF7654', 'shif_sha_number': 'SHA87697', 'hourly_rate': Decimal('170.00'), 'hourly_rate_currency': 'KES', 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': '254cb3d3-22f5-4887-9351-f6168af4a9b7', 'photo': None}
+
+Successfully fetched 2 non-admin users
+
+Successfully fetched 2 non-admin users
+
+Fetched details for user None: {'email': None, 'phone_number': '0786452564', 'first_name': 'Grace', 'last_name': 'Auma', 'account': 'PkA5H', 'user_role': 'teaching', 'id_number': '12345678', 'nssf_number': 'NSSF7654', 'shif_sha_number': 'SHA87697', 'hourly_rate': Decimal('170.00'), 'hourly_rate_currency': 'KES', 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': '254cb3d3-22f5-4887-9351-f6168af4a9b7', 'photo': None}
+
+Advance created for user 254cb3d3-22f5-4887-9351-f6168af4a9b7 | amount=248.0 | month=12/2025 | remarks=Shida
+
+Fetched all statutory deductions | count=3
+
+Fetched hourly rate for user eb3f74a2-1aa0-4135-be00-96177e45f334 | rate=0.0 KES
+
+Fetched hourly rate for user c069ae5c-6a12-4256-b280-0e13b0d29214 | rate=150.0 KES
+
+Fetched hourly rate for user 254cb3d3-22f5-4887-9351-f6168af4a9b7 | rate=170.0 KES
+

@@ -1,0 +1,18 @@
+payroll_user_debug: Payroll for user Isaac Misiani | attendance=0 | overtime=0 | advances=0 | hourly_rate=0.0 | gross=0 | deductions=0.0 | advance=0 | net_pay=0.0
+
+payroll_user_debug: Payroll for user John Mumba | attendance=0 | overtime=0 | advances=0 | hourly_rate=150.0 | gross=0 | deductions=0.0 | advance=0 | net_pay=0.0
+
+payroll_user_debug: Payroll for user Grace Auma | attendance=0 | overtime=1 | advances=1 | hourly_rate=170.0 | gross=2000.0 | deductions=150.0 | advance=500.0 | net_pay=1350.0
+
+payroll_user_debug: Payroll for user Isaac Misiani | attendance=0 | overtime=0 | advances=0 | hourly_rate=0.0 | gross=0 | deductions=0.0 | advance=0 | net_pay=0.0
+
+payroll_user_debug: Payroll for user John Mumba | attendance=0 | overtime=0 | advances=0 | hourly_rate=150.0 | gross=0 | deductions=0.0 | advance=0 | net_pay=0.0
+
+payroll_user_debug: Payroll for user Grace Auma | attendance=0 | overtime=1 | advances=2 | hourly_rate=170.0 | gross=2000.0 | deductions=150.0 | advance=502.0 | net_pay=1348.0
+
+payroll_user_debug: Payroll for user Isaac Misiani | attendance=0 | overtime=0 | advances=0 | hourly_rate=0.0 | gross=0 | deductions=0.0 | advance=0 | net_pay=0.0
+
+payroll_user_debug: Payroll for user John Mumba | attendance=0 | overtime=0 | advances=0 | hourly_rate=150.0 | gross=0 | deductions=0.0 | advance=0 | net_pay=0.0
+
+payroll_user_debug: Payroll for user Grace Auma | attendance=0 | overtime=1 | advances=3 | hourly_rate=170.0 | gross=2000.0 | deductions=150.0 | advance=750.0 | net_pay=1100.0
+

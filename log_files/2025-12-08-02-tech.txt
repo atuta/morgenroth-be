@@ -1,8 +1,0 @@
-User clocked in | user=05a87ecd-2427-4281-a21d-3d4917bd8912 | session_id=7e93c781-1407-4b15-a9fa-4508ab27c1d9
-
-Retrieved current session | user=05a87ecd-2427-4281-a21d-3d4917bd8912 | session_id=7e93c781-1407-4b15-a9fa-4508ab27c1d9
-
-Retrieved current session | user=05a87ecd-2427-4281-a21d-3d4917bd8912 | session_id=7e93c781-1407-4b15-a9fa-4508ab27c1d9
-
-Retrieved current session | user=05a87ecd-2427-4281-a21d-3d4917bd8912 | session_id=7e93c781-1407-4b15-a9fa-4508ab27c1d9
-
