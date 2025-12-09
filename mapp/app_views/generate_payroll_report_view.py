@@ -1,4 +1,5 @@
 import datetime
+import traceback
 from io import BytesIO
 import os
 from django.conf import settings
@@ -13,8 +14,15 @@ from mapp.classes.user_service import UserService
 from mapp.classes.logs.logs import Logs
 
 
+# Helper function to format snake_case to ALL UPPERCASE (e.g., housing_levy -> HOUSING LEVY)
+def format_deduction_name(name):
+    """Converts snake_case string to ALL UPPERCASE with spaces."""
+    # --- FIX: Changed .title() to .upper() ---
+    return name.replace('_', ' ').upper()
+
+
 # Helper function to build the detail tables
-def build_detail_table(header_text, detail_items, currency, NormalStyle, NormalRightStyle, DetailStyle, width):
+def build_detail_table(header_text, detail_items, currency, NormalStyle, NormalRightStyle, DetailStyle, DetailHeaderRightStyle, width):
     """
     Creates a nested table for specific transaction details (Advances, Deductions, Overtime).
     """
@@ -25,18 +33,21 @@ def build_detail_table(header_text, detail_items, currency, NormalStyle, NormalR
     detail_data = []
     
     if header_text == "Deductions":
-        detail_header = [Paragraph("Name", DetailStyle), Paragraph("Rate", DetailStyle), Paragraph("Amount", DetailStyle)]
+        detail_header = [Paragraph("Name", DetailStyle), Paragraph("Rate", DetailStyle), Paragraph("Amount", DetailHeaderRightStyle)]
         col_widths = [0.3 * width, 0.2 * width, 0.5 * width]
         
         detail_data = [
             [
-                Paragraph(item["name"], NormalStyle),
+                # --- APPLYING THE UPPERCASE FORMATTING ---
+                Paragraph(format_deduction_name(item["name"]), NormalStyle),
                 Paragraph(f"{item.get('percentage', 0):.2f}%", NormalStyle),
                 Paragraph(f"{item['amount']:.2f} {currency}", NormalRightStyle),
-            ] for item in detail_items if item.get('amount') > 0
+            ] for item in detail_items if item.get('amount', 0) > 0
         ]
+        style_commands = []
+        
     elif header_text == "Overtime":
-        detail_header = [Paragraph("Date", DetailStyle), Paragraph("Hours", DetailStyle), Paragraph("Amount", DetailStyle), Paragraph("Remarks", DetailStyle)]
+        detail_header = [Paragraph("Date", DetailStyle), Paragraph("Hours", DetailStyle), Paragraph("Amount", DetailHeaderRightStyle), Paragraph("Remarks", DetailStyle)]
         col_widths = [0.2 * width, 0.15 * width, 0.25 * width, 0.4 * width]
         
         detail_data = [
@@ -45,10 +56,12 @@ def build_detail_table(header_text, detail_items, currency, NormalStyle, NormalR
                 Paragraph(f"{item.get('hours', 0):.1f}", NormalStyle),
                 Paragraph(f"{item['amount']:.2f} {currency}", NormalRightStyle),
                 Paragraph(item.get("remarks", ""), NormalStyle),
-            ] for item in detail_items if item.get('amount') > 0
+            ] for item in detail_items if item.get('amount', 0) > 0
         ]
+        style_commands = [('ALIGN', (2, 1), (2, -1), 'RIGHT')]
+        
     elif header_text == "Advances":
-        detail_header = [Paragraph("Date", DetailStyle), Paragraph("Amount", DetailStyle), Paragraph("Remarks", DetailStyle), Paragraph("Approved By", DetailStyle)]
+        detail_header = [Paragraph("Date", DetailStyle), Paragraph("Amount", DetailHeaderRightStyle), Paragraph("Remarks", DetailStyle), Paragraph("Approved By", DetailStyle)]
         col_widths = [0.2 * width, 0.2 * width, 0.3 * width, 0.3 * width]
         
         detail_data = [
@@ -57,24 +70,34 @@ def build_detail_table(header_text, detail_items, currency, NormalStyle, NormalR
                 Paragraph(f"{item['amount']:.2f} {currency}", NormalRightStyle),
                 Paragraph(item.get("remarks", ""), NormalStyle),
                 Paragraph(item.get("approved_by", "N/A"), NormalStyle),
-            ] for item in detail_items if item.get('amount') > 0
+            ] for item in detail_items if item.get('amount', 0) > 0
         ]
+        style_commands = [('ALIGN', (1, 1), (1, -1), 'RIGHT')]
     
     if not detail_data:
         return []
 
-    Story.append(Paragraph(f"<b>--- {header_text} Details ---</b>", DetailStyle))
+    Story.append(Paragraph(f"<b>--- {header_text} DETAILS ---</b>", DetailStyle)) # Updated header here too
     detail_data.insert(0, detail_header)
 
     detail_table = Table(detail_data, colWidths=col_widths)
-    detail_table.setStyle(TableStyle([
+    
+    base_styles = [
         ('GRID', (0, 0), (-1, -1), 0.25, colors.lightgrey),
         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#F5F5F5")),
         ('VALIGN', (0, 0), (-1, -1), 'TOP'),
         ('LEFTPADDING', (0, 0), (-1, -1), 4),
         ('RIGHTPADDING', (0, 0), (-1, -1), 4),
         ('BOTTOMPADDING', (0, 0), (-1, -1), 2),
-    ]))
+    ]
+    
+    if header_text in ["Overtime", "Advances"]:
+        base_styles.extend(style_commands)
+        
+    if header_text == "Deductions":
+        base_styles.append(('ALIGN', (-1, 1), (-1, -1), 'RIGHT')) 
+
+    detail_table.setStyle(TableStyle(base_styles))
     
     Story.append(Spacer(1, 0.1*cm))
     Story.append(detail_table)
@@ -89,18 +112,12 @@ def api_generate_payroll_report(request):
     end_date = request.GET.get("end_date")
 
     # ... (Date and Validation Logic Omitted) ...
-
-    if not start_date or not end_date:
-        return HttpResponse("start_date & end_date are required", status=400)
-
+    if not start_date or not end_date: return HttpResponse("start_date & end_date are required", status=400)
     try:
         start_date_obj = datetime.datetime.strptime(start_date, "%Y-%m-%d").date()
         end_date_obj = datetime.datetime.strptime(end_date, "%Y-%m-%d").date()
-    except:
-        return HttpResponse("Use YYYY-MM-DD date format", status=400)
-
-    if end_date_obj < start_date_obj:
-        return HttpResponse("end_date cannot be before start_date", status=400)
+    except: return HttpResponse("Use YYYY-MM-DD date format", status=400)
+    if end_date_obj < start_date_obj: return HttpResponse("end_date cannot be before start_date", status=400)
 
     try:
         report_data = UserService.generate_payroll_report(start_date_obj, end_date_obj)
@@ -111,30 +128,31 @@ def api_generate_payroll_report(request):
 
         # ==================== PDF BUILDING ====================
         buffer = BytesIO()
+        
         LEFT_MARGIN = 1.5 * cm
         RIGHT_MARGIN = 1.5 * cm
-        
-        doc = SimpleDocTemplate(
-            buffer, pagesize=landscape(A4), topMargin=1.5*cm, bottomMargin=1.5*cm,
-            leftMargin=LEFT_MARGIN, rightMargin=RIGHT_MARGIN
-        )
-        
         AVAILABLE_WIDTH = landscape(A4)[0] - LEFT_MARGIN - RIGHT_MARGIN
         EMPLOYEE_COL_RATIO = 0.35
         MONEY_COL_RATIO = (1.0 - EMPLOYEE_COL_RATIO) / 4
-
         col_widths = [
             EMPLOYEE_COL_RATIO * AVAILABLE_WIDTH, MONEY_COL_RATIO * AVAILABLE_WIDTH,
             MONEY_COL_RATIO * AVAILABLE_WIDTH, MONEY_COL_RATIO * AVAILABLE_WIDTH,
             MONEY_COL_RATIO * AVAILABLE_WIDTH,
         ]
         
+        doc = SimpleDocTemplate(
+            buffer, pagesize=landscape(A4), topMargin=1.5*cm, bottomMargin=1.5*cm,
+            leftMargin=LEFT_MARGIN, rightMargin=RIGHT_MARGIN
+        )
+
+        # --- ReportLab Styles ---
         styles = getSampleStyleSheet()
         Title = styles['Title']; Title.alignment = 1
         Bold = ParagraphStyle('Bold', parent=styles['Normal'], fontName='Helvetica-Bold', fontSize=11)
         Normal_Right = ParagraphStyle('Normal_Right', parent=styles['Normal'], alignment=2) 
         Bold_Right = ParagraphStyle('Bold_Right', parent=Bold, alignment=2)
         Normal = styles['Normal']
+        DetailHeaderRightStyle = ParagraphStyle('DetailHeaderRight', parent=Bold, fontSize=8, alignment=2, textColor=colors.darkgrey)
         DetailStyle = ParagraphStyle('Detail', parent=styles['Normal'], fontName='Helvetica-Bold', fontSize=8, textColor=colors.darkgrey)
 
         Story = []
@@ -164,20 +182,18 @@ def api_generate_payroll_report(request):
             detail_width = AVAILABLE_WIDTH * 0.9 
             
             detail_cell_contents.extend(
-                build_detail_table("Overtime", emp.get("overtime", []), currency, Normal, Normal_Right, DetailStyle, detail_width)
+                build_detail_table("Overtime", emp.get("overtime", []), currency, Normal, Normal_Right, DetailStyle, DetailHeaderRightStyle, detail_width)
             )
             detail_cell_contents.extend(
-                build_detail_table("Advances", emp.get("advances", []), currency, Normal, Normal_Right, DetailStyle, detail_width)
+                build_detail_table("Advances", emp.get("advances", []), currency, Normal, Normal_Right, DetailStyle, DetailHeaderRightStyle, detail_width)
             )
             detail_cell_contents.extend(
-                build_detail_table("Deductions", emp.get("deductions", []), currency, Normal, Normal_Right, DetailStyle, detail_width)
+                build_detail_table("Deductions", emp.get("deductions", []), currency, Normal, Normal_Right, DetailStyle, DetailHeaderRightStyle, detail_width)
             )
             
-            # Add summary row first
             table_data.append(summary_row)
 
             if detail_cell_contents:
-                # Add detail row: content is in the first cell, others are blank.
                 detail_row = [[detail_cell_contents, Paragraph("", Normal), Paragraph("", Normal), Paragraph("", Normal), Paragraph("", Normal)]]
                 table_data.extend(detail_row)
 
@@ -191,41 +207,32 @@ def api_generate_payroll_report(request):
             Paragraph(f"{totals.get('net_pay', 0):.2f} {currency}", Bold_Right),
         ])
 
-        # --- FIX: Combine initial and dynamic styles into one list before applying ---
-        
-        # 1. Define the base style commands
+        # ... (Table styling and application logic remains the same) ...
         style_list = [
             ('GRID',(0,0),(-1,-1),0.5,colors.grey),
             ('BACKGROUND',(0,0),(-1,0),colors.HexColor("#E6E6E6")),
             ('BACKGROUND',(0,-1),(-1,-1),colors.HexColor("#B4E1FA")),
             ('FONTNAME',(0,0),(-1,0),'Helvetica-Bold'),
             ('FONTNAME',(0,-1),(-1,-1),'Helvetica-Bold'),
+            ('ALIGN', (-1, 1), (-1, -2), 'RIGHT'), 
         ]
 
-        # 2. Add Dynamic SPAN logic for Detail Rows
         for i in range(1, len(table_data) - 1): 
-            # Check if the cell at (0, i) is a list (nested flowables)
             if isinstance(table_data[i][0], list): 
-                # SPAN cell (0, i) to (-1, i)
                 style_list.append(('SPAN', (0, i), (-1, i)))
-                # Remove padding and set background for the spanning row
                 style_list.append(('BACKGROUND', (0, i), (-1, i), colors.HexColor("#FFFFFF")))
                 style_list.append(('LEFTPADDING', (0, i), (-1, i), 0))
                 style_list.append(('RIGHTPADDING', (0, i), (-1, i), 0))
                 style_list.append(('TOPPADDING', (0, i), (-1, i), 0))
                 style_list.append(('BOTTOMPADDING', (0, i), (-1, i), 0))
 
-        # 3. Create Table
         table = Table(table_data, colWidths=col_widths, repeatRows=1) 
-
-        # 4. FIX: Apply the COMPLETE style list (Base + Dynamic SPANs) once
         table.setStyle(TableStyle(style_list))
         
         Story.append(table)
         Story.append(Spacer(1, 0.5*cm))
         
         # ... (File save and HTTP response logic) ...
-
         doc.build(Story)
         
         reports_dir = os.path.join(settings.BASE_DIR, "payroll_reports")
@@ -247,5 +254,10 @@ def api_generate_payroll_report(request):
         return response
 
     except Exception as e:
-        Logs.atuta_technical_logger("payroll_report_pdf_generation_error", exc_info=e)
-        return HttpResponse("Payroll PDF generation failed", status=500)
+        import traceback
+        error_message = f"An unexpected error occurred during PDF generation: {e}"
+        Logs.atuta_technical_logger(error_message, exc_info=e) 
+        return HttpResponse(
+            "An internal server error occurred during report generation. Please check the system logs.", 
+            status=500
+        )
