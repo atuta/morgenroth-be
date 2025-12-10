@@ -1,3 +1,0 @@
-payroll_report_pdf_generation_error
-
-Error in file: /Users/isaac/python_projects/morgenroth/morgenrothproject/mapp/app_views/generate_payroll_report_view.py, line: 242, in api_generate_payroll_report - 'Table' object has no attribute 'style'

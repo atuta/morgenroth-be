@@ -1,0 +1,106 @@
+Fetched all statutory deductions | count=3
+
+Fetched hourly rate for user c069ae5c-6a12-4256-b280-0e13b0d29214 | rate=150.0 KES
+
+Fetched hourly rate for user 254cb3d3-22f5-4887-9351-f6168af4a9b7 | rate=170.0 KES
+
+Fetched hourly rate for user eb3f74a2-1aa0-4135-be00-96177e45f334 | rate=0.0 KES
+
+Fetched all statutory deductions | count=3
+
+Fetched hourly rate for user c069ae5c-6a12-4256-b280-0e13b0d29214 | rate=150.0 KES
+
+Fetched hourly rate for user 254cb3d3-22f5-4887-9351-f6168af4a9b7 | rate=170.0 KES
+
+Fetched hourly rate for user eb3f74a2-1aa0-4135-be00-96177e45f334 | rate=0.0 KES
+
+Fetched all statutory deductions | count=3
+
+Fetched hourly rate for user c069ae5c-6a12-4256-b280-0e13b0d29214 | rate=150.0 KES
+
+Fetched hourly rate for user 254cb3d3-22f5-4887-9351-f6168af4a9b7 | rate=170.0 KES
+
+Fetched hourly rate for user eb3f74a2-1aa0-4135-be00-96177e45f334 | rate=0.0 KES
+
+Fetched all statutory deductions | count=3
+
+Fetched hourly rate for user c069ae5c-6a12-4256-b280-0e13b0d29214 | rate=150.0 KES
+
+Fetched hourly rate for user 254cb3d3-22f5-4887-9351-f6168af4a9b7 | rate=170.0 KES
+
+Fetched hourly rate for user eb3f74a2-1aa0-4135-be00-96177e45f334 | rate=0.0 KES
+
+User logged in | user_id=eb3f74a2-1aa0-4135-be00-96177e45f334
+
+Fetched all statutory deductions | count=3
+
+Fetched hourly rate for user c069ae5c-6a12-4256-b280-0e13b0d29214 | rate=150.0 KES
+
+Fetched hourly rate for user 254cb3d3-22f5-4887-9351-f6168af4a9b7 | rate=170.0 KES
+
+Fetched hourly rate for user eb3f74a2-1aa0-4135-be00-96177e45f334 | rate=0.0 KES
+
+Fetched all statutory deductions | count=3
+
+Fetched hourly rate for user c069ae5c-6a12-4256-b280-0e13b0d29214 | rate=150.0 KES
+
+Fetched hourly rate for user 254cb3d3-22f5-4887-9351-f6168af4a9b7 | rate=170.0 KES
+
+Fetched hourly rate for user eb3f74a2-1aa0-4135-be00-96177e45f334 | rate=0.0 KES
+
+User logged in | user_id=c069ae5c-6a12-4256-b280-0e13b0d29214
+
+User logged in | user_id=eb3f74a2-1aa0-4135-be00-96177e45f334
+
+Fetched all statutory deductions | count=3
+
+Fetched hourly rate for user 254cb3d3-22f5-4887-9351-f6168af4a9b7 | rate=170.0 KES
+
+Fetched hourly rate for user eb3f74a2-1aa0-4135-be00-96177e45f334 | rate=0.0 KES
+
+Fetched hourly rate for user c069ae5c-6a12-4256-b280-0e13b0d29214 | rate=150.0 KES
+
+Fetched all statutory deductions | count=3
+
+Fetched hourly rate for user 254cb3d3-22f5-4887-9351-f6168af4a9b7 | rate=170.0 KES
+
+Fetched hourly rate for user eb3f74a2-1aa0-4135-be00-96177e45f334 | rate=0.0 KES
+
+Fetched hourly rate for user c069ae5c-6a12-4256-b280-0e13b0d29214 | rate=150.0 KES
+
+payroll_summary_debug: Payroll Summary | total_users=3 | total_hours=0.06 | total_base_pay=9.0 | total_overtime=5700.0 | gross_pay=5709.0 | total_deductions=428.175 | total_advance=1450.0 | net_pay=3830.825 | deductions_items=9 | advances_items=5 | overtime_items=3
+
+Fetched all statutory deductions | count=3
+
+Fetched hourly rate for user 254cb3d3-22f5-4887-9351-f6168af4a9b7 | rate=170.0 KES
+
+Fetched hourly rate for user eb3f74a2-1aa0-4135-be00-96177e45f334 | rate=0.0 KES
+
+Fetched hourly rate for user c069ae5c-6a12-4256-b280-0e13b0d29214 | rate=150.0 KES
+
+{'status': 'success', 'message': {'start_date': datetime.date(2025, 12, 9), 'end_date': datetime.date(2025, 12, 10), 'employees': [{'user': {'id': '254cb3d3-22f5-4887-9351-f6168af4a9b7', 'full_name': 'Grace Auma', 'email': None}, 'currency': 'KES', 'summary': {'total_hours': 0.0, 'total_base_pay': 0.0, 'total_overtime': 2000.0, 'gross_pay': 2000.0, 'total_deductions': 150.0, 'total_advance': 750.0, 'net_pay': 1100.0}, 'attendance': [{'date': None, 'hours': 0, 'pay': 0, 'notes': ''}], 'overtime': [{'date': '2025-12-09', 'hours': 5.0, 'amount': 2000.0, 'remarks': 'Errands'}], 'deductions': [{'name': 'housing_levy', 'percentage': 2.2, 'amount': 44.00000000000001}, {'name': 'nssf', 'percentage': 2.5, 'amount': 50.0}, {'name': 'shif_sha', 'percentage': 2.8, 'amount': 55.99999999999999}], 'advances': [{'date': '2025-12-09', 'amount': 248.0, 'remarks': 'Shida', 'approved_by': 'Isaac Misiani'}, {'date': '2025-12-09', 'amount': 2.0, 'remarks': '250', 'approved_by': 'Isaac Misiani'}, {'date': '2025-12-09', 'amount': 500.0, 'remarks': 'Issues', 'approved_by': 'Isaac Misiani'}]}, {'user': {'id': 'eb3f74a2-1aa0-4135-be00-96177e45f334', 'full_name': 'Isaac Misiani', 'email': None}, 'currency': 'KES', 'summary': {'total_hours': 0.0, 'total_base_pay': 0.0, 'total_overtime': 0.0, 'gross_pay': 0.0, 'total_deductions': 0.0, 'total_advance': 0.0, 'net_pay': 0.0}, 'attendance': [{'date': None, 'hours': 0, 'pay': 0, 'notes': ''}], 'overtime': [{'date': None, 'hours': 0, 'amount': 0, 'remarks': ''}], 'deductions': [{'name': 'housing_levy', 'percentage': 2.2, 'amount': 0.0}, {'name': 'nssf', 'percentage': 2.5, 'amount': 0.0}, {'name': 'shif_sha', 'percentage': 2.8, 'amount': 0.0}], 'advances': [{'date': None, 'amount': 0, 'remarks': '', 'approved_by': None}]}, {'user': {'id': 'c069ae5c-6a12-4256-b280-0e13b0d29214', 'full_name': 'John Mumba', 'email': 'isaacs@gmail.com'}, 'currency': 'KES', 'summary': {'total_hours': 0.06, 'total_base_pay': 9.0, 'total_overtime': 3700.0, 'gross_pay': 3709.0, 'total_deductions': 278.175, 'total_advance': 700.0, 'net_pay': 2730.825}, 'attendance': [{'date': '2025-12-09', 'hours': 0.06, 'pay': 9.0, 'notes': ''}], 'overtime': [{'date': '2025-12-09', 'hours': 7.0, 'amount': 3700.0, 'remarks': 'Trimming the fence'}], 'deductions': [{'name': 'housing_levy', 'percentage': 2.2, 'amount': 81.59800000000001}, {'name': 'nssf', 'percentage': 2.5, 'amount': 92.72500000000001}, {'name': 'shif_sha', 'percentage': 2.8, 'amount': 103.85199999999999}], 'advances': [{'date': '2025-12-09', 'amount': 700.0, 'remarks': 'Changamoto', 'approved_by': 'Isaac Misiani'}]}], 'totals': {'total_hours': 0.06, 'total_base_pay': 9.0, 'total_overtime': 5700.0, 'gross_pay': 5709.0, 'total_deductions': 428.175, 'total_advance': 1450.0, 'net_pay': 3830.825}, 'deductions_items': [{'name': 'housing_levy', 'percentage': 2.2, 'amount': 44.00000000000001}, {'name': 'nssf', 'percentage': 2.5, 'amount': 50.0}, {'name': 'shif_sha', 'percentage': 2.8, 'amount': 55.99999999999999}, {'name': 'housing_levy', 'percentage': 2.2, 'amount': 0.0}, {'name': 'nssf', 'percentage': 2.5, 'amount': 0.0}, {'name': 'shif_sha', 'percentage': 2.8, 'amount': 0.0}, {'name': 'housing_levy', 'percentage': 2.2, 'amount': 81.59800000000001}, {'name': 'nssf', 'percentage': 2.5, 'amount': 92.72500000000001}, {'name': 'shif_sha', 'percentage': 2.8, 'amount': 103.85199999999999}], 'advances_items': [{'date': '2025-12-09', 'amount': 248.0, 'remarks': 'Shida', 'approved_by': 'Isaac Misiani'}, {'date': '2025-12-09', 'amount': 2.0, 'remarks': '250', 'approved_by': 'Isaac Misiani'}, {'date': '2025-12-09', 'amount': 500.0, 'remarks': 'Issues', 'approved_by': 'Isaac Misiani'}, {'date': None, 'amount': 0, 'remarks': '', 'approved_by': None}, {'date': '2025-12-09', 'amount': 700.0, 'remarks': 'Changamoto', 'approved_by': 'Isaac Misiani'}], 'overtime_items': [{'date': '2025-12-09', 'hours': 5.0, 'amount': 2000.0, 'remarks': 'Errands'}, {'date': None, 'hours': 0, 'amount': 0, 'remarks': ''}, {'date': '2025-12-09', 'hours': 7.0, 'amount': 3700.0, 'remarks': 'Trimming the fence'}]}}
+
+Fetched all statutory deductions | count=3
+
+Fetched hourly rate for user 254cb3d3-22f5-4887-9351-f6168af4a9b7 | rate=170.0 KES
+
+Fetched hourly rate for user eb3f74a2-1aa0-4135-be00-96177e45f334 | rate=0.0 KES
+
+Fetched hourly rate for user c069ae5c-6a12-4256-b280-0e13b0d29214 | rate=150.0 KES
+
+{'status': 'success', 'message': {'start_date': datetime.date(2025, 12, 9), 'end_date': datetime.date(2025, 12, 10), 'employees': [{'user': {'id': '254cb3d3-22f5-4887-9351-f6168af4a9b7', 'full_name': 'Grace Auma', 'email': None}, 'currency': 'KES', 'summary': {'total_hours': 0.0, 'total_base_pay': 0.0, 'total_overtime': 2000.0, 'gross_pay': 2000.0, 'total_deductions': 150.0, 'total_advance': 750.0, 'net_pay': 1100.0}, 'attendance': [{'date': None, 'hours': 0, 'pay': 0, 'notes': ''}], 'overtime': [{'date': '2025-12-09', 'hours': 5.0, 'amount': 2000.0, 'remarks': 'Errands'}], 'deductions': [{'name': 'housing_levy', 'percentage': 2.2, 'amount': 44.00000000000001}, {'name': 'nssf', 'percentage': 2.5, 'amount': 50.0}, {'name': 'shif_sha', 'percentage': 2.8, 'amount': 55.99999999999999}], 'advances': [{'date': '2025-12-09', 'amount': 248.0, 'remarks': 'Shida', 'approved_by': 'Isaac Misiani'}, {'date': '2025-12-09', 'amount': 2.0, 'remarks': '250', 'approved_by': 'Isaac Misiani'}, {'date': '2025-12-09', 'amount': 500.0, 'remarks': 'Issues', 'approved_by': 'Isaac Misiani'}]}, {'user': {'id': 'eb3f74a2-1aa0-4135-be00-96177e45f334', 'full_name': 'Isaac Misiani', 'email': None}, 'currency': 'KES', 'summary': {'total_hours': 0.0, 'total_base_pay': 0.0, 'total_overtime': 0.0, 'gross_pay': 0.0, 'total_deductions': 0.0, 'total_advance': 0.0, 'net_pay': 0.0}, 'attendance': [{'date': None, 'hours': 0, 'pay': 0, 'notes': ''}], 'overtime': [{'date': None, 'hours': 0, 'amount': 0, 'remarks': ''}], 'deductions': [{'name': 'housing_levy', 'percentage': 2.2, 'amount': 0.0}, {'name': 'nssf', 'percentage': 2.5, 'amount': 0.0}, {'name': 'shif_sha', 'percentage': 2.8, 'amount': 0.0}], 'advances': [{'date': None, 'amount': 0, 'remarks': '', 'approved_by': None}]}, {'user': {'id': 'c069ae5c-6a12-4256-b280-0e13b0d29214', 'full_name': 'John Mumba', 'email': 'isaacs@gmail.com'}, 'currency': 'KES', 'summary': {'total_hours': 0.06, 'total_base_pay': 9.0, 'total_overtime': 3700.0, 'gross_pay': 3709.0, 'total_deductions': 278.175, 'total_advance': 700.0, 'net_pay': 2730.825}, 'attendance': [{'date': '2025-12-09', 'hours': 0.06, 'pay': 9.0, 'notes': ''}], 'overtime': [{'date': '2025-12-09', 'hours': 7.0, 'amount': 3700.0, 'remarks': 'Trimming the fence'}], 'deductions': [{'name': 'housing_levy', 'percentage': 2.2, 'amount': 81.59800000000001}, {'name': 'nssf', 'percentage': 2.5, 'amount': 92.72500000000001}, {'name': 'shif_sha', 'percentage': 2.8, 'amount': 103.85199999999999}], 'advances': [{'date': '2025-12-09', 'amount': 700.0, 'remarks': 'Changamoto', 'approved_by': 'Isaac Misiani'}]}], 'totals': {'total_hours': 0.06, 'total_base_pay': 9.0, 'total_overtime': 5700.0, 'gross_pay': 5709.0, 'total_deductions': 428.175, 'total_advance': 1450.0, 'net_pay': 3830.825}, 'deductions_items': [{'name': 'housing_levy', 'percentage': 2.2, 'amount': 44.00000000000001}, {'name': 'nssf', 'percentage': 2.5, 'amount': 50.0}, {'name': 'shif_sha', 'percentage': 2.8, 'amount': 55.99999999999999}, {'name': 'housing_levy', 'percentage': 2.2, 'amount': 0.0}, {'name': 'nssf', 'percentage': 2.5, 'amount': 0.0}, {'name': 'shif_sha', 'percentage': 2.8, 'amount': 0.0}, {'name': 'housing_levy', 'percentage': 2.2, 'amount': 81.59800000000001}, {'name': 'nssf', 'percentage': 2.5, 'amount': 92.72500000000001}, {'name': 'shif_sha', 'percentage': 2.8, 'amount': 103.85199999999999}], 'advances_items': [{'date': '2025-12-09', 'amount': 248.0, 'remarks': 'Shida', 'approved_by': 'Isaac Misiani'}, {'date': '2025-12-09', 'amount': 2.0, 'remarks': '250', 'approved_by': 'Isaac Misiani'}, {'date': '2025-12-09', 'amount': 500.0, 'remarks': 'Issues', 'approved_by': 'Isaac Misiani'}, {'date': None, 'amount': 0, 'remarks': '', 'approved_by': None}, {'date': '2025-12-09', 'amount': 700.0, 'remarks': 'Changamoto', 'approved_by': 'Isaac Misiani'}], 'overtime_items': [{'date': '2025-12-09', 'hours': 5.0, 'amount': 2000.0, 'remarks': 'Errands'}, {'date': None, 'hours': 0, 'amount': 0, 'remarks': ''}, {'date': '2025-12-09', 'hours': 7.0, 'amount': 3700.0, 'remarks': 'Trimming the fence'}]}}
+
+User logged in | user_id=c069ae5c-6a12-4256-b280-0e13b0d29214
+
+User logged in | user_id=eb3f74a2-1aa0-4135-be00-96177e45f334
+
+Fetched all statutory deductions | count=3
+
+Fetched hourly rate for user 254cb3d3-22f5-4887-9351-f6168af4a9b7 | rate=170.0 KES
+
+Fetched hourly rate for user eb3f74a2-1aa0-4135-be00-96177e45f334 | rate=0.0 KES
+
+Fetched hourly rate for user c069ae5c-6a12-4256-b280-0e13b0d29214 | rate=150.0 KES
+
+{'status': 'success', 'message': {'start_date': datetime.date(2025, 12, 9), 'end_date': datetime.date(2025, 12, 10), 'employees': [{'user': {'id': '254cb3d3-22f5-4887-9351-f6168af4a9b7', 'full_name': 'Grace Auma', 'email': None}, 'currency': 'KES', 'summary': {'total_hours': 0.0, 'total_base_pay': 0.0, 'total_overtime': 2000.0, 'gross_pay': 2000.0, 'total_deductions': 150.0, 'total_advance': 750.0, 'net_pay': 1100.0}, 'attendance': [{'date': None, 'hours': 0, 'pay': 0, 'notes': ''}], 'overtime': [{'date': '2025-12-09', 'hours': 5.0, 'amount': 2000.0, 'remarks': 'Errands'}], 'deductions': [{'name': 'housing_levy', 'percentage': 2.2, 'amount': 44.00000000000001}, {'name': 'nssf', 'percentage': 2.5, 'amount': 50.0}, {'name': 'shif_sha', 'percentage': 2.8, 'amount': 55.99999999999999}], 'advances': [{'date': '2025-12-09', 'amount': 248.0, 'remarks': 'Shida', 'approved_by': 'Isaac Misiani'}, {'date': '2025-12-09', 'amount': 2.0, 'remarks': '250', 'approved_by': 'Isaac Misiani'}, {'date': '2025-12-09', 'amount': 500.0, 'remarks': 'Issues', 'approved_by': 'Isaac Misiani'}]}, {'user': {'id': 'eb3f74a2-1aa0-4135-be00-96177e45f334', 'full_name': 'Isaac Misiani', 'email': None}, 'currency': 'KES', 'summary': {'total_hours': 0.0, 'total_base_pay': 0.0, 'total_overtime': 0.0, 'gross_pay': 0.0, 'total_deductions': 0.0, 'total_advance': 0.0, 'net_pay': 0.0}, 'attendance': [{'date': None, 'hours': 0, 'pay': 0, 'notes': ''}], 'overtime': [{'date': None, 'hours': 0, 'amount': 0, 'remarks': ''}], 'deductions': [{'name': 'housing_levy', 'percentage': 2.2, 'amount': 0.0}, {'name': 'nssf', 'percentage': 2.5, 'amount': 0.0}, {'name': 'shif_sha', 'percentage': 2.8, 'amount': 0.0}], 'advances': [{'date': None, 'amount': 0, 'remarks': '', 'approved_by': None}]}, {'user': {'id': 'c069ae5c-6a12-4256-b280-0e13b0d29214', 'full_name': 'John Mumba', 'email': 'isaacs@gmail.com'}, 'currency': 'KES', 'summary': {'total_hours': 0.11, 'total_base_pay': 16.5, 'total_overtime': 3700.0, 'gross_pay': 3716.5, 'total_deductions': 278.73749999999995, 'total_advance': 700.0, 'net_pay': 2737.7625}, 'attendance': [{'date': '2025-12-09', 'hours': 0.06, 'pay': 9.0, 'notes': ''}, {'date': '2025-12-09', 'hours': 0.05, 'pay': 7.5, 'notes': ''}], 'overtime': [{'date': '2025-12-09', 'hours': 7.0, 'amount': 3700.0, 'remarks': 'Trimming the fence'}], 'deductions': [{'name': 'housing_levy', 'percentage': 2.2, 'amount': 81.763}, {'name': 'nssf', 'percentage': 2.5, 'amount': 92.91250000000001}, {'name': 'shif_sha', 'percentage': 2.8, 'amount': 104.06199999999998}], 'advances': [{'date': '2025-12-09', 'amount': 700.0, 'remarks': 'Changamoto', 'approved_by': 'Isaac Misiani'}]}], 'totals': {'total_hours': 0.11, 'total_base_pay': 16.5, 'total_overtime': 5700.0, 'gross_pay': 5716.5, 'total_deductions': 428.73749999999995, 'total_advance': 1450.0, 'net_pay': 3837.7625}, 'deductions_items': [{'name': 'housing_levy', 'percentage': 2.2, 'amount': 44.00000000000001}, {'name': 'nssf', 'percentage': 2.5, 'amount': 50.0}, {'name': 'shif_sha', 'percentage': 2.8, 'amount': 55.99999999999999}, {'name': 'housing_levy', 'percentage': 2.2, 'amount': 0.0}, {'name': 'nssf', 'percentage': 2.5, 'amount': 0.0}, {'name': 'shif_sha', 'percentage': 2.8, 'amount': 0.0}, {'name': 'housing_levy', 'percentage': 2.2, 'amount': 81.763}, {'name': 'nssf', 'percentage': 2.5, 'amount': 92.91250000000001}, {'name': 'shif_sha', 'percentage': 2.8, 'amount': 104.06199999999998}], 'advances_items': [{'date': '2025-12-09', 'amount': 248.0, 'remarks': 'Shida', 'approved_by': 'Isaac Misiani'}, {'date': '2025-12-09', 'amount': 2.0, 'remarks': '250', 'approved_by': 'Isaac Misiani'}, {'date': '2025-12-09', 'amount': 500.0, 'remarks': 'Issues', 'approved_by': 'Isaac Misiani'}, {'date': None, 'amount': 0, 'remarks': '', 'approved_by': None}, {'date': '2025-12-09', 'amount': 700.0, 'remarks': 'Changamoto', 'approved_by': 'Isaac Misiani'}], 'overtime_items': [{'date': '2025-12-09', 'hours': 5.0, 'amount': 2000.0, 'remarks': 'Errands'}, {'date': None, 'hours': 0, 'amount': 0, 'remarks': ''}, {'date': '2025-12-09', 'hours': 7.0, 'amount': 3700.0, 'remarks': 'Trimming the fence'}]}}
+

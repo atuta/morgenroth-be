@@ -247,7 +247,7 @@ class UserService:
                     "overtime_items": overall_overtime
                 }
             }
-            # Logs.atuta_logger(payroll)
+            Logs.atuta_logger(payroll)
             return payroll
 
         except Exception as e:
