@@ -356,7 +356,7 @@ class AttendanceService:
             }
 
         except Exception as e:
-            Logs.error(f"lunch_in_failed_user_{user.user_id}", exc_info=e)
+            Logs.atuta_technical_logger(f"lunch_in_failed_user_{user.user_id}", exc_info=e)
             return {
                 "status": "error",
                 "message": "lunch_in_failed"
@@ -387,7 +387,7 @@ class AttendanceService:
             }
 
         except Exception as e:
-            Logs.error(f"lunch_out_failed_user_{user.user_id}", exc_info=e)
+            Logs.atuta_technical_logger(f"lunch_out_failed_user_{user.user_id}", exc_info=e)
             return {
                 "status": "error",
                 "message": "lunch_out_failed"
@@ -419,7 +419,7 @@ class AttendanceService:
             }
 
         except Exception as e:
-            Logs.error("total_hours_calc_failed", exc_info=e)
+            Logs.atuta_technical_logger("total_hours_calc_failed", exc_info=e)
             return {
                 "status": "error",
                 "message": "total_hours_calc_failed"

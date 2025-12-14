@@ -46,6 +46,34 @@ def api_admin_dashboard_metrics(request):
 
     except Exception as e:
         return Response({"status": "error", "message": "admin_dashboard_metrics_failed"}, status=500)
+    
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def api_update_user_holiday_status(request):
+    """
+    Admin updates a specific user's holiday status.
+    Only a valid is_on_holiday value will be updated.
+    """
+    try:
+        # Get user_id from request data
+        user_id = request.data.get("user_id")
+        if not user_id:
+            return Response({"status": "error", "message": "user_id_required"}, status=400)
+
+        is_on_holiday = request.data.get("is_on_holiday")
+
+        result = UserService.update_user_boolean_status(
+            user_id=user_id,
+            field_name="is_on_holiday",
+            value=is_on_holiday
+        )
+
+        status_code = 200 if result.get("status") == "success" else 400
+        return Response(result, status=status_code)
+
+    except Exception as e:
+        # Optional: log the exception
+        return Response({"status": "error", "message": "update_failed"}, status=500)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
@@ -231,7 +259,7 @@ def api_add_user(request):
         return Response(result, status=200 if result["status"] == "success" else 400)
 
     except Exception as e:
-        Logs.error("api_add_user_failed", exc_info=e)
+        Logs.atuta_technical_logger("api_add_user_failed", exc_info=e)
         return Response(
             {"status": "error", "message": "server_error"},
             status=500
@@ -261,7 +289,7 @@ def api_change_password(request):
         return Response(result, status=200 if result["status"] == "success" else 400)
 
     except Exception as e:
-        Logs.error("api_change_password_failed", exc_info=e)
+        Logs.atuta_technical_logger("api_change_password_failed", exc_info=e)
         return Response({"status": "error", "message": "server_error"}, status=500)
 
 @api_view(['POST'])
@@ -301,7 +329,7 @@ def api_login(request):
         }, status=200)
 
     except Exception as e:
-        Logs.error("api_login_failed", exc_info=e)
+        Logs.atuta_technical_logger("api_login_failed", exc_info=e)
         return Response({"status": "error", "message": "server_error"}, status=500)
 
 

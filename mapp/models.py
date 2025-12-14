@@ -101,6 +101,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     # Attendance
     is_present_today = models.BooleanField(default=False)
     is_on_leave = models.BooleanField(default=False)
+    is_on_holiday = models.BooleanField(default=False)
 
     # Status
     STATUS_CHOICES = [

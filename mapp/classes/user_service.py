@@ -449,6 +449,50 @@ class UserService:
         except Exception as e:
             Logs.atuta_technical_logger("attendance_statistics_failed", exc_info=e)
             return {"status": "error", "message": "attendance_statistics_failed"}
+        
+    @classmethod
+    def update_user_holiday_status(cls, user_id, is_on_holiday=None):
+        """
+        Update a user's is_on_holiday status if a valid boolean value is provided.
+        Logs both incoming data and updated status.
+        """
+        try:
+            # Log incoming data
+            Logs.atuta_logger(f"Received holiday status update for user {user_id}: is_on_holiday={is_on_holiday}")
+
+            user = CustomUser.objects.get(user_id=user_id)
+
+            if is_on_holiday is None:
+                Logs.atuta_logger(f"No holiday status provided for user {user_id}")
+                return {"status": "info", "message": "no_status_provided"}
+
+            # Ensure boolean type
+            if isinstance(is_on_holiday, str):
+                val = is_on_holiday.strip().lower()
+                if val in ("true", "1", "yes"):
+                    is_on_holiday = True
+                elif val in ("false", "0", "no"):
+                    is_on_holiday = False
+                else:
+                    Logs.atuta_logger(f"Invalid is_on_holiday value received for user {user_id}: {is_on_holiday}")
+                    return {"status": "error", "message": "invalid_status_value"}
+            elif not isinstance(is_on_holiday, bool):
+                Logs.atuta_logger(f"Invalid is_on_holiday type for user {user_id}: {type(is_on_holiday)}")
+                return {"status": "error", "message": "invalid_status_type"}
+
+            user.is_on_holiday = is_on_holiday
+            user.save()
+
+            Logs.atuta_logger(f"Successfully updated holiday status for user {user_id} to {is_on_holiday}")
+            return {"status": "success", "message": "holiday_status_updated"}
+
+        except ObjectDoesNotExist:
+            Logs.atuta_logger(f"User {user_id} not found for holiday status update")
+            return {"status": "error", "message": "user_not_found"}
+        except Exception as e:
+            Logs.atuta_technical_logger("update_user_holiday_status_failed", exc_info=e)
+            return {"status": "error", "message": "update_failed"}
+
 
     @classmethod
     def update_user_leave_status(cls, user_id, is_on_leave=None):
@@ -755,7 +799,7 @@ class UserService:
             }
 
         except Exception as e:
-            Logs.error(f"subscription_top_up_failed_user_{user.id}", exc_info=e)
+            Logs.atuta_technical_logger(f"subscription_top_up_failed_user_{user.id}", exc_info=e)
             return {
                 "status": "error",
                 "message": "subscription_update_failed"
@@ -794,7 +838,7 @@ class UserService:
                 }
             }
         except Exception as e:
-            Logs.error(f"permission_check_failed_user_{user.id}", exc_info=e)
+            Logs.atuta_technical_logger(f"permission_check_failed_user_{user.id}", exc_info=e)
             return {
                 "status": "error",
                 "message": "permission_check_failed"
@@ -820,7 +864,7 @@ class UserService:
             }
 
         except Exception as e:
-            Logs.error(f"module_permission_check_failed_user_{user.id}", exc_info=e)
+            Logs.erratuta_technical_loggeror(f"module_permission_check_failed_user_{user.id}", exc_info=e)
             return {
                 "status": "error",
                 "message": "module_permission_check_failed"
