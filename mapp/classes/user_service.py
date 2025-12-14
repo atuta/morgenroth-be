@@ -639,8 +639,8 @@ class UserService:
         """
         Return a list of all users whose role is NOT 'admin'.
         Handles missing photo field safely.
+        Converts boolean fields is_on_leave and is_on_holiday to 'yes'/'no'.
         """
-        # Removed 'user_id' from this list, as we will add it manually (and reliably) below
         FIELDS_TO_INCLUDE = [
             'first_name', 'last_name', 'email', 'account', 
             'user_role', 'phone_number', 'hourly_rate', 
@@ -652,18 +652,18 @@ class UserService:
             user_list = []
 
             for user in users:
-                # 1. Create the dictionary from non-PK fields
+                # Create the dictionary from non-PK fields
                 user_dict = model_to_dict(user, fields=FIELDS_TO_INCLUDE)
                 
-                # 🚀 CRITICAL FIX: Manually and explicitly add the primary key (user_id)
-                # This ensures the UUID field is correctly included regardless of model_to_dict quirks.
-                user_dict["user_id"] = str(user.user_id) # Convert UUID to string for JSON serialization
+                # Add primary key
+                user_dict["user_id"] = str(user.user_id)
                 
-                # 2. Safely handle photo field URL
+                # Handle photo safely
                 user_dict["photo"] = user.photo.url if user.photo else None
                 
-                # Log data fetched for debugging
-                # Logs.atuta_logger(f"User data fetched: {user_dict}")
+                # Convert boolean fields to 'yes'/'no'
+                user_dict["is_on_leave"] = "yes" if user.is_on_leave else "no"
+                user_dict["is_on_holiday"] = "yes" if user.is_on_holiday else "no"
                 
                 user_list.append(user_dict)
 
@@ -678,6 +678,7 @@ class UserService:
                 "status": "error",
                 "message": "failed_to_fetch_users"
             }
+
 
     @classmethod
     def add_user(
