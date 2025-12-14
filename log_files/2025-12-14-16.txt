@@ -48,3 +48,103 @@ Successfully updated holiday status for user c069ae5c-6a12-4256-b280-0e13b0d2921
 
 Successfully fetched 2 non-admin users
 
+Fetched details for user None: {'email': None, 'phone_number': '0786452564', 'first_name': 'Grace', 'last_name': 'Auma', 'account': 'PkA5H', 'user_role': 'teaching', 'id_number': '12345678', 'nssf_number': 'NSSF7654', 'shif_sha_number': 'SHA87697', 'hourly_rate': Decimal('170.00'), 'hourly_rate_currency': 'KES', 'is_present_today': False, 'is_on_leave': True, 'status': 'active', 'user_id': '254cb3d3-22f5-4887-9351-f6168af4a9b7', 'photo': None}
+
+Successfully fetched 2 non-admin users
+
+Fetched details for user isaacs@gmail.com: {'email': 'isaacs@gmail.com', 'phone_number': '0721267768', 'first_name': 'John', 'last_name': 'Mumba', 'account': 'pS4np', 'user_role': 'office', 'id_number': '25678923', 'nssf_number': 'NSSF12345', 'shif_sha_number': 'SHA12345', 'hourly_rate': Decimal('150.00'), 'hourly_rate_currency': 'KES', 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': 'c069ae5c-6a12-4256-b280-0e13b0d29214', 'photo': None}
+
+Received leave status update for user c069ae5c-6a12-4256-b280-0e13b0d29214: is_on_leave=yes
+
+Successfully updated leave status for user c069ae5c-6a12-4256-b280-0e13b0d29214 to True
+
+Successfully fetched 2 non-admin users
+
+Received leave status update for user 254cb3d3-22f5-4887-9351-f6168af4a9b7: is_on_leave=no
+
+Successfully updated leave status for user 254cb3d3-22f5-4887-9351-f6168af4a9b7 to False
+
+Received leave status update for user c069ae5c-6a12-4256-b280-0e13b0d29214: is_on_leave=no
+
+Successfully updated leave status for user c069ae5c-6a12-4256-b280-0e13b0d29214 to False
+
+Received holiday status update for user c069ae5c-6a12-4256-b280-0e13b0d29214: is_on_holiday=no
+
+Successfully updated holiday status for user c069ae5c-6a12-4256-b280-0e13b0d29214 to False
+
+Successfully fetched 2 non-admin users
+
+Fetched details for user isaacs@gmail.com: {'email': 'isaacs@gmail.com', 'phone_number': '0721267768', 'first_name': 'John', 'last_name': 'Mumba', 'account': 'pS4np', 'user_role': 'office', 'id_number': '25678923', 'nssf_number': 'NSSF12345', 'shif_sha_number': 'SHA12345', 'hourly_rate': Decimal('150.00'), 'hourly_rate_currency': 'KES', 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': 'c069ae5c-6a12-4256-b280-0e13b0d29214', 'photo': None}
+
+Received leave status update for user c069ae5c-6a12-4256-b280-0e13b0d29214: is_on_leave=yes
+
+Successfully updated leave status for user c069ae5c-6a12-4256-b280-0e13b0d29214 to True
+
+Successfully fetched 2 non-admin users
+
+Successfully fetched 2 non-admin users
+
+Successfully fetched 2 non-admin users
+
+Working hours retrieved | timezone=Africa/Nairobi
+
+Working hours retrieved | timezone=Africa/Nairobi
+
+Working hours retrieved | timezone=Africa/Nairobi
+
+Successfully fetched 2 non-admin users
+
+Received leave status update for user 254cb3d3-22f5-4887-9351-f6168af4a9b7: is_on_leave=yes
+
+Successfully updated leave status for user 254cb3d3-22f5-4887-9351-f6168af4a9b7 to True
+
+Received holiday status update for user 254cb3d3-22f5-4887-9351-f6168af4a9b7: is_on_holiday=yes
+
+Successfully updated holiday status for user 254cb3d3-22f5-4887-9351-f6168af4a9b7 to True
+
+Fetched details for user None: {'email': None, 'phone_number': '0786452564', 'first_name': 'Grace', 'last_name': 'Auma', 'account': 'PkA5H', 'user_role': 'teaching', 'id_number': '12345678', 'nssf_number': 'NSSF7654', 'shif_sha_number': 'SHA87697', 'hourly_rate': Decimal('170.00'), 'hourly_rate_currency': 'KES', 'is_present_today': False, 'is_on_leave': True, 'status': 'active', 'user_id': '254cb3d3-22f5-4887-9351-f6168af4a9b7', 'photo': None}
+
+Successfully fetched 2 non-admin users
+
+Successfully fetched 2 non-admin users
+
+Received holiday status update for user c069ae5c-6a12-4256-b280-0e13b0d29214: is_on_holiday=yes
+
+Successfully updated holiday status for user c069ae5c-6a12-4256-b280-0e13b0d29214 to True
+
+Received holiday status update for user c069ae5c-6a12-4256-b280-0e13b0d29214: is_on_holiday=no
+
+Successfully updated holiday status for user c069ae5c-6a12-4256-b280-0e13b0d29214 to False
+
+Received holiday status update for user c069ae5c-6a12-4256-b280-0e13b0d29214: is_on_holiday=yes
+
+Successfully updated holiday status for user c069ae5c-6a12-4256-b280-0e13b0d29214 to True
+
+Successfully fetched 2 non-admin users
+
+Successfully fetched 2 non-admin users
+
+Received leave status update for user c069ae5c-6a12-4256-b280-0e13b0d29214: is_on_leave=no
+
+Successfully updated leave status for user c069ae5c-6a12-4256-b280-0e13b0d29214 to False
+
+Received holiday status update for user 254cb3d3-22f5-4887-9351-f6168af4a9b7: is_on_holiday=no
+
+Successfully updated holiday status for user 254cb3d3-22f5-4887-9351-f6168af4a9b7 to False
+
+Successfully fetched 2 non-admin users
+
+Successfully fetched 2 non-admin users
+
+Received leave status update for user c069ae5c-6a12-4256-b280-0e13b0d29214: is_on_leave=yes
+
+Successfully updated leave status for user c069ae5c-6a12-4256-b280-0e13b0d29214 to True
+
+Received leave status update for user c069ae5c-6a12-4256-b280-0e13b0d29214: is_on_leave=no
+
+Successfully updated leave status for user c069ae5c-6a12-4256-b280-0e13b0d29214 to False
+
+Received leave status update for user 254cb3d3-22f5-4887-9351-f6168af4a9b7: is_on_leave=no
+
+Successfully updated leave status for user 254cb3d3-22f5-4887-9351-f6168af4a9b7 to False
+

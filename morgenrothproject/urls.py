@@ -16,7 +16,8 @@ from mapp.app_views import (
     system_setting_view,
     user_manual_view,
     user_view,
-    verification_view
+    verification_view,
+    working_hours_view
 )
 
 from rest_framework_simplejwt.views import (
@@ -37,6 +38,9 @@ urlpatterns = [
     path('api/update-admin-notice/', admin_notice_view.api_update_admin_notice, name='update_admin_notice'),
     path('api/delete-admin-notice/', admin_notice_view.api_delete_admin_notice, name='delete_admin_notice'),
 
+
+    # Working hours endpoints
+    path('api/get-all-working-hours/', working_hours_view.api_get_all_working_hours, name='get_all_working_hours'),
 
     # User endpoints
     path('api/admin-dashboard-metrics/', user_view.api_admin_dashboard_metrics, name='admin_dashboard_metrics'),
