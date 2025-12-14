@@ -402,3 +402,72 @@ def admin_generate_user_payslip(request):
 def admin_generate_user_payslip_pdf(request):
     """ Admin-facing PDF payslip endpoint. Requires ?user_id=... """
     return _handle_payslip_generation(request, is_admin_view=True, is_pdf=True)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def api_admin_record_hour_correction(request):
+    """
+    Admin: Record hour correction for a specific user.
+
+    Expected JSON:
+    {
+        "user_id": "<uuid>",
+        "hours": 2.5,                 # positive or negative
+        "reason": "System downtime",
+        "month": 11,                  # optional, defaults to current month
+        "year": 2025                  # optional, defaults to current year
+    }
+    """
+    try:
+        user_id = request.data.get("user_id")
+        hours = request.data.get("hours")
+        reason = request.data.get("reason")
+        month = request.data.get("month")
+        year = request.data.get("year")
+
+        if not user_id or hours is None or not reason:
+            return Response(
+                {"status": "error", "message": "missing_parameters"},
+                status=400
+            )
+
+        try:
+            hours = float(hours)
+        except ValueError:
+            return Response(
+                {"status": "error", "message": "invalid_hours"},
+                status=400
+            )
+
+        try:
+            user = CustomUser.objects.get(user_id=user_id)
+        except CustomUser.DoesNotExist:
+            return Response(
+                {"status": "error", "message": "user_not_found"},
+                status=404
+            )
+
+        result = PayrollService.record_hour_correction(
+            user=user,
+            hours=hours,
+            reason=reason,
+            month=month,
+            year=year,
+            corrected_by=request.user  # admin recording
+        )
+
+        return Response(
+            result,
+            status=200 if result["status"] == "success" else 500
+        )
+
+    except Exception as e:
+        Logs.atuta_technical_logger(
+            "api_admin_record_hour_correction_failed",
+            exc_info=e
+        )
+        return Response(
+            {"status": "error", "message": "server_error"},
+            status=500
+        )

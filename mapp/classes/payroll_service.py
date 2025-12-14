@@ -1,4 +1,5 @@
 from typing import Optional
+from decimal import Decimal
 from django.db.models import Sum
 from mapp.models import (
     CustomUser,
@@ -6,6 +7,7 @@ from mapp.models import (
     StatutoryDeduction,
     AdvancePayment,
     OvertimeAllowance,
+    HourCorrection
 )
 from mapp.classes.logs.logs import Logs
 from django.utils import timezone
@@ -13,6 +15,67 @@ import os
 
 
 class PayrollService:
+
+    @classmethod
+    def record_hour_correction(
+        cls,
+        user: CustomUser,
+        hours: float,
+        reason: str,
+        corrected_by: Optional[CustomUser] = None,
+        month: Optional[int] = None,
+        year: Optional[int] = None,
+    ):
+        """
+        Record a manual hour correction for a user.
+        Positive hours = add hours
+        Negative hours = deduct hours
+        """
+
+        try:
+            now = timezone.now()
+            month = month or now.month
+            year = year or now.year
+
+            # Pull hourly_rate directly from user
+            hourly_rate = user.hourly_rate
+
+            correction = HourCorrection.objects.create(
+                user=user,
+                hours=hours,
+                hourly_rate=hourly_rate,
+                reason=reason,
+                corrected_by=corrected_by,
+                month=month,
+                year=year,
+                date=now.date(),
+            )
+
+            Logs.atuta_logger(
+                f"Hour correction recorded for user {user.user_id} | "
+                f"hours={hours} | "
+                f"rate={correction.hourly_rate} | "
+                f"amount={correction.amount} | "
+                f"month={month}/{year} | "
+                f"reason={reason}"
+            )
+
+            return {
+                "status": "success",
+                "message": "hour_correction_recorded",
+                "correction_id": str(correction.correction_id),
+            }
+
+        except Exception as e:
+            Logs.atuta_technical_logger(
+                f"hour_correction_record_failed_user_{user.user_id}",
+                exc_info=e,
+            )
+            return {
+                "status": "error",
+                "message": "hour_correction_record_failed",
+            }
+
 
     @classmethod
     def generate_detailed_payslip(cls, user: CustomUser, month: int, year: int):

@@ -108,6 +108,11 @@ urlpatterns = [
     path('api/admin/generate-user-payslip/', payroll_view.admin_generate_user_payslip, name='admin_generate_user_payslip'),
     path('api/admin/generate-user-payslip-pdf/', payroll_view.admin_generate_user_payslip_pdf, name='admin_generate_user_payslip_pdf'),
     path('api/admin/generate-payroll-report/', generate_payroll_report_view.api_generate_payroll_report, name='api_generate_payroll_report'),
+    path(
+        'api/admin/record-hour-correction/',
+        payroll_view.api_admin_record_hour_correction,
+        name='api_admin_record_hour_correction'
+    ),
 
     # Rate endpoints
     path('api/set-rate/', rate_view.api_set_rate, name='set_rate'),

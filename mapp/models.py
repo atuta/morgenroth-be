@@ -81,6 +81,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     # Roles
     USER_ROLE_CHOICES = [
+        ('super', 'Super Admin'),
         ('admin', 'Admin'),
         ('office', 'Office'),
         ('teaching', 'Teaching'),
@@ -556,8 +557,12 @@ class HourCorrection(models.Model):
         if self.hourly_rate is None:
             self.hourly_rate = self.user.hourly_rate
 
+        # Ensure both are Decimal
+        hours_decimal = Decimal(str(self.hours))
+        hourly_rate_decimal = Decimal(str(self.hourly_rate))
+
         # Always recalculate amount for consistency
-        self.amount = self.hours * self.hourly_rate
+        self.amount = hours_decimal * hourly_rate_decimal
 
         super().save(*args, **kwargs)
 

@@ -1,6 +1,0 @@
-Holiday status update failed: 
-
-Error in file: /Users/isaac/python_projects/morgenroth/morgenrothproject/mapp/app_views/user_view.py, line: 65, in api_update_user_holiday_status - type object 'UserService' has no attribute 'update_user_boolean_status'
-Holiday status update failed: 
-
-Error in file: /Users/isaac/python_projects/morgenroth/morgenrothproject/mapp/app_views/user_view.py, line: 65, in api_update_user_holiday_status - UserService.update_user_holiday_status() got an unexpected keyword argument 'field_name'
