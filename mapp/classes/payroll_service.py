@@ -50,6 +50,7 @@ class PayrollService:
                 "correction_id": str(correction.correction_id),
                 "user_id": str(user.user_id),
                 "full_name": user.full_name,
+                "user_role": user.user_role,  # <-- added this line
                 "photo": user.photo.url if user.photo else None,
                 "hours": float(correction.hours),
                 "hourly_rate": float(correction.hourly_rate),
@@ -70,6 +71,7 @@ class PayrollService:
             "has_next": page_obj.has_next(),
             "has_previous": page_obj.has_previous(),
         }
+
 
     @classmethod
     def record_hour_correction(
