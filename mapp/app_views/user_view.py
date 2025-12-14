@@ -55,24 +55,23 @@ def api_update_user_holiday_status(request):
     Only a valid is_on_holiday value will be updated.
     """
     try:
-        # Get user_id from request data
         user_id = request.data.get("user_id")
         if not user_id:
             return Response({"status": "error", "message": "user_id_required"}, status=400)
 
         is_on_holiday = request.data.get("is_on_holiday")
 
-        result = UserService.update_user_boolean_status(
+        # Use the dedicated class method
+        result = UserService.update_user_holiday_status(
             user_id=user_id,
-            field_name="is_on_holiday",
-            value=is_on_holiday
+            is_on_holiday=is_on_holiday
         )
 
         status_code = 200 if result.get("status") == "success" else 400
         return Response(result, status=status_code)
 
     except Exception as e:
-        # Optional: log the exception
+        Logs.atuta_technical_logger("Holiday status update failed", exc_info=e)
         return Response({"status": "error", "message": "update_failed"}, status=500)
 
 @api_view(['POST'])
@@ -99,7 +98,7 @@ def api_update_user_leave_status(request):
         return Response(result, status=status_code)
 
     except Exception as e:
-        # Log exception if needed
+        Logs.atuta_technical_logger(f"Holiday status update failed: ", exc_info=e)
         return Response({"status": "error", "message": "update_failed"}, status=500)
 
 

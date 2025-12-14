@@ -1,2 +1,44 @@
+Received holiday status update for user 254cb3d3-22f5-4887-9351-f6168af4a9b7: is_on_holiday=yes
+
+Successfully updated holiday status for user 254cb3d3-22f5-4887-9351-f6168af4a9b7 to True
+
+Received holiday status update for user c069ae5c-6a12-4256-b280-0e13b0d29214: is_on_holiday=yes
+
+Successfully updated holiday status for user c069ae5c-6a12-4256-b280-0e13b0d29214 to True
+
+Received holiday status update for user c069ae5c-6a12-4256-b280-0e13b0d29214: is_on_holiday=no
+
+Successfully updated holiday status for user c069ae5c-6a12-4256-b280-0e13b0d29214 to False
+
+Received holiday status update for user 254cb3d3-22f5-4887-9351-f6168af4a9b7: is_on_holiday=no
+
+Successfully updated holiday status for user 254cb3d3-22f5-4887-9351-f6168af4a9b7 to False
+
+Received holiday status update for user 254cb3d3-22f5-4887-9351-f6168af4a9b7: is_on_holiday=yes
+
+Successfully updated holiday status for user 254cb3d3-22f5-4887-9351-f6168af4a9b7 to True
+
+Received holiday status update for user c069ae5c-6a12-4256-b280-0e13b0d29214: is_on_holiday=yes
+
+Successfully updated holiday status for user c069ae5c-6a12-4256-b280-0e13b0d29214 to True
+
+Successfully fetched 2 non-admin users
+
+Received holiday status update for user 254cb3d3-22f5-4887-9351-f6168af4a9b7: is_on_holiday=yes
+
+Successfully updated holiday status for user 254cb3d3-22f5-4887-9351-f6168af4a9b7 to True
+
+Received holiday status update for user c069ae5c-6a12-4256-b280-0e13b0d29214: is_on_holiday=yes
+
+Successfully updated holiday status for user c069ae5c-6a12-4256-b280-0e13b0d29214 to True
+
+Received leave status update for user 254cb3d3-22f5-4887-9351-f6168af4a9b7: is_on_leave=yes
+
+Successfully updated leave status for user 254cb3d3-22f5-4887-9351-f6168af4a9b7 to True
+
+Received leave status update for user c069ae5c-6a12-4256-b280-0e13b0d29214: is_on_leave=yes
+
+Successfully updated leave status for user c069ae5c-6a12-4256-b280-0e13b0d29214 to True
+
 Successfully fetched 2 non-admin users
 
