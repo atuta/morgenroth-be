@@ -498,6 +498,76 @@ class UserManual(models.Model):
     def __str__(self):
         return f"Manual | {self.title}"
     
+# -----------------
+# 17. HourCorrection
+# -----------------
+class HourCorrection(models.Model):
+    correction_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
+    user = models.ForeignKey(
+        "CustomUser",
+        on_delete=models.CASCADE,
+        related_name="hour_corrections"
+    )
+
+    date = models.DateField(default=timezone.now)
+    month = models.PositiveSmallIntegerField(default=current_month)
+    year = models.PositiveSmallIntegerField(default=current_year)
+
+    # Positive = add hours, Negative = deduct hours
+    hours = models.DecimalField(max_digits=5, decimal_places=2)
+
+    # Snapshot of the hourly rate at correction time
+    hourly_rate = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True
+    )
+
+    # Stored value: hours * hourly_rate
+    amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=Decimal('0.00')
+    )
+
+    corrected_by = models.ForeignKey(
+        "CustomUser",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="approved_hour_corrections"
+    )
+
+    reason = models.TextField()
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['user', 'year', 'month']),
+            models.Index(fields=['year', 'month']),
+        ]
+
+    def save(self, *args, **kwargs):
+        # Freeze hourly rate at time of correction
+        if self.hourly_rate is None:
+            self.hourly_rate = self.user.hourly_rate
+
+        # Always recalculate amount for consistency
+        self.amount = self.hours * self.hourly_rate
+
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        sign = "+" if self.hours >= 0 else "-"
+        return (
+            f"Hour Correction {sign}{abs(self.hours)}h | "
+            f"{self.user.phone_number} | {self.month}/{self.year}"
+        )
+
 class WorkingHoursConfig(models.Model):
     class Days(models.IntegerChoices):
         MONDAY = 1, 'Monday'
