@@ -113,6 +113,11 @@ urlpatterns = [
         payroll_view.api_admin_record_hour_correction,
         name='api_admin_record_hour_correction'
     ),
+    path(
+        'api/hour-corrections/',
+        payroll_view.api_get_hour_corrections,
+        name='api_get_hour_corrections'
+        ),
 
     # Rate endpoints
     path('api/set-rate/', rate_view.api_set_rate, name='set_rate'),

@@ -11,10 +11,65 @@ from mapp.models import (
 )
 from mapp.classes.logs.logs import Logs
 from django.utils import timezone
+from django.core.paginator import Paginator
 import os
 
 
 class PayrollService:
+
+    def get_hour_corrections(user_id=None, month=None, year=None, page=1, per_page=20):
+        """
+        Returns a paginated list of HourCorrection records.
+
+        Optional filters:
+            - user_id: filter by specific user
+            - month: filter by month (1-12)
+            - year: filter by year
+        Pagination:
+            - page: current page number (default 1)
+            - per_page: number of records per page (default 20)
+        """
+
+        corrections = HourCorrection.objects.select_related('user').all()
+
+        if user_id:
+            corrections = corrections.filter(user__user_id=user_id)
+        if month:
+            corrections = corrections.filter(month=month)
+        if year:
+            corrections = corrections.filter(year=year)
+
+        paginator = Paginator(corrections, per_page)
+        page_obj = paginator.get_page(page)
+
+        # Prepare serialized data
+        results = []
+        for correction in page_obj.object_list:
+            user = correction.user
+            results.append({
+                "correction_id": str(correction.correction_id),
+                "user_id": str(user.user_id),
+                "full_name": user.full_name,
+                "photo": user.photo.url if user.photo else None,
+                "hours": float(correction.hours),
+                "hourly_rate": float(correction.hourly_rate),
+                "amount": float(correction.amount),
+                "reason": correction.reason,
+                "date": correction.date.isoformat(),
+                "month": correction.month,
+                "year": correction.year,
+                "corrected_by_id": str(correction.corrected_by.user_id) if correction.corrected_by else None,
+                "created_at": correction.created_at.isoformat(),
+            })
+
+        return {
+            "results": results,
+            "total_records": paginator.count,
+            "total_pages": paginator.num_pages,
+            "current_page": page_obj.number,
+            "has_next": page_obj.has_next(),
+            "has_previous": page_obj.has_previous(),
+        }
 
     @classmethod
     def record_hour_correction(

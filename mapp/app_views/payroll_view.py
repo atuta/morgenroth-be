@@ -404,6 +404,48 @@ def admin_generate_user_payslip_pdf(request):
     return _handle_payslip_generation(request, is_admin_view=True, is_pdf=True)
 
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def api_get_hour_corrections(request):
+    """
+    Get paginated HourCorrection records using get_hour_corrections service.
+    Optional query parameters:
+        - user_id=<uuid>
+        - month=<1-12>
+        - year=<yyyy>
+        - page=<int>, default 1
+        - per_page=<int>, default 20
+    """
+    try:
+        user_id = request.query_params.get('user_id')
+        month = request.query_params.get('month')
+        year = request.query_params.get('year')
+        page = int(request.query_params.get('page', 1))
+        per_page = int(request.query_params.get('per_page', 20))
+
+        # Delegate to the service function
+        data = PayrollService.get_hour_corrections(
+            user_id=user_id,
+            month=int(month) if month else None,
+            year=int(year) if year else None,
+            page=page,
+            per_page=per_page
+        )
+
+        return Response({
+            "status": "success",
+            "data": data
+        })
+
+    except Exception as e:
+        import logging
+        logging.exception("Failed to fetch hour corrections")
+        return Response({
+            "status": "error",
+            "message": "server_error"
+        }, status=500)
+
+
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def api_admin_record_hour_correction(request):
