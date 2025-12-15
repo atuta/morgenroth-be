@@ -1,0 +1,4 @@
+Hour correction recorded for user 254cb3d3-22f5-4887-9351-f6168af4a9b7 | hours=8.5 | rate=170.00 | amount=1445.000 | month=12/2025 | reason=Holiday hours auto allocation
+
+Hour correction recorded for user b332ba54-5e18-428e-b567-374b43fadfc3 | hours=8.5 | rate=120.00 | amount=1020.000 | month=12/2025 | reason=Holiday hours auto allocation
+
