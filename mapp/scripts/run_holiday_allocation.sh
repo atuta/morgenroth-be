@@ -5,8 +5,8 @@ set -e  # exit immediately on error
 # --------------------------------------------------
 # Paths (CHANGE ONLY IF YOUR STRUCTURE CHANGES)
 # --------------------------------------------------
-PROJECT_ROOT="/Users/isaac/python_projects/morgenroth/morgenrothproject"
-VENV_PATH="/Users/isaac/python_projects/morgenroth/morgenroth_env"
+PROJECT_ROOT="/home/isaac/morgenroth/morgenrothproject"
+VENV_PATH="/home/isaac/morgenroth/morgenroth_env"
 SCRIPT_PATH="$PROJECT_ROOT/mapp/scripts/allocate_holiday_hours.py"
 
 # --------------------------------------------------
