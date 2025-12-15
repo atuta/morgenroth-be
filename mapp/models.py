@@ -1,5 +1,6 @@
 import uuid
 from decimal import Decimal
+from django.core.exceptions import ValidationError
 from django.utils import timezone
 from django.db import models
 from django.utils.timezone import now
@@ -99,6 +100,18 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     hourly_rate = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
     hourly_rate_currency = models.CharField(max_length=10, default="KES")
 
+    # Lunch policy (24hr format e.g. 1300, 1800)
+    lunch_start = models.PositiveSmallIntegerField(
+        null=True,
+        blank=True,
+        help_text="Lunch start time in 24hr format e.g. 1300"
+    )
+    lunch_end = models.PositiveSmallIntegerField(
+        null=True,
+        blank=True,
+        help_text="Lunch end time in 24hr format e.g. 1400"
+    )
+
     # Attendance
     is_present_today = models.BooleanField(default=False)
     is_on_leave = models.BooleanField(default=False)
@@ -129,6 +142,35 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     @property
     def full_name(self):
         return f"{self.first_name} {self.last_name}".strip()
+
+    def clean(self):
+        """
+        Validate lunch start/end times.
+        Stored as 24hr integers e.g. 1300, 1800.
+        """
+        super().clean()
+
+        for field_name in ("lunch_start", "lunch_end"):
+            value = getattr(self, field_name)
+            if value is None:
+                continue
+
+            if value < 0 or value > 2359:
+                raise ValidationError({
+                    field_name: "Time must be between 0000 and 2359"
+                })
+
+            minutes = value % 100
+            if minutes >= 60:
+                raise ValidationError({
+                    field_name: "Invalid minutes value"
+                })
+
+        if self.lunch_start and self.lunch_end:
+            if self.lunch_end <= self.lunch_start:
+                raise ValidationError(
+                    "Lunch end time must be after lunch start time"
+                )
 
 
 # -----------------

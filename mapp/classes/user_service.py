@@ -5,7 +5,7 @@ from datetime import datetime as dt_datetime, date as dt_date, time as dt_time
 from decimal import Decimal, InvalidOperation
 from django.utils import timezone
 from django.forms.models import model_to_dict
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db import IntegrityError
 
 from mapp.models import CustomUser, AttendanceSession, OvertimeAllowance, AdvancePayment, StatutoryDeduction
@@ -536,47 +536,104 @@ class UserService:
             return {"status": "error", "message": "update_failed"}
 
     @classmethod
-    def update_user_fields(cls, user_id, nssf=None, sha=None, hourly_rate=None):
+    def update_user_fields(
+        cls,
+        user_id,
+        nssf=None,
+        sha=None,
+        hourly_rate=None,
+        lunch_start=None,
+        lunch_end=None,
+    ):
         """
-        Update a user's NSSF, SHA, and hourly_rate fields only if valid values are provided.
-        Converts inputs to appropriate types before saving.
-        Logs both incoming data and updated fields.
+        Update selected user fields if valid values are provided.
+        Lunch start and end must be provided together (24hr format).
         """
         try:
-            # Log all incoming data from frontend
-            Logs.atuta_logger(f"Received update request for user {user_id}: nssf={nssf}, sha={sha}, hourly_rate={hourly_rate}")
+            Logs.atuta_logger(
+                f"Received update request for user {user_id}: "
+                f"nssf={nssf}, sha={sha}, hourly_rate={hourly_rate}, "
+                f"lunch_start={lunch_start}, lunch_end={lunch_end}"
+            )
 
             user = CustomUser.objects.get(user_id=user_id)
             updated_fields = []
 
-            # Only update if values are provided and valid
+            # --- NSSF ---
             if nssf not in (None, ""):
                 user.nssf_number = str(nssf)
                 updated_fields.append("nssf_number")
 
+            # --- SHA ---
             if sha not in (None, ""):
                 user.shif_sha_number = str(sha)
                 updated_fields.append("shif_sha_number")
 
+            # --- Hourly rate ---
             if hourly_rate not in (None, ""):
                 try:
                     user.hourly_rate = Decimal(hourly_rate)
                     updated_fields.append("hourly_rate")
                 except (InvalidOperation, ValueError):
-                    Logs.atuta_logger(f"Invalid hourly_rate received for user {user_id}: {hourly_rate}")
+                    Logs.atuta_logger(
+                        f"Invalid hourly_rate received for user {user_id}: {hourly_rate}"
+                    )
                     return {"status": "error", "message": "invalid_hourly_rate"}
 
-            if updated_fields:
-                user.save()
-                Logs.atuta_logger(f"Successfully updated user {user_id} fields: {', '.join(updated_fields)}")
-                return {"status": "success", "message": "user_updated"}
-            else:
+            # --- Lunch times (MUST be both or none) ---
+            lunch_start_provided = lunch_start not in (None, "")
+            lunch_end_provided = lunch_end not in (None, "")
+
+            if lunch_start_provided ^ lunch_end_provided:
+                # XOR → one provided without the other
+                Logs.atuta_logger(
+                    f"Incomplete lunch time data for user {user_id}: "
+                    f"lunch_start={lunch_start}, lunch_end={lunch_end}"
+                )
+                return {
+                    "status": "error",
+                    "message": "lunch_start_and_end_required",
+                }
+
+            if lunch_start_provided and lunch_end_provided:
+                try:
+                    user.lunch_start = int(lunch_start)
+                    user.lunch_end = int(lunch_end)
+                    updated_fields.extend(["lunch_start", "lunch_end"])
+                except (ValueError, TypeError):
+                    return {
+                        "status": "error",
+                        "message": "invalid_lunch_time_format",
+                    }
+
+            if not updated_fields:
                 Logs.atuta_logger(f"No fields to update for user {user_id}")
                 return {"status": "info", "message": "no_fields_to_update"}
+
+            # Model-level validation (time bounds, ordering, etc.)
+            try:
+                user.full_clean()
+            except ValidationError as ve:
+                Logs.atuta_logger(
+                    f"Validation failed for user {user_id}: {ve.message_dict}"
+                )
+                return {
+                    "status": "error",
+                    "message": "validation_failed",
+                    "errors": ve.message_dict,
+                }
+
+            user.save(update_fields=updated_fields)
+
+            Logs.atuta_logger(
+                f"Successfully updated user {user_id} fields: {', '.join(updated_fields)}"
+            )
+            return {"status": "success", "message": "user_updated"}
 
         except ObjectDoesNotExist:
             Logs.atuta_logger(f"User {user_id} not found for update")
             return {"status": "error", "message": "user_not_found"}
+
         except Exception as e:
             Logs.atuta_technical_logger("update_user_fields_failed", exc_info=e)
             return {"status": "error", "message": "update_failed"}
@@ -596,7 +653,7 @@ class UserService:
                 "first_name", "last_name", "email", "account", "user_role",
                 "phone_number", "id_number", "nssf_number", "shif_sha_number",
                 "hourly_rate", "hourly_rate_currency", "status",
-                "is_present_today", "is_on_leave"
+                "is_present_today", "is_on_leave", "lunch_start", "lunch_end"  # Added lunch fields
             ]
 
             user_data = model_to_dict(user, fields=FIELDS_TO_INCLUDE)
@@ -628,7 +685,6 @@ class UserService:
                 "status": "error",
                 "message": "failed_to_fetch_user"
             }
-
 
 
     @classmethod

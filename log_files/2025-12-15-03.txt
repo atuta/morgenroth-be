@@ -38,3 +38,5 @@ Fetched total working hours for user eb3f74a2-1aa0-4135-be00-96177e45f334 | 12/2
 
 Fetched total working hours for user 254cb3d3-22f5-4887-9351-f6168af4a9b7 | 12/2025 | sessions=0 | corrections=1.00 | total=1.0
 
+Successfully fetched 2 non-admin users
+

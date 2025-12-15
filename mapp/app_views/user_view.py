@@ -130,32 +130,42 @@ def upload_user_photo(request):
 @permission_classes([IsAuthenticated])
 def api_update_user_fields(request):
     """
-    Admin updates a specific user's NSSF, SHA, and hourly rate.
+    Admin updates a specific user's fields.
     Only fields provided in the request will be updated.
+    Lunch start and end must be provided together.
     """
     try:
-        # Get user_id from request data
         user_id = request.data.get("user_id")
         if not user_id:
-            return Response({"status": "error", "message": "user_id_required"}, status=400)
+            return Response(
+                {"status": "error", "message": "user_id_required"},
+                status=400
+            )
 
         nssf = request.data.get("nssf")
         sha = request.data.get("sha")
         hourly_rate = request.data.get("hourly_rate")
+        lunch_start = request.data.get("lunch_start")
+        lunch_end = request.data.get("lunch_end")
 
         result = UserService.update_user_fields(
             user_id=user_id,
             nssf=nssf,
             sha=sha,
-            hourly_rate=hourly_rate
+            hourly_rate=hourly_rate,
+            lunch_start=lunch_start,
+            lunch_end=lunch_end,
         )
 
         status_code = 200 if result.get("status") == "success" else 400
         return Response(result, status=status_code)
 
     except Exception as e:
-        # You may want to log the exception for debugging
-        return Response({"status": "error", "message": "update_failed"}, status=500)
+        return Response(
+            {"status": "error", "message": "update_failed"},
+            status=500
+        )
+
     
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
