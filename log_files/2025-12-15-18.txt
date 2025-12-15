@@ -1,0 +1,62 @@
+Successfully fetched 2 non-admin users
+
+Fetched details for user None: {'email': None, 'phone_number': '0786452564', 'first_name': 'Grace', 'last_name': 'Auma', 'account': 'PkA5H', 'user_role': 'teaching', 'id_number': '12345678', 'nssf_number': 'NSSF7654', 'shif_sha_number': 'SHA87697', 'hourly_rate': Decimal('170.00'), 'hourly_rate_currency': 'KES', 'lunch_start': None, 'lunch_end': None, 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': '254cb3d3-22f5-4887-9351-f6168af4a9b7', 'photo': '/media/staff_photos/cropped_images.jpg'}
+
+Successfully fetched 2 non-admin users
+
+Fetched details for user None: {'email': None, 'phone_number': '0786452564', 'first_name': 'Grace', 'last_name': 'Auma', 'account': 'PkA5H', 'user_role': 'teaching', 'id_number': '12345678', 'nssf_number': 'NSSF7654', 'shif_sha_number': 'SHA87697', 'hourly_rate': Decimal('170.00'), 'hourly_rate_currency': 'KES', 'lunch_start': None, 'lunch_end': None, 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': '254cb3d3-22f5-4887-9351-f6168af4a9b7', 'photo': '/media/staff_photos/cropped_images.jpg'}
+
+Successfully fetched 2 non-admin users
+
+Successfully fetched 2 non-admin users
+
+Fetched details for user None: {'email': None, 'phone_number': '0786452564', 'first_name': 'Grace', 'last_name': 'Auma', 'account': 'PkA5H', 'user_role': 'teaching', 'id_number': '12345678', 'nssf_number': 'NSSF7654', 'shif_sha_number': 'SHA87697', 'hourly_rate': Decimal('170.00'), 'hourly_rate_currency': 'KES', 'lunch_start': None, 'lunch_end': None, 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': '254cb3d3-22f5-4887-9351-f6168af4a9b7', 'photo': '/media/staff_photos/cropped_images.jpg'}
+
+Received update request for user 254cb3d3-22f5-4887-9351-f6168af4a9b7: nssf=NSSF7654, sha=SHA87697, hourly_rate=170, lunch_start=1100, lunch_end=1200
+
+Successfully updated user 254cb3d3-22f5-4887-9351-f6168af4a9b7 fields: nssf_number, shif_sha_number, hourly_rate, lunch_start, lunch_end
+
+Successfully fetched 2 non-admin users
+
+Successfully fetched 2 non-admin users
+
+Fetched details for user isaacs@gmail.com: {'email': 'isaacs@gmail.com', 'phone_number': '0721267768', 'first_name': 'John', 'last_name': 'Mumba', 'account': 'pS4np', 'user_role': 'office', 'id_number': '25678923', 'nssf_number': 'NSSF12345', 'shif_sha_number': 'SHA12345', 'hourly_rate': Decimal('1500.00'), 'hourly_rate_currency': 'KES', 'lunch_start': 1200, 'lunch_end': 1400, 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': 'c069ae5c-6a12-4256-b280-0e13b0d29214', 'photo': None}
+
+Successfully fetched 2 non-admin users
+
+Successfully fetched 2 non-admin users
+
+Successfully fetched 2 non-admin users
+
+Successfully fetched 2 non-admin users
+
+Fetched details for user isaacs@gmail.com: {'email': 'isaacs@gmail.com', 'phone_number': '0721267768', 'first_name': 'John', 'last_name': 'Mumba', 'account': 'pS4np', 'user_role': 'office', 'id_number': '25678923', 'nssf_number': 'NSSF12345', 'shif_sha_number': 'SHA12345', 'hourly_rate': Decimal('1500.00'), 'hourly_rate_currency': 'KES', 'lunch_start': 1200, 'lunch_end': 1400, 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': 'c069ae5c-6a12-4256-b280-0e13b0d29214', 'photo': None}
+
+Successfully fetched 2 non-admin users
+
+Successfully fetched 2 non-admin users
+
+Fetched details for user None: {'email': None, 'phone_number': '0786452564', 'first_name': 'Grace', 'last_name': 'Auma', 'account': 'PkA5H', 'user_role': 'teaching', 'id_number': '12345678', 'nssf_number': 'NSSF7654', 'shif_sha_number': 'SHA87697', 'hourly_rate': Decimal('170.00'), 'hourly_rate_currency': 'KES', 'lunch_start': 1100, 'lunch_end': 1200, 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': '254cb3d3-22f5-4887-9351-f6168af4a9b7', 'photo': '/media/staff_photos/cropped_images.jpg'}
+
+Successfully fetched 2 non-admin users
+
+Fetched details for user isaacs@gmail.com: {'email': 'isaacs@gmail.com', 'phone_number': '0721267768', 'first_name': 'John', 'last_name': 'Mumba', 'account': 'pS4np', 'user_role': 'office', 'id_number': '25678923', 'nssf_number': 'NSSF12345', 'shif_sha_number': '', 'hourly_rate': Decimal('1500.00'), 'hourly_rate_currency': 'KES', 'lunch_start': 1200, 'lunch_end': 1400, 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': 'c069ae5c-6a12-4256-b280-0e13b0d29214', 'photo': None}
+
+Successfully fetched 2 non-admin users
+
+Successfully fetched 2 non-admin users
+
+Successfully fetched 2 non-admin users
+
+Successfully fetched 2 non-admin users
+
+Successfully fetched 2 non-admin users
+
+Successfully fetched 2 non-admin users
+
+Successfully fetched 2 non-admin users
+
+Successfully fetched 2 non-admin users
+
+Successfully fetched 2 non-admin users
+

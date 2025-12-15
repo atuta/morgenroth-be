@@ -693,11 +693,13 @@ class UserService:
         Return a list of all users whose role is NOT 'admin'.
         Handles missing photo field safely.
         Converts boolean fields is_on_leave and is_on_holiday to 'yes'/'no'.
+        Includes NSSF, SHA, hourly rate, and lunch start/end times.
         """
         FIELDS_TO_INCLUDE = [
             'first_name', 'last_name', 'email', 'account', 
             'user_role', 'phone_number', 'hourly_rate', 
-            'hourly_rate_currency', 'photo', 'status'
+            'hourly_rate_currency', 'photo', 'status',
+            'nssf_number', 'shif_sha_number', 'lunch_start', 'lunch_end'
         ]
         
         try:
