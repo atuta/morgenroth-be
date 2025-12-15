@@ -1,6 +1,0 @@
-hour_correction_record_failed_user_254cb3d3-22f5-4887-9351-f6168af4a9b7
-
-Error in file: /Users/isaac/python_projects/morgenroth/morgenrothproject/mapp/classes/payroll_service.py, line: 43, in record_hour_correction - type object 'PayrollService' has no attribute 'objects'
-hour_correction_record_failed_user_254cb3d3-22f5-4887-9351-f6168af4a9b7
-
-Error in file: /Users/isaac/python_projects/morgenroth/morgenrothproject/mapp/models.py, line: 561, in save - unsupported operand type(s) for *: 'float' and 'decimal.Decimal'

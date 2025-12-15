@@ -545,20 +545,33 @@ class PayrollService:
     @classmethod
     def get_total_hours_for_period(cls, user: CustomUser, month: int, year: int):
         """
-        Fetch total hours worked by a user for a specific month & year.
+        Fetch total effective hours worked by a user for a specific month & year,
+        factoring in any hour corrections.
         """
         try:
-            qs = AttendanceSession.objects.filter(
+            # Sum of completed attendance sessions
+            session_qs = AttendanceSession.objects.filter(
                 user=user,
                 date__month=month,
                 date__year=year,
-                status='closed'  # only count completed sessions
+                status='closed'
             )
+            total_session_hours = session_qs.aggregate(Sum('total_hours'))['total_hours__sum'] or 0
 
-            total_hours = qs.aggregate(Sum('total_hours'))['total_hours__sum'] or 0
+            # Sum of hour corrections
+            corrections_qs = HourCorrection.objects.filter(
+                user=user,
+                month=month,
+                year=year
+            )
+            total_correction_hours = corrections_qs.aggregate(Sum('hours'))['hours__sum'] or 0
+
+            # Final total
+            total_hours = float(total_session_hours) + float(total_correction_hours)
 
             Logs.atuta_logger(
-                f"Fetched total working hours for user {user.user_id} | {month}/{year} | total={total_hours}"
+                f"Fetched total working hours for user {user.user_id} | {month}/{year} | "
+                f"sessions={total_session_hours} | corrections={total_correction_hours} | total={total_hours}"
             )
 
             return {
@@ -566,7 +579,7 @@ class PayrollService:
                 "message": {
                     "month": month,
                     "year": year,
-                    "total_hours": float(total_hours)
+                    "total_hours": total_hours
                 }
             }
 

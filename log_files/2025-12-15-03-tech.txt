@@ -1,0 +1,3 @@
+admin_dashboard_metrics_failed
+
+Error in file: /Users/isaac/python_projects/morgenroth/morgenrothproject/mapp/classes/user_service.py, line: 286, in admin_dashboard_metrics - 'total'
