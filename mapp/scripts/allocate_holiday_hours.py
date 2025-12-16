@@ -4,7 +4,8 @@ import os
 import sys
 from pathlib import Path
 import django
-from datetime import datetime
+from datetime import datetime, timedelta
+import pytz
 
 # --------------------------------------------------
 # Force project root onto PYTHONPATH
@@ -25,6 +26,8 @@ from mapp.classes.logs.logs import Logs
 
 
 REMARK = "Holiday hours auto allocation"
+LUNCH_DEDUCTION_HOURS = 1.0  # subtract 1 hour for lunch by default
+KENYA_TZ = pytz.timezone("Africa/Nairobi")
 
 
 # -------------------------------------------------------------------
@@ -33,9 +36,9 @@ REMARK = "Holiday hours auto allocation"
 def get_daily_work_hours(user, date):
     """
     Calculate working hours for a user on a specific date
-    using WorkingHours config.
+    using WorkingHours config. Subtracts 1 hour for lunch.
     """
-    day = date.strftime("%A").lower()  # monday, tuesday, etc.
+    day = date.strftime("%A").lower()
     role = user.user_role
 
     role_hours = WorkingHours.HOURS.get(role)
@@ -50,7 +53,15 @@ def get_daily_work_hours(user, date):
     end = datetime.strptime(day_hours["end"], "%H:%M")
 
     hours = (end - start).total_seconds() / 3600
+
+    # Subtract lunch hour
+    hours = max(hours - LUNCH_DEDUCTION_HOURS, 0.0)
     return round(hours, 2)
+
+
+def get_current_utc3_time():
+    """Return current time in UTC+3 as string."""
+    return datetime.now(pytz.utc).astimezone(KENYA_TZ).strftime("%Y-%m-%d %H:%M:%S")
 
 
 # -------------------------------------------------------------------
@@ -98,7 +109,14 @@ def main():
 
             if result.get("status") == "success":
                 success += 1
-                print(f"[OK] {user.user_id} — {hours} hrs")
+                # Log details
+                correction_id = result.get("correction_id")
+                amount = getattr(result, "amount", "N/A")  # some implementations return amount
+                current_time = get_current_utc3_time()
+                print(
+                    f"[OK] {user.full_name} | hours={hours} | "
+                    f"amount={amount} | id={correction_id} | datetime={current_time}"
+                )
             else:
                 failed += 1
                 print(f"[FAIL] {user.user_id}")
