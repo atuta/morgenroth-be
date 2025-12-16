@@ -1,0 +1,9 @@
+get_hourly_rate_failed_user_254cb3d3-22f5-4887-9351-f6168af4a9b7
+
+Error in file: /Users/isaac/python_projects/morgenroth/morgenrothproject/mapp/classes/payroll_service.py, line: 430, in get_hourly_rate - No hourly rate snapshot found
+generate_detailed_payslip_failed_user_254cb3d3-22f5-4887-9351-f6168af4a9b7_12_2025
+
+Error in file: /Users/isaac/python_projects/morgenroth/morgenrothproject/mapp/classes/payroll_service.py, line: 156, in generate_detailed_payslip - Failed to fetch hourly rate
+get_hourly_rate_failed_user_eb3f74a2-1aa0-4135-be00-96177e45f334
+
+Error in file: /Users/isaac/python_projects/morgenroth/morgenrothproject/mapp/classes/payroll_service.py, line: 430, in get_hourly_rate - No hourly rate snapshot found

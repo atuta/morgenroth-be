@@ -1,13 +1,15 @@
 from typing import Optional
 from decimal import Decimal
-from django.db.models import Sum
+from django.db.models import Sum, Q
 from mapp.models import (
     CustomUser,
     AttendanceSession,
     StatutoryDeduction,
     AdvancePayment,
     OvertimeAllowance,
-    HourCorrection
+    HourCorrection,
+    HourlyRateSnapshot,
+    StatutoryDeductionSnapshot
 )
 from mapp.classes.logs.logs import Logs
 from django.utils import timezone
@@ -404,14 +406,35 @@ class PayrollService:
     @classmethod
     def get_hourly_rate(cls, user: CustomUser):
         """
-        Fetch the hourly rate and currency for a user.
+        Fetch the latest hourly rate and currency for a user
+        from HourlyRateSnapshot.
         """
         try:
-            rate = float(user.hourly_rate or 0.0)
-            currency = user.hourly_rate_currency or "KES"
+            now = timezone.now()
+
+            snapshot = (
+                HourlyRateSnapshot.objects
+                .filter(
+                    user=user,
+                    effective_from__lte=now
+                )
+                .filter(
+                    Q(effective_to__gt=now) |
+                    Q(effective_to__isnull=True)
+                )
+                .order_by("-effective_from")
+                .first()
+            )
+
+            if not snapshot:
+                raise Exception("No hourly rate snapshot found")
+
+            rate = float(snapshot.hourly_rate)
+            currency = snapshot.currency or "KES"
 
             Logs.atuta_logger(
-                f"Fetched hourly rate for user {user.user_id} | rate={rate} {currency}"
+                f"Fetched hourly rate snapshot for user {user.user_id} | "
+                f"rate={rate} {currency} | effective_from={snapshot.effective_from}"
             )
 
             return {
@@ -435,22 +458,31 @@ class PayrollService:
     @classmethod
     def get_all_deductions(cls):
         """
-        Fetch all statutory deductions.
+        Fetch all statutory deductions using their latest snapshot values.
         Returns a list of deductions with name and percentage.
         """
         try:
-            qs = StatutoryDeduction.objects.all()
+            deductions = StatutoryDeduction.objects.all()
 
-            data = [
-                {
-                    "name": d.name,
-                    "percentage": float(d.percentage)
-                }
-                for d in qs
-            ]
+            data = []
+
+            for deduction in deductions:
+                snapshot = (
+                    StatutoryDeductionSnapshot.objects
+                    .filter(deduction=deduction)
+                    .order_by("-effective_from", "-created_at")
+                    .first()
+                )
+
+                percentage = float(snapshot.percentage) if snapshot else 0.0
+
+                data.append({
+                    "name": deduction.name,
+                    "percentage": percentage
+                })
 
             Logs.atuta_logger(
-                f"Fetched all statutory deductions | count={len(data)}"
+                f"Fetched all statutory deductions from snapshots | count={len(data)}"
             )
 
             return {
@@ -467,6 +499,7 @@ class PayrollService:
                 "status": "error",
                 "message": "deductions_fetch_failed"
             }
+
 
     @classmethod
     def get_total_overtime_amount_for_period(cls, user: CustomUser, month: int, year: int):
