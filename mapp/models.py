@@ -614,6 +614,98 @@ class HourCorrection(models.Model):
             f"Hour Correction {sign}{abs(self.hours)}h | "
             f"{self.user.phone_number} | {self.month}/{self.year}"
         )
+    
+class HourlyRateSnapshot(models.Model):
+    snapshot_id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False
+    )
+
+    user = models.ForeignKey(
+        "mapp.CustomUser",
+        on_delete=models.CASCADE,
+        related_name="hourly_rate_snapshots"
+    )
+
+    hourly_rate = models.DecimalField(
+        max_digits=10,
+        decimal_places=2
+    )
+
+    currency = models.CharField(
+        max_length=10,
+        default="KES"
+    )
+
+    # Period control
+    effective_from = models.DateTimeField(default=timezone.now)
+    effective_to = models.DateTimeField(null=True, blank=True)
+
+    # Audit
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(
+        "mapp.CustomUser",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="created_hourly_rate_snapshots"
+    )
+
+    class Meta:
+        ordering = ["-effective_from"]
+        indexes = [
+            models.Index(fields=["user", "effective_from"]),
+        ]
+
+    def __str__(self):
+        return f"{self.user.full_name} @ {self.hourly_rate} ({self.effective_from})"
+
+class StatutoryDeductionSnapshot(models.Model):
+    snapshot_id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False
+    )
+
+    deduction = models.ForeignKey(
+        "mapp.StatutoryDeduction",
+        on_delete=models.CASCADE,
+        related_name="snapshots"
+    )
+
+    percentage = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=Decimal("0.00")
+    )
+
+    # Period control
+    effective_from = models.DateTimeField(default=timezone.now)
+    effective_to = models.DateTimeField(null=True, blank=True)
+
+    # Audit
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(
+        "mapp.CustomUser",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="created_statutory_deduction_snapshots"
+    )
+
+    class Meta:
+        ordering = ["-effective_from"]
+        indexes = [
+            models.Index(fields=["deduction", "effective_from"]),
+        ]
+
+    def __str__(self):
+        return (
+            f"{self.deduction.name} | "
+            f"{self.percentage}% | "
+            f"{self.effective_from}"
+        )
 
 class WorkingHoursConfig(models.Model):
     class Days(models.IntegerChoices):
