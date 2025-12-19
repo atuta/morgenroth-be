@@ -718,7 +718,6 @@ class WorkingHoursConfig(models.Model):
         SUNDAY = 7, 'Sunday'
 
     USER_ROLE_CHOICES = [
-        ('super', 'Super Admin'),
         ('admin', 'Admin'),
         ('office', 'Office'),
         ('teaching', 'Teaching'),

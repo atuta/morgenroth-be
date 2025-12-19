@@ -19,7 +19,7 @@ django.setup()
 from django.utils import timezone
 from django.db import transaction
 
-from mapp.models import CustomUser
+from mapp.models import CustomUser, WorkingHoursConfig
 from mapp.classes.payroll_service import PayrollService
 from mapp.configs.working_hours import WorkingHours
 from mapp.classes.logs.logs import Logs
@@ -35,28 +35,37 @@ KENYA_TZ = pytz.timezone("Africa/Nairobi")
 # -------------------------------------------------------------------
 def get_daily_work_hours(user, date):
     """
-    Calculate working hours for a user on a specific date
-    using WorkingHours config. Subtracts 1 hour for lunch.
+    Calculate working hours for a user on a specific date using
+    WorkingHoursConfig from the DB. Subtracts lunch hours if configured.
     """
-    day = date.strftime("%A").lower()
-    role = user.user_role
 
-    role_hours = WorkingHours.HOURS.get(role)
-    if not role_hours:
+    # Convert day name to integer for query
+    day_of_week = date.isoweekday()  # Monday=1, Sunday=7
+    user_role = user.user_role
+
+    try:
+        config = WorkingHoursConfig.objects.get(
+            day_of_week=day_of_week,
+            user_role=user_role,
+            is_active=True
+        )
+    except WorkingHoursConfig.DoesNotExist:
         return 0.0
 
-    day_hours = role_hours.get(day)
-    if not day_hours:
-        return 0.0
+    start = datetime.combine(date, config.start_time)
+    end = datetime.combine(date, config.end_time)
 
-    start = datetime.strptime(day_hours["start"], "%H:%M")
-    end = datetime.strptime(day_hours["end"], "%H:%M")
+    total_hours = (end - start).total_seconds() / 3600
 
-    hours = (end - start).total_seconds() / 3600
+    # Subtract lunch if user has lunch configured
+    lunch_hours = 0.0
+    if getattr(user, "lunch_start", None) and getattr(user, "lunch_end", None):
+        lunch_start_hour = user.lunch_start // 100 + (user.lunch_start % 100) / 60
+        lunch_end_hour = user.lunch_end // 100 + (user.lunch_end % 100) / 60
+        lunch_hours = max(lunch_end_hour - lunch_start_hour, 0.0)
 
-    # Subtract lunch hour
-    hours = max(hours - LUNCH_DEDUCTION_HOURS, 0.0)
-    return round(hours, 2)
+    total_hours = max(total_hours - lunch_hours, 0.0)
+    return round(total_hours, 2)
 
 
 def get_current_utc3_time():
