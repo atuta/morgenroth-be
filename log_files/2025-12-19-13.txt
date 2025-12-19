@@ -1,0 +1,8 @@
+Working hours created | day=1, role=subordinate, start=15:00, end=18:09, tz=Africa/Nairobi
+
+Working hours retrieved | role=subordinate, tz=Africa/Nairobi
+
+Working hours created | day=1, role=office, start=17:07, end=18:08, tz=Africa/Nairobi
+
+Working hours retrieved | role=subordinate, tz=Africa/Nairobi
+

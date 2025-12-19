@@ -1,14 +1,5 @@
 {
   "working_hours": {
-    "admin": {
-      "monday":    { "start": "08:00", "end": "17:00" },
-      "tuesday":   { "start": "08:00", "end": "17:00" },
-      "wednesday": { "start": "08:00", "end": "17:00" },
-      "thursday":  { "start": "08:00", "end": "17:00" },
-      "friday":    { "start": "08:00", "end": "17:00" },
-      "saturday":  { "start": "08:00", "end": "13:00" },
-      "sunday":    { "start": "08:00", "end": "13:00" }
-    },
     "office": {
       "monday":    { "start": "09:00", "end": "17:00" },
       "tuesday":   { "start": "09:00", "end": "17:00" },

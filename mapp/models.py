@@ -717,30 +717,44 @@ class WorkingHoursConfig(models.Model):
         SATURDAY = 6, 'Saturday'
         SUNDAY = 7, 'Sunday'
 
+    USER_ROLE_CHOICES = [
+        ('super', 'Super Admin'),
+        ('admin', 'Admin'),
+        ('office', 'Office'),
+        ('teaching', 'Teaching'),
+        ('subordinate', 'Subordinate'),
+    ]
+
     day_of_week = models.PositiveSmallIntegerField(choices=Days.choices)
+
+    user_role = models.CharField(
+        max_length=20,
+        choices=USER_ROLE_CHOICES,
+    )
 
     start_time = models.TimeField()
     end_time = models.TimeField()
 
-    # timezone for that config rule
     timezone = models.CharField(
         max_length=100,
         default='Africa/Nairobi'
     )
 
-    # optional feature: allow disabling a day
     is_active = models.BooleanField(default=True)
 
-    # audit
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        unique_together = ('day_of_week', 'timezone')
+        unique_together = ('day_of_week', 'user_role', 'timezone')
         ordering = ['day_of_week']
 
     def __str__(self):
-        return f"{self.get_day_of_week_display()} {self.start_time} - {self.end_time}"
+        return (
+            f"{self.get_day_of_week_display()} | "
+            f"{self.get_user_role_display()} | "
+            f"{self.start_time} - {self.end_time}"
+        )
 
     
 class ErrorLog(models.Model):
