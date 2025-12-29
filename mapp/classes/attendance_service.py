@@ -15,6 +15,71 @@ from mapp.classes.logs.logs import Logs
 class AttendanceService:
 
     @classmethod
+    def get_attendance_history(cls, start_date=None, end_date=None, user_id=None):
+        """
+        Returns attendance sessions with date range filtering.
+        If user_id is provided, filters for that specific user.
+        If user_id is None, returns records for all users (Admin view).
+        """
+        try:
+            # 1. Base Queryset with optimization
+            sessions = AttendanceSession.objects.select_related("user")
+
+            # 2. Filter by User if provided
+            if user_id:
+                sessions = sessions.filter(user__user_id=user_id)
+
+            # 3. Date Range Filtering
+            if start_date:
+                sessions = sessions.filter(date__gte=start_date)
+            if end_date:
+                sessions = sessions.filter(date__lte=end_date)
+
+            # 4. Ordering
+            sessions = sessions.order_by("-date", "-created_at")
+
+            data = []
+
+            for session in sessions:
+                # Handle photo URL safely
+                try:
+                    clock_in_photo_url = session.clock_in_photo.url if session.clock_in_photo else None
+                except Exception:
+                    clock_in_photo_url = None
+
+                data.append({
+                    "session_id": str(session.session_id),
+                    "user_id": str(session.user.user_id),
+                    "full_name": session.user.full_name,
+                    "date": session.date,
+                    "clock_in_time": session.clock_in_time,
+                    "lunch_in": session.lunch_in,
+                    "lunch_out": session.lunch_out,
+                    "clock_out_time": session.clock_out_time,
+                    "clockin_type": session.clockin_type,  # Added new field
+                    "total_hours": session.total_hours,
+                    "status": session.status,
+                    "notes": session.notes,
+                    "clock_in_photo_url": clock_in_photo_url, # Included as requested
+                })
+
+            # Log the successful fetch
+            Logs.atuta_logger(f"Attendance history fetched: range {start_date} to {end_date} | user={user_id or 'ALL'}")
+
+            return {
+                "status": "success",
+                "message": data,
+            }
+
+        except Exception as e:
+            # Log technical details for debugging
+            Logs.atuta_technical_logger(f"get_attendance_history_failed", exc_info=e)
+            return {
+                "status": "error",
+                "message": "attendance_history_fetch_failed",
+            }
+
+    @classmethod
     def get_user_attendance_history(cls, user_id, start_date=None, end_date=None):
         """
         Returns attendance sessions for a user.
@@ -321,6 +386,7 @@ class AttendanceService:
             session_data = {
                 "session_id": str(session.session_id),
                 "clock_in_time": session.clock_in_time.isoformat(),
+                "clockin_type": session.clockin_type,
                 "clock_in_photo": session.clock_in_photo.url if session.clock_in_photo else None,
                 "notes": session.notes,
                 "total_hours": session.total_hours,

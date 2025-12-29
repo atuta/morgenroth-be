@@ -8,6 +8,62 @@ from mapp.models import CustomUser, AttendanceSession
 from mapp.classes.attendance_service import AttendanceService
 from mapp.classes.logs.logs import Logs
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def api_get_attendance_history(request):
+    """
+    Retrieves attendance records based on date range and optional user filtering.
+    QueryParams: start_date (YYYY-MM-DD), end_date (YYYY-MM-DD), user_id (optional)
+    """
+    try:
+        # 1. Extract Query Parameters
+        start_date_str = request.query_params.get("start_date")
+        end_date_str = request.query_params.get("end_date")
+        requested_user_id = request.query_params.get("user_id")
+
+        # 2. Permission Logic (RBAC)
+        # If the user is NOT an admin/super, they are locked to their own ID
+        if request.user.user_role not in ['super', 'admin']:
+            target_user_id = str(request.user.user_id)
+        else:
+            # Admins can filter by a specific user or pass None for all users
+            target_user_id = requested_user_id
+
+        # 3. Date Parsing & Validation
+        start_date = None
+        end_date = None
+
+        try:
+            if start_date_str:
+                start_date = datetime.datetime.strptime(start_date_str, "%Y-%m-%d").date()
+            if end_date_str:
+                end_date = datetime.datetime.strptime(end_date_str, "%Y-%m-%d").date()
+        except ValueError:
+            return Response({
+                "status": "error", 
+                "message": "invalid_date_format_use_YYYY-MM-DD"
+            }, status=400)
+
+        # 4. Call the Service Layer
+        result = AttendanceService.get_attendance_history(
+            start_date=start_date,
+            end_date=end_date,
+            user_id=target_user_id
+        )
+
+        # 5. Response Mapping
+        if result["status"] == "success":
+            return Response(result, status=200)
+        
+        return Response(result, status=400)
+
+    except Exception as e:
+        # Technical log for server-side issues
+        Logs.atuta_technical_logger(f"api_attendance_history_view_failed", exc_info=e)
+        return Response({
+            "status": "error",
+            "message": "internal_server_error"
+        }, status=500)
 
 
 @api_view(['GET'])
