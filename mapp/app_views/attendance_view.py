@@ -59,19 +59,23 @@ def api_generate_attendance_pdf(request):
         if not report_data:
             return HttpResponse("No data found for the selected user and range", status=404)
 
-        # 2. Fetch Hour Corrections Data (New Step)
+        # 2. Fetch Hour Corrections Data
         corrections_res = AttendanceService.get_user_hour_corrections(
             user_id, s_month, s_year, e_month, e_year
         )
+        
         correction_records = []
+        total_corr_hours = 0.00
         if corrections_res.get("status") == "success":
             correction_records = corrections_res["data"]["records"]
+            # Extract total hours from summary for the card
+            total_corr_hours = corrections_res["data"]["summary"].get("total_hours", 0.00)
 
         user_info = report_data.get("user", {})
         summary = report_data.get("summary", {})
         rows = report_data.get("rows", [])
 
-        # --- PDF Setup ---
+        # ==================== PDF BUILDING SETUP ====================
         buffer = BytesIO()
         doc = SimpleDocTemplate(
             buffer, pagesize=landscape(A4), 
@@ -93,13 +97,16 @@ def api_generate_attendance_pdf(request):
         Story = []
 
         # --- 1. TOP HEADER ---
-        # (Assuming your previous header code for avatar and name goes here)
         date_display = f"{start_date_obj.strftime('%B %d, %Y')} - {end_date_obj.strftime('%B %d, %Y')}"
         header_table = Table([[Paragraph(user_info.get("full_name", ""), NameStyle), 
                              Paragraph(date_display, DateRangeStyle), 
                              Paragraph("Page 1/1", PageStyle)]], 
                              colWidths=[7.5*cm, 11.7*cm, 7.5*cm])
-        header_table.setStyle(TableStyle([('VALIGN', (0,0), (-1,-1), 'MIDDLE'), ('LINEBELOW', (0,0), (-1,0), 0.5, colors.lightgrey), ('BOTTOMPADDING', (0,0), (-1,0), 10)]))
+        header_table.setStyle(TableStyle([
+            ('VALIGN', (0,0), (-1,-1), 'MIDDLE'), 
+            ('LINEBELOW', (0,0), (-1,0), 0.5, colors.lightgrey), 
+            ('BOTTOMPADDING', (0,0), (-1,0), 10)
+        ]))
         Story.append(header_table)
         Story.append(Spacer(1, 0.6*cm))
 
@@ -113,23 +120,33 @@ def api_generate_attendance_pdf(request):
                  p_label.textColor = colors.white
                  p_value.textColor = colors.white
             box_table = Table([[p_label], [p_value]], colWidths=[3.7*cm], rowHeights=[0.8*cm, 0.7*cm])
-            box_table.setStyle(TableStyle([('BACKGROUND', (0,0), (-1,-1), bg_color), ('ALIGN', (0,0), (-1,-1), 'CENTER'), ('VALIGN', (0,0), (0,0), 'TOP'), ('VALIGN', (0,1), (0,1), 'BOTTOM'), ('ROUNDEDCORNERS', [6, 6, 6, 6])]))
+            box_table.setStyle(TableStyle([
+                ('BACKGROUND', (0,0), (-1,-1), bg_color), 
+                ('ALIGN', (0,0), (-1,-1), 'CENTER'), 
+                ('VALIGN', (0,0), (0,0), 'TOP'), 
+                ('VALIGN', (0,1), (0,1), 'BOTTOM'), 
+                ('ROUNDEDCORNERS', [6, 6, 6, 6])
+            ]))
             return box_table
 
+        # FIX: Ensure both are cast to float to avoid "unsupported operand type" error
+        work_hours = float(summary.get('work_hours', 0) or 0)
+        total_paid_calc = work_hours + float(total_corr_hours or 0)
+
         summary_row = [
-            make_box("Work Hours", summary.get('work_hours', 0), colors.HexColor("#E8F5E9")),
+            make_box("Work Hours", work_hours, colors.HexColor("#E8F5E9")),
             make_box("Paid Breaks", 0.00, colors.HexColor("#EDE7F6")),
-            make_box("Paid Absences", 0.00, colors.HexColor("#FFF3E0")),
-            make_box("Total Paid", summary.get('work_hours', 0), colors.HexColor("#2196F3")),
-            make_box("Regular", summary.get('regular', 0), colors.HexColor("#E3F2FD")),
-            make_box("Overtime", summary.get('overtime', 0), colors.HexColor("#E1F5FE")),
+            make_box("Corrected Hours", total_corr_hours, colors.HexColor("#FFF3E0")),
+            make_box("Total Paid", total_paid_calc, colors.HexColor("#2196F3")),
+            make_box("Regular", float(summary.get('regular', 0) or 0), colors.HexColor("#E3F2FD")),
+            make_box("Overtime", float(summary.get('overtime', 0) or 0), colors.HexColor("#E1F5FE")),
             make_box("Unpaid Breaks", 0.00, colors.HexColor("#FBE9E7")),
         ]
         summary_table = Table([summary_row], colWidths=[3.81*cm]*7)
         Story.append(summary_table)
         Story.append(Spacer(1, 0.8*cm))
 
-        # --- 3. HOUR CORRECTIONS TABLE (NEW SECTION) ---
+        # --- 3. HOUR CORRECTIONS TABLE ---
         if correction_records:
             Story.append(Paragraph("<b>Hour Corrections & Adjustments</b>", Bold))
             Story.append(Spacer(1, 0.2*cm))
@@ -179,10 +196,22 @@ def api_generate_attendance_pdf(request):
             for session in day['sessions']:
                 cin = session['clock_in'].strftime("%H:%M") if session['clock_in'] else "--"
                 cout = session['clock_out'].strftime("%H:%M") if session['clock_out'] else "--"
-                attendance_data.append([Paragraph(day['date_display'], Normal), Paragraph(session['type'], Normal), Paragraph("No sub jobs", Normal), Paragraph(cin, Normal), Paragraph(cout, Normal), Paragraph(f"{session['hours']:.2f}", Normal), ""])
+                attendance_data.append([
+                    Paragraph(day['date_display'], Normal), 
+                    Paragraph(session['type'], Normal), 
+                    Paragraph("No sub jobs", Normal), 
+                    Paragraph(cin, Normal), 
+                    Paragraph(cout, Normal), 
+                    Paragraph(f"{session['hours']:.2f}", Normal), 
+                    ""
+                ])
             
             total_row_indices.append(len(attendance_data))
-            attendance_data.append(["", "", "", "", "", Paragraph("<b>Daily Total:</b>", Bold), Paragraph(f"<b>{day['day_total']:.2f}</b>", Bold)])
+            attendance_data.append([
+                "", "", "", "", "", 
+                Paragraph("<b>Daily Total:</b>", Bold), 
+                Paragraph(f"<b>{day['day_total']:.2f}</b>", Bold)
+            ])
 
         col_widths = [3.8*cm, 3.8*cm, 4.5*cm, 3.2*cm, 3.2*cm, 4.1*cm, 4.1*cm]
         main_table = Table(attendance_data, colWidths=col_widths, repeatRows=1)

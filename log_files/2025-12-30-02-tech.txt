@@ -2,3 +2,11 @@ DEBUG: HourCorrection Request -> User: 254cb3d3-22f5-4887-9351-f6168af4a9b7, Ran
 
 DEBUG: Found 6 records in database for this filter.
 
+DEBUG: HourCorrection Request -> User: 254cb3d3-22f5-4887-9351-f6168af4a9b7, Range: 12/2025 to 12/2025
+
+DEBUG: Found 6 records in database for this filter.
+
+DEBUG: HourCorrection Request -> User: 254cb3d3-22f5-4887-9351-f6168af4a9b7, Range: 12/2025 to 12/2025
+
+DEBUG: Found 6 records in database for this filter.
+
