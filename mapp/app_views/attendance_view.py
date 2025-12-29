@@ -116,10 +116,16 @@ def api_get_current_session(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def api_clock_in(request):
-    timestamp = request.data.get("timestamp")
+    """
+    API endpoint for user clock-in. 
+    Accepts timestamp, photo_base64, and clockin_type.
+    """
+    timestamp_str = request.data.get("timestamp")
     photo_base64 = request.data.get("photo_base64") or None
+    # Default to "regular" if not provided by the frontend
+    clockin_type = request.data.get("clockin_type", "regular") 
 
-    if not timestamp:
+    if not timestamp_str:
         return Response(
             {"status": "error", "message": "missing_timestamp"},
             status=400
@@ -127,31 +133,39 @@ def api_clock_in(request):
 
     # Robust parsing that handles Z suffix and offsets
     try:
-        timestamp = datetime.datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
+        # Using fromisoformat to match modern Python standards
+        timestamp = datetime.datetime.fromisoformat(timestamp_str.replace("Z", "+00:00"))
     except Exception:
         return Response(
             {"status": "error", "message": "invalid_timestamp_format"},
             status=400
         )
 
+    # Call the updated service method
     result = AttendanceService.clock_in(
         user=request.user,
         timestamp=timestamp,
+        clockin_type=clockin_type,
         photo_base64=photo_base64
     )
 
-    # proper HTTP status mapping
+    # Proper HTTP status mapping
     if result["status"] == "success":
         return Response(result, status=201)
 
+    # Logic-based errors
     if result["message"] == "active_session_exists":
-        return Response(result, status=409)
+        return Response(result, status=409)  # Conflict
 
-    if result["message"] == "invalid_photo_data":
-        return Response(result, status=422)
+    if result["message"] == "user_on_leave":
+        return Response(result, status=403)  # Forbidden
+
+    # Validation errors
+    if result["message"] in ["invalid_photo_data", "invalid_clockin_type"]:
+        return Response(result, status=422)  # Unprocessable Entity
 
     if result["message"] == "missing_timestamp":
-        return Response(result, status=400)
+        return Response(result, status=400)  # Bad Request
 
     # Everything else we treat as server failure
     return Response(result, status=500)

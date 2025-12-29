@@ -171,12 +171,10 @@ class AttendanceService:
 
 
     @classmethod
-    def clock_in(cls, user, timestamp, photo_base64: str = None):
+    def clock_in(cls, user, timestamp, clockin_type="regular", photo_base64: str = None):
         """
         Create a new attendance session for a user.
-        Each clock-in creates a new record with status 'open'.
-        Users on leave cannot clock in.
-        Updates user's is_present_today to True on successful clock-in.
+        Now supports clockin_type: 'regular' or 'overtime'.
         """
         try:
             if timestamp is None:
@@ -185,11 +183,17 @@ class AttendanceService:
             if user.is_on_leave:
                 return {"status": "error", "message": "user_on_leave"}
 
+            # Validate clockin_type
+            valid_types = [choice[0] for choice in AttendanceSession.CLOCKIN_TYPE_CHOICES]
+            if clockin_type not in valid_types:
+                return {"status": "error", "message": "invalid_clockin_type"}
+
             if timezone.is_naive(timestamp):
                 timestamp = timezone.make_aware(timestamp)
 
             with transaction.atomic():
-                # Ensure no active session
+                # Ensure no active session for this specific type (or overall if preferred)
+                # Logic: We check for ANY 'open' session for this user
                 existing = AttendanceSession.objects.select_for_update().filter(
                     user=user,
                     status="open",
@@ -203,6 +207,7 @@ class AttendanceService:
                     "user": user,
                     "date": timestamp.date(),
                     "clock_in_time": timestamp,
+                    "clockin_type": clockin_type,  # NEW
                     "status": "open"
                 }
 
@@ -225,16 +230,21 @@ class AttendanceService:
                 # Create attendance session
                 session = AttendanceSession.objects.create(**attendance_data)
 
-                # Mark user as present today
-                user.is_present_today = True
-                user.save(update_fields=["is_present_today"])
+                # Mark user as present today (Only if it's a regular clock-in or always?)
+                # Usually, if they are working overtime, they are also "present".
+                if not user.is_present_today:
+                    user.is_present_today = True
+                    user.save(update_fields=["is_present_today"])
 
-            Logs.atuta_technical_logger(f"User clocked in | user={user.user_id} | session_id={session.session_id}")
+            Logs.atuta_technical_logger(
+                f"User clocked in | type={clockin_type} | user={user.user_id} | session_id={session.session_id}"
+            )
 
             return {
                 "status": "success",
                 "message": "clock_in_recorded",
-                "session_id": str(session.session_id)
+                "session_id": str(session.session_id),
+                "clockin_type": clockin_type
             }
 
         except Exception as e:
