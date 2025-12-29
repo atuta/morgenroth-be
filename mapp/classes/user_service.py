@@ -544,29 +544,57 @@ class UserService:
         hourly_rate=None,
         lunch_start=None,
         lunch_end=None,
+        email=None,            # NEW
+        phone_number=None,     # NEW
+        id_number=None,        # NEW
+        user_role=None,        # NEW
     ):
         """
-        Update selected user fields if valid values are provided.
-        Lunch start and end must be provided together (24hr format).
+        Update selected user fields including contact and role info.
         """
         try:
             Logs.atuta_logger(
                 f"Received update request for user {user_id}: "
                 f"nssf={nssf}, sha={sha}, hourly_rate={hourly_rate}, "
-                f"lunch_start={lunch_start}, lunch_end={lunch_end}"
+                f"email={email}, phone={phone_number}, id_number={id_number}, role={user_role}"
             )
 
             user = CustomUser.objects.get(user_id=user_id)
             updated_fields = []
 
+            # --- Email ---
+            if email not in (None, ""):
+                user.email = email.lower().strip()
+                updated_fields.append("email")
+
+            # --- Phone Number ---
+            if phone_number not in (None, ""):
+                user.phone_number = str(phone_number).strip()
+                updated_fields.append("phone_number")
+
+            # --- ID Number ---
+            if id_number not in (None, ""):
+                user.id_number = str(id_number).strip()
+                updated_fields.append("id_number")
+
+            # --- User Role ---
+            if user_role not in (None, ""):
+                # Validate against model choices
+                valid_roles = [choice[0] for choice in CustomUser.USER_ROLE_CHOICES]
+                if user_role in valid_roles:
+                    user.user_role = user_role
+                    updated_fields.append("user_role")
+                else:
+                    return {"status": "error", "message": "invalid_user_role"}
+
             # --- NSSF ---
             if nssf not in (None, ""):
-                user.nssf_number = str(nssf)
+                user.nssf_number = str(nssf).strip()
                 updated_fields.append("nssf_number")
 
             # --- SHA ---
             if sha not in (None, ""):
-                user.shif_sha_number = str(sha)
+                user.shif_sha_number = str(sha).strip()
                 updated_fields.append("shif_sha_number")
 
             # --- Hourly rate ---
@@ -575,25 +603,14 @@ class UserService:
                     user.hourly_rate = Decimal(hourly_rate)
                     updated_fields.append("hourly_rate")
                 except (InvalidOperation, ValueError):
-                    Logs.atuta_logger(
-                        f"Invalid hourly_rate received for user {user_id}: {hourly_rate}"
-                    )
                     return {"status": "error", "message": "invalid_hourly_rate"}
 
-            # --- Lunch times (MUST be both or none) ---
+            # --- Lunch times ---
             lunch_start_provided = lunch_start not in (None, "")
             lunch_end_provided = lunch_end not in (None, "")
 
             if lunch_start_provided ^ lunch_end_provided:
-                # XOR → one provided without the other
-                Logs.atuta_logger(
-                    f"Incomplete lunch time data for user {user_id}: "
-                    f"lunch_start={lunch_start}, lunch_end={lunch_end}"
-                )
-                return {
-                    "status": "error",
-                    "message": "lunch_start_and_end_required",
-                }
+                return {"status": "error", "message": "lunch_start_and_end_required"}
 
             if lunch_start_provided and lunch_end_provided:
                 try:
@@ -601,39 +618,29 @@ class UserService:
                     user.lunch_end = int(lunch_end)
                     updated_fields.extend(["lunch_start", "lunch_end"])
                 except (ValueError, TypeError):
-                    return {
-                        "status": "error",
-                        "message": "invalid_lunch_time_format",
-                    }
+                    return {"status": "error", "message": "invalid_lunch_time_format"}
 
             if not updated_fields:
-                Logs.atuta_logger(f"No fields to update for user {user_id}")
                 return {"status": "info", "message": "no_fields_to_update"}
 
-            # Model-level validation (time bounds, ordering, etc.)
+            # Model-level validation (Checks unique constraints & lunch time logic)
             try:
                 user.full_clean()
             except ValidationError as ve:
-                Logs.atuta_logger(
-                    f"Validation failed for user {user_id}: {ve.message_dict}"
-                )
+                Logs.atuta_logger(f"Validation failed for {user_id}: {ve.message_dict}")
                 return {
-                    "status": "error",
-                    "message": "validation_failed",
-                    "errors": ve.message_dict,
+                    "status": "error", 
+                    "message": "validation_failed", 
+                    "errors": ve.message_dict
                 }
 
             user.save(update_fields=updated_fields)
 
-            Logs.atuta_logger(
-                f"Successfully updated user {user_id} fields: {', '.join(updated_fields)}"
-            )
+            Logs.atuta_logger(f"Successfully updated {user_id}: {', '.join(updated_fields)}")
             return {"status": "success", "message": "user_updated"}
 
         except ObjectDoesNotExist:
-            Logs.atuta_logger(f"User {user_id} not found for update")
             return {"status": "error", "message": "user_not_found"}
-
         except Exception as e:
             Logs.atuta_technical_logger("update_user_fields_failed", exc_info=e)
             return {"status": "error", "message": "update_failed"}

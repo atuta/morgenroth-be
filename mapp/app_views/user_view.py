@@ -131,8 +131,7 @@ def upload_user_photo(request):
 def api_update_user_fields(request):
     """
     Admin updates a specific user's fields.
-    Only fields provided in the request will be updated.
-    Lunch start and end must be provided together.
+    Now supports email, phone_number, id_number, and user_role.
     """
     try:
         user_id = request.data.get("user_id")
@@ -142,12 +141,20 @@ def api_update_user_fields(request):
                 status=400
             )
 
+        # Extracting standard fields
         nssf = request.data.get("nssf")
         sha = request.data.get("sha")
         hourly_rate = request.data.get("hourly_rate")
         lunch_start = request.data.get("lunch_start")
         lunch_end = request.data.get("lunch_end")
 
+        # Extracting the new inclusions
+        email = request.data.get("email")
+        phone_number = request.data.get("phone_number")
+        id_number = request.data.get("id_number")
+        user_role = request.data.get("user_role")
+
+        # Pass all arguments to the service layer
         result = UserService.update_user_fields(
             user_id=user_id,
             nssf=nssf,
@@ -155,12 +162,22 @@ def api_update_user_fields(request):
             hourly_rate=hourly_rate,
             lunch_start=lunch_start,
             lunch_end=lunch_end,
+            email=email,
+            phone_number=phone_number,
+            id_number=id_number,
+            user_role=user_role,
         )
 
-        status_code = 200 if result.get("status") == "success" else 400
+        # Map 'info' status to 200 as well (e.g., "no_fields_to_update")
+        if result.get("status") in ("success", "info"):
+            status_code = 200
+        else:
+            status_code = 400
+            
         return Response(result, status=status_code)
 
     except Exception as e:
+        Logs.atuta_technical_logger("api_update_user_fields", exc_info=e)
         return Response(
             {"status": "error", "message": "update_failed"},
             status=500
