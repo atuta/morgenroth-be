@@ -1,3 +1,0 @@
-update_user_fields_failed
-
-Error in file: /Users/isaac/python_projects/morgenroth/morgenrothproject/mapp/classes/user_service.py, line: 583, in update_user_fields - type object 'UserService' has no attribute 'USER_ROLE_CHOICES'
