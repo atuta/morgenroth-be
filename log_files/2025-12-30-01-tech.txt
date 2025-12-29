@@ -1,0 +1,10 @@
+API EXCEPTION in api_get_detailed_attendance_report: name 'Response' is not defined
+
+API EXCEPTION in api_get_detailed_attendance_report: name 'Response' is not defined
+
+API EXCEPTION in api_get_detailed_attendance_report: name 'Response' is not defined
+
+API EXCEPTION in api_get_detailed_attendance_report: name 'Response' is not defined
+
+API EXCEPTION in api_get_detailed_attendance_report: name 'Response' is not defined
+

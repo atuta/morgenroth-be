@@ -14,3 +14,7 @@ User clocked in | type=regular | user=254cb3d3-22f5-4887-9351-f6168af4a9b7 | ses
 
 Retrieved current session | user=254cb3d3-22f5-4887-9351-f6168af4a9b7 | session_id=14a2780b-b0ed-4ee6-90f7-a592aebf72dc
 
+Retrieved current session | user=254cb3d3-22f5-4887-9351-f6168af4a9b7 | session_id=14a2780b-b0ed-4ee6-90f7-a592aebf72dc
+
+User clocked out | user=254cb3d3-22f5-4887-9351-f6168af4a9b7 | session_id=14a2780b-b0ed-4ee6-90f7-a592aebf72dc
+

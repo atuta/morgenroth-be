@@ -1,12 +1,219 @@
+# 1. Python Standard Library
 import datetime
+import traceback
+import os
+from io import BytesIO
 
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+# 2. Third-Party Libraries
+import requests
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import A4, landscape
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import cm
+from reportlab.platypus import (
+    SimpleDocTemplate, Paragraph, Spacer, 
+    Table, TableStyle, Image, KeepTogether
+)
+
+# 3. Django Core
+from django.conf import settings
+from django.http import HttpResponse
 from rest_framework.response import Response
 
-from mapp.models import CustomUser, AttendanceSession
+# 4. Django Rest Framework (DRF)
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+
+# 5. Local Project Imports (mapp)
 from mapp.classes.attendance_service import AttendanceService
 from mapp.classes.logs.logs import Logs
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def api_generate_attendance_pdf(request):
+    """
+    Generates a detailed attendance report PDF for a specific user and date range.
+    """
+    user_id = request.GET.get("user_id")
+    start_date = request.GET.get("start_date")
+    end_date = request.GET.get("end_date")
+
+    # --- Initial Validation ---
+    if not all([user_id, start_date, end_date]):
+        return HttpResponse("user_id, start_date & end_date are required", status=400)
+    
+    try:
+        start_date_obj = datetime.datetime.strptime(start_date, "%Y-%m-%d").date()
+        end_date_obj = datetime.datetime.strptime(end_date, "%Y-%m-%d").date()
+    except ValueError:
+        return HttpResponse("Use YYYY-MM-DD date format", status=400)
+
+    try:
+        # Step: Fetch report data
+        report_data = AttendanceService.get_detailed_attendance_report(user_id, start_date, end_date)
+        if not report_data:
+            return HttpResponse("No data found for the selected user and range", status=404)
+
+        user_info = report_data.get("user", {})
+        summary = report_data.get("summary", {})
+        rows = report_data.get("rows", [])
+
+        # ==================== PDF BUILDING SETUP ====================
+        buffer = BytesIO()
+        doc = SimpleDocTemplate(
+            buffer, pagesize=landscape(A4), 
+            topMargin=1.0*cm, bottomMargin=1.5*cm,
+            leftMargin=1.5*cm, rightMargin=1.5*cm
+        )
+
+        # --- ReportLab Styles ---
+        styles = getSampleStyleSheet()
+        Normal = styles['Normal']
+        
+        # Define the missing Bold style
+        Bold = ParagraphStyle(
+            'Bold', 
+            parent=Normal, 
+            fontName='Helvetica-Bold', 
+            fontSize=10, 
+            leading=12
+        )
+
+        # Header Styles
+        NameStyle = ParagraphStyle('NameStyle', parent=Bold, fontSize=11)
+        DateRangeStyle = ParagraphStyle('DateRange', parent=Bold, alignment=1, fontSize=12)
+        PageStyle = ParagraphStyle('PageStyle', parent=Normal, alignment=2, fontSize=10, textColor=colors.grey)
+
+        # Summary Box Styles
+        BoxLabel = ParagraphStyle('BoxLabel', parent=Bold, alignment=1, fontSize=8, leading=9)
+        BoxValue = ParagraphStyle('BoxValue', parent=Bold, alignment=1, fontSize=14, leading=16)
+
+        Story = []
+
+        # --- 1. TOP HEADER (Avatar, Date Range, Page) ---
+        avatar_img = None
+        photo_url = user_info.get("photo_url")
+        if photo_url:
+            try:
+                # Handle relative URLs if necessary
+                if photo_url.startswith('/'):
+                    photo_url = settings.SITE_URL + photo_url
+                
+                resp = requests.get(photo_url, timeout=5)
+                if resp.status_code == 200:
+                    img_data = BytesIO(resp.content)
+                    avatar_img = Image(img_data, width=0.8*cm, height=0.8*cm)
+            except Exception:
+                pass # Silent fail on image load
+
+        user_header_content = []
+        if avatar_img: user_header_content.append(avatar_img)
+        user_header_content.append(Paragraph(user_info.get("full_name", "Staff Member"), NameStyle))
+        
+        date_display = f"{start_date_obj.strftime('%B %d, %Y')} - {end_date_obj.strftime('%B %d, %Y')}"
+        header_data = [[
+            user_header_content,
+            Paragraph(date_display, DateRangeStyle),
+            Paragraph("Page 1/1", PageStyle)
+        ]]
+        
+        header_table = Table(header_data, colWidths=[7*cm, 13*cm, 6.7*cm])
+        header_table.setStyle(TableStyle([
+            ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+            ('LINEBELOW', (0,0), (-1,0), 0.5, colors.lightgrey),
+            ('BOTTOMPADDING', (0,0), (-1,0), 10),
+        ]))
+        Story.append(header_table)
+        Story.append(Spacer(1, 0.6*cm))
+
+        # --- 2. SUMMARY BOXES (Colored Row) ---
+        def make_box(label, value, bg_color):
+            label_p = Paragraph(label.upper().replace(" ", "<br/>"), BoxLabel)
+            value_p = Paragraph(f"{value:.2f}", BoxValue)
+            
+            # Use white text for the specific Blue background
+            if bg_color == colors.HexColor("#2196F3"):
+                 label_p.textColor = colors.white
+                 value_p.textColor = colors.white
+
+            box_table = Table([[label_p], [value_p]], colWidths=[3.2*cm])
+            box_table.setStyle(TableStyle([
+                ('BACKGROUND', (0,0), (-1,-1), bg_color),
+                ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+                ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+                ('BOTTOMPADDING', (0,0), (-1,-1), 5),
+                ('TOPPADDING', (0,0), (-1,-1), 5),
+            ]))
+            return box_table
+
+        summary_row = [
+            make_box("Work Hours", summary.get('work_hours', 0), colors.HexColor("#E8F5E9")),
+            make_box("Paid Breaks", 0.00, colors.HexColor("#EDE7F6")),
+            make_box("Paid Absences", 0.00, colors.HexColor("#FFF3E0")),
+            make_box("Total Paid", summary.get('work_hours', 0), colors.HexColor("#2196F3")),
+            make_box("Regular", summary.get('regular', 0), colors.HexColor("#E3F2FD")),
+            make_box("Overtime", summary.get('overtime', 0), colors.HexColor("#E1F5FE")),
+            make_box("Unpaid Breaks", 0.00, colors.HexColor("#FBE9E7")),
+        ]
+
+        summary_table = Table([summary_row], colWidths=[3.6*cm]*7)
+        summary_table.setStyle(TableStyle([('ALIGN', (0,0), (-1,-1), 'CENTER')]))
+        Story.append(summary_table)
+        Story.append(Spacer(1, 1*cm))
+
+        # --- 3. ATTENDANCE TABLE ---
+        attendance_data = [[
+            Paragraph("<b>Day</b>", Bold),
+            Paragraph("<b>Type</b>", Bold),
+            Paragraph("<b>Sub job</b>", Bold),
+            Paragraph("<b>Clock in</b>", Bold),
+            Paragraph("<b>Clock out</b>", Bold),
+            Paragraph("<b>Total hours</b>", Bold),
+            Paragraph("<b>Daily total</b>", Bold),
+        ]]
+
+        for day in rows:
+            for idx, session in enumerate(day['sessions']):
+                is_first = (idx == 0)
+                cin = session['clock_in'].strftime("%H:%M") if session['clock_in'] else "--"
+                cout = session['clock_out'].strftime("%H:%M") if session['clock_out'] else "--"
+                
+                attendance_data.append([
+                    Paragraph(day['date_display'], Normal) if is_first else "",
+                    Paragraph(session['type'], Normal),
+                    Paragraph("No sub jobs", Normal),
+                    Paragraph(cin, Normal),
+                    Paragraph(cout, Normal),
+                    Paragraph(f"{session['hours']:.2f}", Normal),
+                    Paragraph(f"<b>{day['day_total']:.2f}</b>", Normal) if is_first else ""
+                ])
+
+        table_col_widths = [3.5*cm, 4*cm, 4*cm, 3*cm, 3*cm, 3.5*cm, 3.5*cm]
+        main_table = Table(attendance_data, colWidths=table_col_widths, repeatRows=1)
+        main_table.setStyle(TableStyle([
+            ('GRID', (0,0), (-1,-1), 0.25, colors.lightgrey),
+            ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+            ('ALIGN', (3,0), (-1,-1), 'CENTER'),
+            ('BOTTOMPADDING', (0,0), (-1,-1), 8),
+            ('TOPPADDING', (0,0), (-1,-1), 8),
+        ]))
+        
+        Story.append(main_table)
+
+        # --- 4. OUTPUT ---
+        doc.build(Story)
+        pdf_bytes = buffer.getvalue()
+        
+        response = HttpResponse(pdf_bytes, content_type='application/pdf')
+        filename = f"Attendance_{user_info.get('full_name', 'Report')}_{start_date}.pdf"
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        
+        return response
+
+    except Exception as e:
+        traceback.print_exc()
+        Logs.atuta_technical_logger(f"Attendance PDF Error: {str(e)}")
+        return HttpResponse("Internal Server Error during PDF generation", status=500)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
