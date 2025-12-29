@@ -116,7 +116,7 @@ def api_generate_attendance_pdf(request):
             if "<br/>" not in label_text: label_text += "<br/>&nbsp;"
             p_label = Paragraph(label_text, BoxLabel)
             p_value = Paragraph(f"<b>{value:.2f}</b>", BoxValue)
-            if bg_color == colors.HexColor("#2196F3"):
+            if bg_color == colors.HexColor("#ACD5F7"):
                  p_label.textColor = colors.white
                  p_value.textColor = colors.white
             box_table = Table([[p_label], [p_value]], colWidths=[3.7*cm], rowHeights=[0.8*cm, 0.7*cm])
@@ -137,7 +137,7 @@ def api_generate_attendance_pdf(request):
             make_box("Work Hours", work_hours, colors.HexColor("#E8F5E9")),
             make_box("Paid Breaks", 0.00, colors.HexColor("#EDE7F6")),
             make_box("Corrected Hours", total_corr_hours, colors.HexColor("#FFF3E0")),
-            make_box("Total Paid", total_paid_calc, colors.HexColor("#2196F3")),
+            make_box("Total Paid", total_paid_calc, colors.HexColor("#ACD5F7")),
             make_box("Regular", float(summary.get('regular', 0) or 0), colors.HexColor("#E3F2FD")),
             make_box("Overtime", float(summary.get('overtime', 0) or 0), colors.HexColor("#E1F5FE")),
             make_box("Unpaid Breaks", 0.00, colors.HexColor("#FBE9E7")),
@@ -244,7 +244,6 @@ def api_generate_attendance_pdf(request):
         return response
 
     except Exception as e:
-        traceback.print_exc()
         return HttpResponse(f"Internal Server Error: {str(e)}", status=500)
 
 @api_view(['GET'])

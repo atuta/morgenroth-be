@@ -162,6 +162,7 @@ class PayrollService:
                 user=user,
                 date__month=month,
                 date__year=year,
+                clockin_type='regular',
                 status='closed'
             ).order_by('date')
 
@@ -587,6 +588,7 @@ class PayrollService:
                 user=user,
                 date__month=month,
                 date__year=year,
+                clockin_type='regular',
                 status='closed'
             )
             total_session_hours = session_qs.aggregate(Sum('total_hours'))['total_hours__sum'] or 0
