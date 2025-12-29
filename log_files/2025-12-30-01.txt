@@ -12,3 +12,5 @@ Attendance history fetched: range 2025-12-01 to 2025-12-31 | user=ALL
 
 Attendance history fetched: range 2025-12-01 to 2025-12-31 | user=ALL
 
+Attendance history fetched: range 2025-12-01 to 2025-12-31 | user=ALL
+

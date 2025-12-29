@@ -61,6 +61,8 @@ def api_generate_attendance_pdf(request):
 
         # ==================== PDF BUILDING SETUP ====================
         buffer = BytesIO()
+        # Landscape A4 is 29.7cm wide. 
+        # With 1.5cm margins on both sides, usable width = 26.7cm.
         doc = SimpleDocTemplate(
             buffer, pagesize=landscape(A4), 
             topMargin=1.0*cm, bottomMargin=1.5*cm,
@@ -71,7 +73,6 @@ def api_generate_attendance_pdf(request):
         styles = getSampleStyleSheet()
         Normal = styles['Normal']
         
-        # Define the missing Bold style
         Bold = ParagraphStyle(
             'Bold', 
             parent=Normal, 
@@ -80,12 +81,9 @@ def api_generate_attendance_pdf(request):
             leading=12
         )
 
-        # Header Styles
         NameStyle = ParagraphStyle('NameStyle', parent=Bold, fontSize=11)
         DateRangeStyle = ParagraphStyle('DateRange', parent=Bold, alignment=1, fontSize=12)
         PageStyle = ParagraphStyle('PageStyle', parent=Normal, alignment=2, fontSize=10, textColor=colors.grey)
-
-        # Summary Box Styles
         BoxLabel = ParagraphStyle('BoxLabel', parent=Bold, alignment=1, fontSize=8, leading=9)
         BoxValue = ParagraphStyle('BoxValue', parent=Bold, alignment=1, fontSize=14, leading=16)
 
@@ -96,29 +94,29 @@ def api_generate_attendance_pdf(request):
         photo_url = user_info.get("photo_url")
         if photo_url:
             try:
-                # Handle relative URLs if necessary
                 if photo_url.startswith('/'):
                     photo_url = settings.SITE_URL + photo_url
-                
                 resp = requests.get(photo_url, timeout=5)
                 if resp.status_code == 200:
                     img_data = BytesIO(resp.content)
                     avatar_img = Image(img_data, width=0.8*cm, height=0.8*cm)
             except Exception:
-                pass # Silent fail on image load
+                pass
 
         user_header_content = []
         if avatar_img: user_header_content.append(avatar_img)
         user_header_content.append(Paragraph(user_info.get("full_name", "Staff Member"), NameStyle))
         
         date_display = f"{start_date_obj.strftime('%B %d, %Y')} - {end_date_obj.strftime('%B %d, %Y')}"
+        
+        # Total: 7.5 + 11.7 + 7.5 = 26.7cm
         header_data = [[
             user_header_content,
             Paragraph(date_display, DateRangeStyle),
             Paragraph("Page 1/1", PageStyle)
         ]]
         
-        header_table = Table(header_data, colWidths=[7*cm, 13*cm, 6.7*cm])
+        header_table = Table(header_data, colWidths=[7.5*cm, 11.7*cm, 7.5*cm])
         header_table.setStyle(TableStyle([
             ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
             ('LINEBELOW', (0,0), (-1,0), 0.5, colors.lightgrey),
@@ -129,21 +127,30 @@ def api_generate_attendance_pdf(request):
 
         # --- 2. SUMMARY BOXES (Colored Row) ---
         def make_box(label, value, bg_color):
-            label_p = Paragraph(label.upper().replace(" ", "<br/>"), BoxLabel)
-            value_p = Paragraph(f"{value:.2f}", BoxValue)
+            label_text = label.upper()
+            if " " not in label_text:
+                label_text += "<br/>&nbsp;"
+            else:
+                label_text = label_text.replace(" ", "<br/>")
+
+            label_p = Paragraph(label_text, BoxLabel)
+            value_p = Paragraph(f"<b>{value:.2f}</b>", BoxValue)
             
-            # Use white text for the specific Blue background
             if bg_color == colors.HexColor("#2196F3"):
                  label_p.textColor = colors.white
                  value_p.textColor = colors.white
 
-            box_table = Table([[label_p], [value_p]], colWidths=[3.2*cm])
+            # Width adjusted to fit 7 cards into 26.7cm with small gaps
+            box_table = Table([[label_p], [value_p]], colWidths=[3.7*cm], rowHeights=[0.8*cm, 0.7*cm])
+            
             box_table.setStyle(TableStyle([
                 ('BACKGROUND', (0,0), (-1,-1), bg_color),
                 ('ALIGN', (0,0), (-1,-1), 'CENTER'),
-                ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-                ('BOTTOMPADDING', (0,0), (-1,-1), 5),
-                ('TOPPADDING', (0,0), (-1,-1), 5),
+                ('VALIGN', (0,0), (0,0), 'TOP'),
+                ('VALIGN', (0,1), (0,1), 'BOTTOM'),
+                ('BOTTOMPADDING', (0,0), (-1,-1), 4),
+                ('TOPPADDING', (0,0), (-1,-1), 6),
+                ('ROUNDEDCORNERS', [6, 6, 6, 6]), 
             ]))
             return box_table
 
@@ -157,8 +164,13 @@ def api_generate_attendance_pdf(request):
             make_box("Unpaid Breaks", 0.00, colors.HexColor("#FBE9E7")),
         ]
 
-        summary_table = Table([summary_row], colWidths=[3.6*cm]*7)
-        summary_table.setStyle(TableStyle([('ALIGN', (0,0), (-1,-1), 'CENTER')]))
+        # 26.7cm divided by 7 = approx 3.81cm. Using 3.81 to ensure margin-to-margin fit.
+        summary_table = Table([summary_row], colWidths=[3.81*cm]*7)
+        summary_table.setStyle(TableStyle([
+            ('ALIGN', (0,0), (-1,-1), 'CENTER'),
+            ('LEFTPADDING', (0,0), (-1,-1), 0),
+            ('RIGHTPADDING', (0,0), (-1,-1), 0),
+        ]))
         Story.append(summary_table)
         Story.append(Spacer(1, 1*cm))
 
@@ -189,12 +201,16 @@ def api_generate_attendance_pdf(request):
                     Paragraph(f"<b>{day['day_total']:.2f}</b>", Normal) if is_first else ""
                 ])
 
-        table_col_widths = [3.5*cm, 4*cm, 4*cm, 3*cm, 3*cm, 3.5*cm, 3.5*cm]
+        # Recalculated for total 26.7cm: 3.8+3.8+4.5+3.2+3.2+4.1+4.1 = 26.7cm
+        table_col_widths = [3.8*cm, 3.8*cm, 4.5*cm, 3.2*cm, 3.2*cm, 4.1*cm, 4.1*cm]
         main_table = Table(attendance_data, colWidths=table_col_widths, repeatRows=1)
         main_table.setStyle(TableStyle([
             ('GRID', (0,0), (-1,-1), 0.25, colors.lightgrey),
             ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
             ('ALIGN', (3,0), (-1,-1), 'CENTER'),
+            ('ALIGN', (4,0), (-1,-1), 'CENTER'),
+            ('ALIGN', (5,0), (-1,-1), 'CENTER'),
+            ('ALIGN', (6,0), (-1,-1), 'CENTER'),
             ('BOTTOMPADDING', (0,0), (-1,-1), 8),
             ('TOPPADDING', (0,0), (-1,-1), 8),
         ]))
@@ -204,6 +220,7 @@ def api_generate_attendance_pdf(request):
         # --- 4. OUTPUT ---
         doc.build(Story)
         pdf_bytes = buffer.getvalue()
+        buffer.close()
         
         response = HttpResponse(pdf_bytes, content_type='application/pdf')
         filename = f"Attendance_{user_info.get('full_name', 'Report')}_{start_date}.pdf"
@@ -213,7 +230,6 @@ def api_generate_attendance_pdf(request):
 
     except Exception as e:
         traceback.print_exc()
-        Logs.atuta_technical_logger(f"Attendance PDF Error: {str(e)}")
         return HttpResponse("Internal Server Error during PDF generation", status=500)
 
 @api_view(['GET'])
