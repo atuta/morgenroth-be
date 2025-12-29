@@ -26,6 +26,7 @@ from rest_framework.permissions import IsAuthenticated
 
 # 5. Local Project Imports (mapp)
 from mapp.classes.attendance_service import AttendanceService
+from mapp.models import AttendanceSession
 from mapp.classes.logs.logs import Logs
 
 @api_view(["GET"])
