@@ -73,6 +73,7 @@ urlpatterns = [
     path('api/attendance/admin/history/', attendance_view.api_admin_get_user_attendance_history, name='admin_user_attendance_history'),
     # New History Endpoint
     path('api/attendance/history/range/', attendance_view.api_get_attendance_history, name='attendance_history'),
+    path('api/attendance/report/detailed/', attendance_view.api_get_detailed_attendance_report, name='attendance_detailed_report'),
 
 
     # Advance endpoints

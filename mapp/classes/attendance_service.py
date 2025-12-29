@@ -1,6 +1,8 @@
 from django.db import transaction
 from django.utils import timezone
 from decimal import Decimal
+from django.db.models import Sum, Q, Case, When, DecimalField
+from datetime import datetime
 import datetime
 import base64
 import uuid
@@ -8,11 +10,76 @@ from django.core.files.base import ContentFile
 from django.db import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
 
-from mapp.models import AttendanceSession
+from mapp.models import AttendanceSession, CustomUser
 from mapp.classes.logs.logs import Logs
 
 
 class AttendanceService:
+
+    @classmethod
+    def get_detailed_attendance_report(cls, user_id, start_date, end_date):
+        try:
+            # Fetch User details
+            user = CustomUser.objects.get(user_id=user_id)
+
+            # Perform conditional aggregation for top summary cards
+            stats = AttendanceSession.objects.filter(
+                user=user,
+                date__range=[start_date, end_date]
+            ).aggregate(
+                reg_hours=Sum(Case(When(clockin_type='regular', then='total_hours'), output_field=DecimalField())),
+                ot_hours=Sum(Case(When(clockin_type='overtime', then='total_hours'), output_field=DecimalField())),
+                grand_total=Sum('total_hours')
+            )
+
+            # Fetch sessions ordered by date descending
+            sessions = AttendanceSession.objects.filter(
+                user=user,
+                date__range=[start_date, end_date]
+            ).order_by('-date', 'clock_in_time')
+
+            daily_data = {}
+            for s in sessions:
+                # Grouping key format: "Fri 31/10"
+                date_key = s.date.strftime("%a %d/%m")
+                
+                if date_key not in daily_data:
+                    daily_data[date_key] = {
+                        "date_display": date_key,
+                        "day_total": 0,
+                        "sessions": []
+                    }
+                
+                hours = float(s.total_hours or 0)
+                daily_data[date_key]["day_total"] += hours
+                daily_data[date_key]["sessions"].append({
+                    "session_id": str(s.session_id),
+                    "type": s.get_clockin_type_display(),
+                    "clock_in": s.clock_in_time,
+                    "clock_out": s.clock_out_time,
+                    "hours": hours,
+                    "status": s.status
+                })
+
+            return {
+                "user": {
+                    "full_name": user.full_name,
+                    "photo": user.photo.url if user.photo else None,
+                },
+                "summary": {
+                    "work_hours": stats['grand_total'] or 0,
+                    "regular": stats['reg_hours'] or 0,
+                    "overtime": stats['ot_hours'] or 0,
+                },
+                "rows": list(daily_data.values())
+            }
+
+        except CustomUser.DoesNotExist:
+            Logs.atuta_logger(f"Report failure: User ID {user_id} not found.")
+            return None
+        except Exception as e:
+            Logs.atuta_technical_logger(f"Critical error in AttendanceService.get_detailed_attendance_report for User {user_id}: {str(e)}")
+            raise e
 
     @classmethod
     def get_attendance_history(cls, start_date=None, end_date=None, user_id=None):

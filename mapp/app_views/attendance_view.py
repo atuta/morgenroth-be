@@ -10,6 +10,57 @@ from mapp.classes.logs.logs import Logs
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
+def api_get_detailed_attendance_report(request):
+    """
+    Endpoint for daily-grouped attendance report.
+    """
+    user_id = request.query_params.get('user_id')
+    start_date = request.query_params.get('start_date')
+    end_date = request.query_params.get('end_date')
+
+    # 1. Parameter Validation
+    if not all([user_id, start_date, end_date]):
+        Logs.atuta_logger(f"User {request.user.username} requested report with missing parameters.")
+        return Response({
+            "status": "error", 
+            "message": "Missing required parameters: user_id, start_date, and end_date are required."
+        }, status=400)
+
+    # 2. RBAC (Role Based Access Control)
+    is_admin = request.user.user_role in ['admin', 'super']
+    is_self = str(request.user.user_id) == str(user_id)
+
+    if not (is_admin or is_self):
+        Logs.atuta_logger(f"UNAUTHORIZED ACCESS ATTEMPT: {request.user.username} tried to view report for user_id {user_id}")
+        return Response({
+            "status": "error", 
+            "message": "You do not have permission to view this report."
+        }, status=403)
+
+    # 3. Data Fetching
+    try:
+        report_data = AttendanceService.get_detailed_attendance_report(user_id, start_date, end_date)
+
+        if not report_data:
+            return Response({
+                "status": "error", 
+                "message": "Employee record not found."
+            }, status=404)
+
+        return Response({
+            "status": "success",
+            "message": report_data
+        })
+
+    except Exception as e:
+        Logs.atuta_technical_logger(f"API EXCEPTION in api_get_detailed_attendance_report: {str(e)}")
+        return Response({
+            "status": "error", 
+            "message": "An internal server error occurred while generating the report."
+        }, status=500)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def api_get_attendance_history(request):
     """
     Retrieves attendance records based on date range and optional user filtering.
