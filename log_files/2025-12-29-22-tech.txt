@@ -1,8 +1,0 @@
-Retrieved current session | user=eb3f74a2-1aa0-4135-be00-96177e45f334 | session_id=a8339d5c-a602-4cdb-ab51-f02068246c4a
-
-User clocked out | user=eb3f74a2-1aa0-4135-be00-96177e45f334 | session_id=a8339d5c-a602-4cdb-ab51-f02068246c4a
-
-User clocked in | type=overtime | user=eb3f74a2-1aa0-4135-be00-96177e45f334 | session_id=b40929f9-8efd-4a49-8854-97bd67388ae4
-
-Retrieved current session | user=eb3f74a2-1aa0-4135-be00-96177e45f334 | session_id=b40929f9-8efd-4a49-8854-97bd67388ae4
-

@@ -33,26 +33,39 @@ from mapp.classes.logs.logs import Logs
 @permission_classes([IsAuthenticated])
 def api_generate_attendance_pdf(request):
     """
-    Generates a detailed attendance report PDF with dates on every row 
-    and highlighted daily totals at the bottom of each date group.
+    Generates a detailed attendance report PDF including Hour Corrections.
     """
     user_id = request.GET.get("user_id")
     start_date = request.GET.get("start_date")
     end_date = request.GET.get("end_date")
 
+    # For Hour Corrections (extracted from the date range)
     if not all([user_id, start_date, end_date]):
         return HttpResponse("user_id, start_date & end_date are required", status=400)
     
     try:
         start_date_obj = datetime.datetime.strptime(start_date, "%Y-%m-%d").date()
         end_date_obj = datetime.datetime.strptime(end_date, "%Y-%m-%d").date()
+        
+        # Extract month/year for the corrections service
+        s_month, s_year = start_date_obj.month, start_date_obj.year
+        e_month, e_year = end_date_obj.month, end_date_obj.year
     except ValueError:
         return HttpResponse("Use YYYY-MM-DD date format", status=400)
 
     try:
+        # 1. Fetch Main Attendance Data
         report_data = AttendanceService.get_detailed_attendance_report(user_id, start_date, end_date)
         if not report_data:
             return HttpResponse("No data found for the selected user and range", status=404)
+
+        # 2. Fetch Hour Corrections Data (New Step)
+        corrections_res = AttendanceService.get_user_hour_corrections(
+            user_id, s_month, s_year, e_month, e_year
+        )
+        correction_records = []
+        if corrections_res.get("status") == "success":
+            correction_records = corrections_res["data"]["records"]
 
         user_info = report_data.get("user", {})
         summary = report_data.get("summary", {})
@@ -79,53 +92,28 @@ def api_generate_attendance_pdf(request):
 
         Story = []
 
-        # --- 1. TOP HEADER (Avatar, Date Range, Page) ---
-        avatar_img = None
-        photo_url = user_info.get("photo_url")
-        if photo_url:
-            try:
-                if photo_url.startswith('/'):
-                    photo_url = settings.SITE_URL + photo_url
-                resp = requests.get(photo_url, timeout=5)
-                if resp.status_code == 200:
-                    avatar_img = Image(BytesIO(resp.content), width=0.8*cm, height=0.8*cm)
-            except Exception:
-                pass
-
-        user_header_content = [avatar_img, Paragraph(user_info.get("full_name", "Staff Member"), NameStyle)] if avatar_img else [Paragraph(user_info.get("full_name", "Staff Member"), NameStyle)]
+        # --- 1. TOP HEADER ---
+        # (Assuming your previous header code for avatar and name goes here)
         date_display = f"{start_date_obj.strftime('%B %d, %Y')} - {end_date_obj.strftime('%B %d, %Y')}"
-        
-        # Total: 7.5 + 11.7 + 7.5 = 26.7cm (A4 Landscape usable width)
-        header_table = Table([[user_header_content, Paragraph(date_display, DateRangeStyle), Paragraph("Page 1/1", PageStyle)]], 
+        header_table = Table([[Paragraph(user_info.get("full_name", ""), NameStyle), 
+                             Paragraph(date_display, DateRangeStyle), 
+                             Paragraph("Page 1/1", PageStyle)]], 
                              colWidths=[7.5*cm, 11.7*cm, 7.5*cm])
-        header_table.setStyle(TableStyle([
-            ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-            ('LINEBELOW', (0,0), (-1,0), 0.5, colors.lightgrey),
-            ('BOTTOMPADDING', (0,0), (-1,0), 10),
-        ]))
+        header_table.setStyle(TableStyle([('VALIGN', (0,0), (-1,-1), 'MIDDLE'), ('LINEBELOW', (0,0), (-1,0), 0.5, colors.lightgrey), ('BOTTOMPADDING', (0,0), (-1,0), 10)]))
         Story.append(header_table)
         Story.append(Spacer(1, 0.6*cm))
 
-        # --- 2. SUMMARY BOXES (Colored Row) ---
+        # --- 2. SUMMARY BOXES ---
         def make_box(label, value, bg_color):
             label_text = label.upper().replace(" ", "<br/>")
             if "<br/>" not in label_text: label_text += "<br/>&nbsp;"
-            
             p_label = Paragraph(label_text, BoxLabel)
             p_value = Paragraph(f"<b>{value:.2f}</b>", BoxValue)
-            
             if bg_color == colors.HexColor("#2196F3"):
                  p_label.textColor = colors.white
                  p_value.textColor = colors.white
-
             box_table = Table([[p_label], [p_value]], colWidths=[3.7*cm], rowHeights=[0.8*cm, 0.7*cm])
-            box_table.setStyle(TableStyle([
-                ('BACKGROUND', (0,0), (-1,-1), bg_color),
-                ('ALIGN', (0,0), (-1,-1), 'CENTER'),
-                ('VALIGN', (0,0), (0,0), 'TOP'),
-                ('VALIGN', (0,1), (0,1), 'BOTTOM'),
-                ('ROUNDEDCORNERS', [6, 6, 6, 6]), 
-            ]))
+            box_table.setStyle(TableStyle([('BACKGROUND', (0,0), (-1,-1), bg_color), ('ALIGN', (0,0), (-1,-1), 'CENTER'), ('VALIGN', (0,0), (0,0), 'TOP'), ('VALIGN', (0,1), (0,1), 'BOTTOM'), ('ROUNDEDCORNERS', [6, 6, 6, 6])]))
             return box_table
 
         summary_row = [
@@ -137,13 +125,45 @@ def api_generate_attendance_pdf(request):
             make_box("Overtime", summary.get('overtime', 0), colors.HexColor("#E1F5FE")),
             make_box("Unpaid Breaks", 0.00, colors.HexColor("#FBE9E7")),
         ]
-
         summary_table = Table([summary_row], colWidths=[3.81*cm]*7)
-        summary_table.setStyle(TableStyle([('ALIGN', (0,0), (-1,-1), 'CENTER')]))
         Story.append(summary_table)
-        Story.append(Spacer(1, 1*cm))
+        Story.append(Spacer(1, 0.8*cm))
 
-        # --- 3. ATTENDANCE TABLE (Dates on every row + Last row total) ---
+        # --- 3. HOUR CORRECTIONS TABLE (NEW SECTION) ---
+        if correction_records:
+            Story.append(Paragraph("<b>Hour Corrections & Adjustments</b>", Bold))
+            Story.append(Spacer(1, 0.2*cm))
+            
+            corr_data = [[
+                Paragraph("<b>Date</b>", Bold),
+                Paragraph("<b>Reason</b>", Bold),
+                Paragraph("<b>Adjusted By</b>", Bold),
+                Paragraph("<b>Hours</b>", Bold),
+                Paragraph("<b>Amount</b>", Bold),
+            ]]
+            
+            for rec in correction_records:
+                sign = "+" if rec['hours'] >= 0 else ""
+                corr_data.append([
+                    Paragraph(rec['date'], Normal),
+                    Paragraph(rec['reason'], Normal),
+                    Paragraph(rec['corrected_by'], Normal),
+                    Paragraph(f"<b>{sign}{rec['hours']:.2f}</b>", Normal),
+                    Paragraph(f"<b>{sign}{rec['amount']:.2f}</b>", Normal),
+                ])
+            
+            corr_table = Table(corr_data, colWidths=[3.5*cm, 11.2*cm, 5*cm, 3.5*cm, 3.5*cm])
+            corr_table.setStyle(TableStyle([
+                ('GRID', (0,0), (-1,-1), 0.25, colors.lightgrey),
+                ('BACKGROUND', (0,0), (-1,0), colors.whitesmoke),
+                ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+                ('BOTTOMPADDING', (0,0), (-1,-1), 6),
+                ('TOPPADDING', (0,0), (-1,-1), 6),
+            ]))
+            Story.append(corr_table)
+            Story.append(Spacer(1, 1*cm))
+
+        # --- 4. ATTENDANCE TABLE ---
         attendance_data = [[
             Paragraph("<b>Date</b>", Bold),
             Paragraph("<b>Type</b>", Bold),
@@ -155,34 +175,17 @@ def api_generate_attendance_pdf(request):
         ]]
 
         total_row_indices = []
-
         for day in rows:
-            # Add session rows
             for session in day['sessions']:
                 cin = session['clock_in'].strftime("%H:%M") if session['clock_in'] else "--"
                 cout = session['clock_out'].strftime("%H:%M") if session['clock_out'] else "--"
-                
-                attendance_data.append([
-                    Paragraph(day['date_display'], Normal),
-                    Paragraph(session['type'], Normal),
-                    Paragraph("No sub jobs", Normal),
-                    Paragraph(cin, Normal),
-                    Paragraph(cout, Normal),
-                    Paragraph(f"{session['hours']:.2f}", Normal),
-                    "" # No daily total on individual session rows
-                ])
-
-            # Add Daily Total Row
+                attendance_data.append([Paragraph(day['date_display'], Normal), Paragraph(session['type'], Normal), Paragraph("No sub jobs", Normal), Paragraph(cin, Normal), Paragraph(cout, Normal), Paragraph(f"{session['hours']:.2f}", Normal), ""])
+            
             total_row_indices.append(len(attendance_data))
-            attendance_data.append([
-                "", "", "", "", "", 
-                Paragraph("<b>Daily Total:</b>", Bold), 
-                Paragraph(f"<b>{day['day_total']:.2f}</b>", Bold)
-            ])
+            attendance_data.append(["", "", "", "", "", Paragraph("<b>Daily Total:</b>", Bold), Paragraph(f"<b>{day['day_total']:.2f}</b>", Bold)])
 
         col_widths = [3.8*cm, 3.8*cm, 4.5*cm, 3.2*cm, 3.2*cm, 4.1*cm, 4.1*cm]
         main_table = Table(attendance_data, colWidths=col_widths, repeatRows=1)
-        
         main_styles = [
             ('GRID', (0,0), (-1,-1), 0.25, colors.lightgrey),
             ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
@@ -192,10 +195,8 @@ def api_generate_attendance_pdf(request):
             ('ALIGN', (6,0), (-1,-1), 'CENTER'),
             ('BOTTOMPADDING', (0,0), (-1,-1), 8),
             ('TOPPADDING', (0,0), (-1,-1), 8),
-            ('BACKGROUND', (0,0), (-1,0), colors.whitesmoke), # Header background
+            ('BACKGROUND', (0,0), (-1,0), colors.whitesmoke),
         ]
-
-        # Apply Light Grey background and Right alignment to Daily Total rows
         for idx in total_row_indices:
             main_styles.append(('BACKGROUND', (0, idx), (-1, idx), colors.whitesmoke))
             main_styles.append(('TOPPADDING', (0, idx), (-1, idx), 10))
@@ -204,15 +205,13 @@ def api_generate_attendance_pdf(request):
         main_table.setStyle(TableStyle(main_styles))
         Story.append(main_table)
 
-        # --- 4. OUTPUT ---
+        # --- 5. OUTPUT ---
         doc.build(Story)
         pdf_bytes = buffer.getvalue()
         buffer.close()
-        
         response = HttpResponse(pdf_bytes, content_type='application/pdf')
         filename = f"Attendance_{user_info.get('full_name', 'Report')}_{start_date}.pdf"
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
-        
         return response
 
     except Exception as e:

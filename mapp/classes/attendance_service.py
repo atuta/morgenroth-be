@@ -10,11 +10,87 @@ from django.core.files.base import ContentFile
 from django.db import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
 
-from mapp.models import AttendanceSession, CustomUser
+from mapp.models import AttendanceSession, CustomUser, HourCorrection
 from mapp.classes.logs.logs import Logs
 
 
 class AttendanceService:
+
+    @staticmethod
+    def get_user_hour_corrections(user_id, start_month, start_year, end_month, end_year):
+        try:
+            # --- DEBUG LOG 1: Inputs ---
+            Logs.atuta_technical_logger(
+                f"DEBUG: HourCorrection Request -> User: {user_id}, "
+                f"Range: {start_month}/{start_year} to {end_month}/{end_year}"
+            )
+
+            if not user_id:
+                return {"status": "error", "message": "User ID is required"}
+
+            # Ensure inputs are integers for reliable comparison
+            try:
+                s_m, s_y = int(start_month), int(start_year)
+                e_m, e_y = int(end_month), int(end_year)
+            except (ValueError, TypeError):
+                Logs.atuta_technical_logger("DEBUG: Failed to cast month/year to integers")
+                return {"status": "error", "message": "Invalid date parameters"}
+
+            # --- 2. Build the date range filter ---
+            # Logic: (Year > StartYear OR (Year == StartYear AND Month >= StartMonth)) 
+            # AND (Year < EndYear OR (Year == EndYear AND Month <= EndMonth))
+            start_filter = Q(year__gt=s_y) | Q(year=s_y, month__gte=s_m)
+            end_filter = Q(year__lt=e_y) | Q(year=e_y, month__lte=e_m)
+
+            # --- 3. Fetch records (Fixed .order_by) ---
+            queryset = HourCorrection.objects.filter(
+                user_id=user_id
+            ).filter(
+                start_filter & end_filter
+            ).select_related('corrected_by').order_by('-date', '-created_at')
+
+            # --- DEBUG LOG 2: Query Result ---
+            count = queryset.count()
+            Logs.atuta_technical_logger(f"DEBUG: Found {count} records in database for this filter.")
+
+            # 4. Format data for the frontend
+            corrections_list = []
+            total_adjustment_amount = Decimal('0.00')
+            total_hours = Decimal('0.00')
+
+            for record in queryset:
+                corrections_list.append({
+                    "correction_id": str(record.correction_id),
+                    "date": record.date.strftime("%Y-%m-%d") if record.date else "",
+                    "display_period": f"{record.month}/{record.year}",
+                    "hours": float(record.hours),
+                    "hourly_rate": float(record.hourly_rate) if record.hourly_rate else 0,
+                    "amount": float(record.amount),
+                    "reason": record.reason,
+                    "corrected_by": record.corrected_by.full_name if record.corrected_by else "System",
+                    "created_at": record.created_at.strftime("%Y-%m-%d %H:%M")
+                })
+                total_adjustment_amount += record.amount
+                total_hours += record.hours
+
+            return {
+                "status": "success",
+                "data": {
+                    "records": corrections_list,
+                    "summary": {
+                        "total_count": len(corrections_list),
+                        "total_hours": float(total_hours),
+                        "total_amount": float(total_adjustment_amount)
+                    }
+                }
+            }
+
+        except Exception as e:
+            Logs.atuta_technical_logger(f"CRITICAL ERROR in HourCorrectionService: {str(e)}")
+            return {
+                "status": "error", 
+                "message": "Internal server error while fetching hour corrections"
+            }
 
     @classmethod
     def get_detailed_attendance_report(cls, user_id, start_date, end_date):
