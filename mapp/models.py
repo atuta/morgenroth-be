@@ -187,11 +187,22 @@ class AttendanceSession(models.Model):
     lunch_out = models.DateTimeField(blank=True, null=True)
     clock_out_time = models.DateTimeField(blank=True, null=True)
 
+    # --- Type Identification ---
+    CLOCKIN_TYPE_CHOICES = [
+        ('regular', 'Regular'),
+        ('overtime', 'Overtime'),
+    ]
+    clockin_type = models.CharField(
+        max_length=15, 
+        choices=CLOCKIN_TYPE_CHOICES, 
+        default='regular'
+    )
+
     # Calculated / misc
-    total_hours = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)  # hours as decimal
+    total_hours = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
     notes = models.TextField(blank=True, null=True)
 
-    # **New field for photo verification**
+    # Photo verification
     clock_in_photo = models.ImageField(upload_to='attendance_photos/', blank=True, null=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -205,11 +216,12 @@ class AttendanceSession(models.Model):
     class Meta:
         ordering = ['-date', '-created_at']
         indexes = [
-            models.Index(fields=['user', 'date']),
+            # Added clockin_type to the index to optimize payroll reporting/filtering
+            models.Index(fields=['user', 'date', 'clockin_type']), 
         ]
 
     def __str__(self):
-        return f"{self.user.full_name} | {self.date} | {self.status}"
+        return f"{self.user.full_name} | {self.date} | {self.clockin_type} | {self.status}"
 
 
 # -----------------
