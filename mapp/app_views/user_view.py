@@ -15,6 +15,39 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from mapp.classes.user_service import UserService
 from mapp.classes.logs.logs import Logs
 
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def api_get_latest_organization(request):
+    """
+    API endpoint to retrieve the latest organization details.
+    """
+    try:
+        # Call the service function
+        result = UserService.get_latest_organization()
+        
+        if result["status"] == "success":
+            # Extract the data
+            org_data = result["data"]
+            
+            # Critical: Convert relative media path to absolute URL for the Frontend
+            if org_data.get("logo"):
+                org_data["logo"] = request.build_absolute_uri(org_data["logo"])
+                
+            return Response(result, status=200)
+        
+        # If no record exists, we return a 404 but with a clean message
+        return Response(result, status=404)
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        Logs.atuta_technical_logger(f"View Error in api_get_latest_organization: {str(e)}")
+        return Response({
+            "status": "error", 
+            "message": "Internal Server Error"
+        }, status=500)
+
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 @parser_classes([MultiPartParser, FormParser])

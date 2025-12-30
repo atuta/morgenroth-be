@@ -61,6 +61,7 @@ urlpatterns = [
 
     # Organization endpoints
     path('api/upsert-organization/', user_view.api_upsert_organization, name='upsert_organization'),
+    path('api/get-latest-organization/', user_view.api_get_latest_organization, name='get_latest_organization'),
 
     # Attendance endpoints
     path('api/clock-in/', attendance_view.api_clock_in, name='clock_in'),

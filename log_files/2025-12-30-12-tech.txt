@@ -10,3 +10,15 @@ Attempting to save organization: Morgenroths
 
 SUCCESS: Organization 'Morgenroths' created with UUID 52381c8e-d8ef-4c92-8706-6b02ed2acf32
 
+Attempting to save organization: Morgenroths
+
+SUCCESS: Organization 'Morgenroths' created with UUID df848e4b-82da-434e-a470-566f01e36b49
+
+Attempting to save organization: Morgenroths
+
+SUCCESS: Organization 'Morgenroths' updated with UUID df848e4b-82da-434e-a470-566f01e36b49
+
+ERROR fetching organization: Cannot resolve keyword 'updated_at' into field. Choices are: email, logo, name, org_uuid, physical_address, postal_address, telephone
+
+ERROR fetching organization: Cannot resolve keyword 'updated_at' into field. Choices are: email, logo, name, org_uuid, physical_address, postal_address, telephone
+
