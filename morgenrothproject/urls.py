@@ -59,6 +59,9 @@ urlpatterns = [
     path('api/user-has-module-permission/', user_view.api_has_module_permission, name='user_has_module_permission'),
     path('api/login/', user_view.api_login, name='user_login'),
 
+    # Organization endpoints
+    path('api/upsert-organization/', user_view.api_upsert_organization, name='upsert_organization'),
+
     # Attendance endpoints
     path('api/clock-in/', attendance_view.api_clock_in, name='clock_in'),
     path('api/clock-out/', attendance_view.api_clock_out, name='clock_out'),

@@ -1,0 +1,12 @@
+Attempting to save organization: Morgenroth
+
+SUCCESS: Organization 'Morgenroth' created with UUID cd19b5c5-ac76-46d9-a690-930810d4a143
+
+Attempting to save organization: Morgenroths
+
+SUCCESS: Organization 'Morgenroths' created with UUID ef75fc9a-ebc3-41f5-86fd-653c33aba688
+
+Attempting to save organization: Morgenroths
+
+SUCCESS: Organization 'Morgenroths' created with UUID 52381c8e-d8ef-4c92-8706-6b02ed2acf32
+

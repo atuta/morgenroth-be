@@ -1,7 +1,7 @@
 import datetime
 
 import json
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, parser_classes
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 from rest_framework.permissions import AllowAny
@@ -10,9 +10,42 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from mapp.serializers import UserPhotoSerializer
+from rest_framework.parsers import MultiPartParser, FormParser
 
 from mapp.classes.user_service import UserService
 from mapp.classes.logs.logs import Logs
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+@parser_classes([MultiPartParser, FormParser])
+def api_upsert_organization(request):
+    """
+    API View to create or update organization details.
+    Uses MultiPartParser to handle logo image uploads.
+    """
+    try:
+        # Extract data from the request
+        # request.data handles both text fields and files when using MultiPartParser
+        data = request.data
+        logo_file = request.FILES.get('logo')
+
+        # Log the attempt
+        Logs.atuta_technical_logger(f"Attempting to save organization: {data.get('name')}")
+
+        # Call the service function we created
+        result = UserService.create_organization_record(data, logo_file)
+
+        if result["status"] == "success":
+            return Response(result, status=201)
+        else:
+            return Response(result, status=400)
+
+    except Exception as e:
+        Logs.atuta_technical_logger(f"View Error in api_upsert_organization: {str(e)}")
+        return Response({
+            "status": "error",
+            "message": "An unexpected error occurred on the server."
+        }, status=500)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])

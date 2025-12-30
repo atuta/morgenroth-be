@@ -1,0 +1,8 @@
+Fetched details for user None: {'email': None, 'phone_number': '0712665544', 'first_name': 'Tom', 'last_name': 'Ouma', 'account': 'JJaaN', 'user_role': 'teaching', 'id_number': '23567823', 'nssf_number': 'NSSF1007', 'shif_sha_number': 'SHA765', 'hourly_rate': Decimal('1200.00'), 'hourly_rate_currency': 'KES', 'lunch_start': 1300, 'lunch_end': 1400, 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': 'b332ba54-5e18-428e-b567-374b43fadfc3', 'photo': None}
+
+Received update request for user b332ba54-5e18-428e-b567-374b43fadfc3: nssf=NSSF1007, sha=SHA765, hourly_rate=1200, email=tom@gmail.com, phone=0712665544, id_number=23567823, role=teaching
+
+Successfully updated b332ba54-5e18-428e-b567-374b43fadfc3: email, phone_number, id_number, user_role, nssf_number, shif_sha_number, hourly_rate, lunch_start, lunch_end
+
+Fetched details for user tom@gmail.com: {'email': 'tom@gmail.com', 'phone_number': '0712665544', 'first_name': 'Tom', 'last_name': 'Ouma', 'account': 'JJaaN', 'user_role': 'teaching', 'id_number': '23567823', 'nssf_number': 'NSSF1007', 'shif_sha_number': 'SHA765', 'hourly_rate': Decimal('1200.00'), 'hourly_rate_currency': 'KES', 'lunch_start': 1300, 'lunch_end': 1400, 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': 'b332ba54-5e18-428e-b567-374b43fadfc3', 'photo': None}
+
