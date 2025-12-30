@@ -170,6 +170,7 @@ class UserService:
                 attendance_qs = AttendanceSession.objects.filter(
                     user=user,
                     date__range=[start_date_parsed, end_date_parsed],
+                    clockin_type='regular',
                     status='closed'
                 ).order_by("date")
 

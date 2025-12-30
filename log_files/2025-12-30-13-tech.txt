@@ -1,8 +1,0 @@
-Attempting to save organization: Morgenroths
-
-SUCCESS: Organization 'Morgenroths' updated with UUID df848e4b-82da-434e-a470-566f01e36b49
-
-Attempting to save organization: Morgenroth
-
-SUCCESS: Organization 'Morgenroth' created with UUID a9ab9135-1741-4019-a5a2-aa0de185583b
-

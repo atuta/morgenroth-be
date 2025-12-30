@@ -1,0 +1,10 @@
+PAYSLIP_DEBUG: Gross Pay for Grace Auma is 4847.25
+
+PAYSLIP_DEBUG: get_all_deductions result: {'status': 'success', 'message': [{'name': 'housing_levy', 'percentage': 2.5}, {'name': 'nssf', 'percentage': 2.1}, {'name': 'shif_sha', 'percentage': 2.7}]}
+
+PAYSLIP_DEBUG: Applied housing_levy (2.5%): 121.18125
+
+PAYSLIP_DEBUG: Applied nssf (2.1%): 101.79225000000001
+
+PAYSLIP_DEBUG: Applied shif_sha (2.7%): 130.87575
+

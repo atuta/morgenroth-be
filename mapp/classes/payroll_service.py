@@ -1,4 +1,6 @@
 from typing import Optional
+from datetime import date
+from dateutil.relativedelta import relativedelta
 from decimal import Decimal
 from django.db.models import Sum, Q
 from mapp.models import (
@@ -135,9 +137,176 @@ class PayrollService:
                 "message": "hour_correction_record_failed",
             }
 
+    @classmethod
+    def generate_batch_payslips(cls, user_ids, start_month, start_year, end_month, end_year):
+        """
+        Matrix-based payroll generation.
+        Handles multiple users x multiple months.
+        """
+        try:
+            # 1. Setup date boundaries
+            start_date = date(start_year, start_month, 1)
+            end_date = date(end_year, end_month, 1)
+            
+            # Generate the list of month/year tuples
+            periods = []
+            current = start_date
+            while current <= end_date:
+                periods.append((current.month, current.year))
+                current += relativedelta(months=1)
+
+            # 2. Fetch all requested users
+            users = CustomUser.objects.filter(user_id__in=user_ids)
+            if not users.exists():
+                return {"status": "error", "message": "No valid users found"}
+
+            # 3. Iterate through the Matrix
+            batch_results = []
+            for user in users:
+                for month, year in periods:
+                    payslip = cls.generate_detailed_payslip(user, month, year)
+                    if payslip["status"] == "success":
+                        batch_results.append(payslip["message"])
+
+            return {
+                "status": "success",
+                "count": len(batch_results),
+                "data": batch_results
+            }
+        except Exception as e:
+            Logs.atuta_technical_logger(f"Batch generation failed: {str(e)}")
+            return {"status": "error", "message": str(e)}
 
     @classmethod
     def generate_detailed_payslip(cls, user: CustomUser, month: int, year: int):
+        try:
+            # 1. Hourly rate
+            rate_result = cls.get_hourly_rate(user)
+            if rate_result["status"] != "success":
+                Logs.atuta_technical_logger(f"PAYSLIP_DEBUG: Failed rate for {user.email}")
+                raise Exception("Failed to fetch hourly rate")
+            
+            hourly_rate = rate_result["message"]["hourly_rate"]
+            currency = rate_result["message"]["currency"]
+
+            # 2. Attendance (Regular Pay)
+            attendance_qs = AttendanceSession.objects.filter(
+                user=user, date__month=month, date__year=year,
+                clockin_type='regular', status='closed'
+            ).order_by('date')
+
+            base_pay_breakdown = []
+            total_hours = 0
+            total_base_pay = 0
+
+            if attendance_qs.exists():
+                for session in attendance_qs:
+                    h = float(session.total_hours or 0)
+                    p = h * hourly_rate
+                    total_hours += h
+                    total_base_pay += p
+                    base_pay_breakdown.append({
+                        "date": session.date.strftime("%Y-%m-%d"),
+                        "hours": h, "pay": float(p), "notes": session.notes or ""
+                    })
+            
+            # 3. Overtime
+            overtime_qs = OvertimeAllowance.objects.filter(
+                user=user, month=month, year=year
+            ).order_by('date')
+
+            overtime_breakdown = []
+            total_overtime = 0
+
+            if overtime_qs.exists():
+                for ot in overtime_qs:
+                    amt = float(ot.amount or 0)
+                    total_overtime += amt
+                    overtime_breakdown.append({
+                        "date": ot.date.strftime("%Y-%m-%d"),
+                        "hours": float(ot.hours), "amount": amt, "remarks": ot.remarks or ""
+                    })
+
+            # 4. Calculations & Deductions
+            gross_pay = total_base_pay + total_overtime
+            
+            # --- START CRITICAL LOGGING ---
+            Logs.atuta_technical_logger(f"PAYSLIP_DEBUG: Gross Pay for {user.full_name} is {gross_pay}")
+            
+            deductions_result = cls.get_all_deductions()
+            
+            # Log the raw result from the deduction settings
+            Logs.atuta_technical_logger(f"PAYSLIP_DEBUG: get_all_deductions result: {deductions_result}")
+            
+            deductions_breakdown = []
+            total_deductions = 0
+
+            if deductions_result["status"] == "success" and deductions_result["message"]:
+                for d in deductions_result["message"]:
+                    # Ensure we aren't multiplying by zero or None
+                    percent = d.get("percentage", 0)
+                    name = d.get("name", "Unknown")
+                    
+                    amt = float(gross_pay) * (float(percent) / 100)
+                    total_deductions += amt
+                    
+                    deductions_breakdown.append({
+                        "name": name, "percentage": percent, "amount": float(amt)
+                    })
+                    Logs.atuta_technical_logger(f"PAYSLIP_DEBUG: Applied {name} ({percent}%): {amt}")
+            else:
+                Logs.atuta_technical_logger(f"PAYSLIP_DEBUG: No deductions found or status failed for {user.full_name}")
+                deductions_breakdown.append({"name": "No Deductions Found", "percentage": 0.0, "amount": 0.0})
+
+            # --- END CRITICAL LOGGING ---
+
+            # 5. Advances
+            advance_qs = AdvancePayment.objects.filter(
+                user=user, month=month, year=year
+            ).order_by('created_at')
+
+            advance_breakdown = []
+            total_advance = 0
+
+            if advance_qs.exists():
+                for adv in advance_qs:
+                    amt = float(adv.amount or 0)
+                    total_advance += amt
+                    advance_breakdown.append({
+                        "date": adv.created_at.strftime("%Y-%m-%d"),
+                        "amount": amt, "remarks": adv.remarks or "",
+                        "approved_by": adv.approved_by.full_name if adv.approved_by else None
+                    })
+
+            # 6. Final Result
+            net_pay = gross_pay - total_deductions - total_advance
+
+            return {
+                "status": "success",
+                "message": {
+                    "user": {"id": str(user.user_id), "full_name": user.full_name, "email": user.email},
+                    "period": f"{month}/{year}",
+                    "month": month, "year": year,
+                    "hourly_rate": float(hourly_rate), "currency": currency,
+                    "total_hours": float(total_hours), "total_base_pay": float(total_base_pay),
+                    "total_overtime": float(total_overtime), "gross_pay": float(gross_pay),
+                    "total_deductions": float(total_deductions), "total_advance": float(total_advance),
+                    "net_pay": float(net_pay),
+                    "deductions_breakdown": deductions_breakdown, # Use the direct list for the PDF engine
+                    "breakdowns": {
+                        "base_pay": base_pay_breakdown,
+                        "overtime": overtime_breakdown,
+                        "deductions": deductions_breakdown,
+                        "advances": advance_breakdown
+                    }
+                }
+            }
+        except Exception as e:
+            Logs.atuta_technical_logger(f"Payslip Logic Error: {str(e)}", exc_info=True)
+            return {"status": "error", "message": str(e)}
+
+    @classmethod
+    def generate_detailed_payslip_dep(cls, user: CustomUser, month: int, year: int):
         """
         Generate a detailed payslip for a user for a given month and year.
         Every section appears regardless of whether values exist.
@@ -428,7 +597,11 @@ class PayrollService:
             )
 
             if not snapshot:
-                raise Exception("No hourly rate snapshot found")
+                # raise Exception("No hourly rate snapshot found")
+                return {
+                "status": "error",
+                "message": "no_snapshot_found"
+            }
 
             rate = float(snapshot.hourly_rate)
             currency = snapshot.currency or "KES"

@@ -111,10 +111,10 @@ urlpatterns = [
 
 
     # Payroll endpoints
-    path('api/generate-user-payslip/', payroll_view.generate_user_payslip, name='generate_user_payslip'),
+    # path('api/generate-user-payslip/', payroll_view.generate_user_payslip, name='generate_user_payslip'),
     path('api/generate-user-payslip-pdf/', payroll_view.generate_user_payslip_pdf, name='generate_user_payslip_pdf'),
-    path('api/admin/generate-user-payslip/', payroll_view.admin_generate_user_payslip, name='admin_generate_user_payslip'),
-    path('api/admin/generate-user-payslip-pdf/', payroll_view.admin_generate_user_payslip_pdf, name='admin_generate_user_payslip_pdf'),
+    # path('api/admin/generate-user-payslip/', payroll_view.admin_generate_user_payslip, name='admin_generate_user_payslip'),
+    # path('api/admin/generate-user-payslip-pdf/', payroll_view.admin_generate_user_payslip_pdf, name='admin_generate_user_payslip_pdf'),
     path('api/admin/generate-payroll-report/', generate_payroll_report_view.api_generate_payroll_report, name='api_generate_payroll_report'),
     path(
         'api/admin/record-hour-correction/',
@@ -126,6 +126,15 @@ urlpatterns = [
         payroll_view.api_get_hour_corrections,
         name='api_get_hour_corrections'
         ),
+
+    # 1. Individual Multiple months Payslip (Logged-in User)
+    path('payslips/my-pdf/', payroll_view.generate_user_payslip_pdf, name='my_payslip_pdf'),
+
+    # 2. Batch Payslips (Admin Only - Matrix approach)
+    # This matches the new POST view we created for multi-user/multi-month
+    path('payslips/batch-pdf/', payroll_view.admin_generate_batch_payslips_pdf, name='admin_batch_payslip_pdf'),
+
+    
 
     # Rate endpoints
     path('api/set-rate/', rate_view.api_set_rate, name='set_rate'),
