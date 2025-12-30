@@ -22,3 +22,26 @@ PAYSLIP_DEBUG: Found 5 advances for Grace Auma
 
 PAYSLIP_DEBUG: Found 5 advances for Grace Auma
 
+PAYSLIP_DEBUG: Found 5 advances for Grace Auma
+
+batch_pdf_failed
+
+Error in file: /Users/isaac/python_projects/morgenroth/morgenroth_env/lib/python3.12/site-packages/reportlab/platypus/tables.py, line: 2405, in _drawBkgrnd - list index out of range
+PAYSLIP_DEBUG: Found 5 advances for Grace Auma
+
+PAYSLIP_DEBUG: Found 5 advances for Grace Auma
+
+PAYSLIP_DEBUG: Found 5 advances for Grace Auma
+
+PAYSLIP_DEBUG: Found 5 advances for Grace Auma
+
+batch_pdf_failed
+
+Error in file: /Users/isaac/python_projects/morgenroth/morgenroth_env/lib/python3.12/site-packages/reportlab/platypus/tables.py, line: 2405, in _drawBkgrnd - list index out of range
+PAYSLIP_DEBUG: Found 5 advances for Grace Auma
+
+batch_pdf_failed
+
+Error in file: /Users/isaac/python_projects/morgenroth/morgenroth_env/lib/python3.12/site-packages/reportlab/platypus/tables.py, line: 2405, in _drawBkgrnd - list index out of range
+PAYSLIP_DEBUG: Found 5 advances for Grace Auma
+

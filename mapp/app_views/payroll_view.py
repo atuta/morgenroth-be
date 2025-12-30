@@ -155,7 +155,6 @@ def _draw_payslip_page(story, user, data, org, styles):
 
 
 
-
 # --- VIEWS ---
 
 @csrf_exempt
