@@ -74,3 +74,15 @@ Fetched hourly rate snapshot for user 254cb3d3-22f5-4887-9351-f6168af4a9b7 | rat
 
 Fetched all statutory deductions from snapshots | count=3
 
+Fetched hourly rate snapshot for user 254cb3d3-22f5-4887-9351-f6168af4a9b7 | rate=175.0 KES | effective_from=2025-12-30 22:06:04.295198+00:00
+
+Fetched all statutory deductions from snapshots | count=3
+
+Fetched hourly rate snapshot for user 254cb3d3-22f5-4887-9351-f6168af4a9b7 | rate=175.0 KES | effective_from=2025-12-30 22:06:04.295198+00:00
+
+Fetched all statutory deductions from snapshots | count=3
+
+Fetched hourly rate snapshot for user 254cb3d3-22f5-4887-9351-f6168af4a9b7 | rate=175.0 KES | effective_from=2025-12-30 22:06:04.295198+00:00
+
+Fetched all statutory deductions from snapshots | count=3
+
