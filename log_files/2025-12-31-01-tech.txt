@@ -8,3 +8,40 @@ PAYSLIP_DEBUG: Applied nssf (2.1%): 101.79225000000001
 
 PAYSLIP_DEBUG: Applied shif_sha (2.7%): 130.87575
 
+PAYSLIP_DEBUG: Found 5 advances for Grace Auma
+
+PAYSLIP_DEBUG: Found 0 advances for Grace Auma
+
+PAYSLIP_DEBUG: Found 0 advances for Grace Auma
+
+PAYSLIP_DEBUG: Found 5 advances for Grace Auma
+
+Attempting to save organization: Morgenroth
+
+SUCCESS: Organization 'Morgenroth' updated with UUID a9ab9135-1741-4019-a5a2-aa0de185583b
+
+PAYSLIP_DEBUG: Found 5 advances for Grace Auma
+
+PAYSLIP_DEBUG: Found 5 advances for Grace Auma
+
+PAYSLIP_DEBUG: Found 5 advances for Grace Auma
+
+PAYSLIP_DEBUG: Found 5 advances for Grace Auma
+
+batch_pdf_failed
+
+Error in file: /Users/isaac/python_projects/morgenroth/morgenrothproject/mapp/app_views/payroll_view.py, line: 215, in admin_generate_batch_payslips_pdf - 'user'
+PAYSLIP_DEBUG: Found 5 advances for Grace Auma
+
+PAYSLIP_DEBUG: Found 5 advances for Grace Auma
+
+PAYSLIP_DEBUG: Found 5 advances for Grace Auma
+
+PAYSLIP_DEBUG: Found 5 advances for Grace Auma
+
+Attempting to save organization: Morgenroth
+
+SUCCESS: Organization 'Morgenroth' updated with UUID a9ab9135-1741-4019-a5a2-aa0de185583b
+
+PAYSLIP_DEBUG: Found 5 advances for Grace Auma
+
