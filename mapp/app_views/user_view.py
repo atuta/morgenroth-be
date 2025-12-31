@@ -15,7 +15,26 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from mapp.classes.user_service import UserService
 from mapp.classes.logs.logs import Logs
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def api_get_all_user_names_and_ids(request):
+    """
+    Fetch all users with their user_id and full_name.
+    """
+    try:
+        result = UserService.get_all_user_names_and_ids()
+        if result.get("status") == "success":
+            return Response(result, status=200)
+        else:
+            return Response(result, status=400)
 
+    except Exception as e:
+        Logs.atuta_technical_logger("api_get_all_user_names_and_ids_failed", exc_info=e)
+        return Response(
+            {"status": "error", "message": "failed_to_fetch_users"},
+            status=500
+        )
+    
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def api_get_latest_organization(request):

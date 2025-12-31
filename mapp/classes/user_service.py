@@ -9,11 +9,39 @@ from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.db import IntegrityError
 
 from mapp.models import CustomUser, AttendanceSession, OvertimeAllowance, AdvancePayment, StatutoryDeduction, OrganizationDetail
-from mapp.classes.payroll_service import PayrollService
+from mapp.classes.payroll_service import PayrollService, CustomUser
 from mapp.classes.logs.logs import Logs
 
 
 class UserService:
+    @classmethod
+    def get_all_user_names_and_ids(cls):
+        """
+        Fetches all users and returns a list of dicts with user_id and full_name.
+        """
+        try:
+            users = CustomUser.objects.all()
+            user_list = [
+                {
+                    "user_id": str(user.user_id),
+                    "full_name": f"{user.first_name} {user.last_name}".strip()
+                }
+                for user in users
+            ]
+
+            Logs.atuta_logger(f"Fetched {len(user_list)} users with full names and IDs")
+            return {
+                "status": "success",
+                "data": user_list
+            }
+
+        except Exception as e:
+            Logs.atuta_technical_logger("get_all_user_names_and_ids_failed", exc_info=e)
+            return {
+                "status": "error",
+                "message": "failed_to_fetch_users"
+            }
+
     @staticmethod
     def get_latest_organization():
         """
