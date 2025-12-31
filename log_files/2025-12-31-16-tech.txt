@@ -4,3 +4,23 @@ Error in file: /Users/isaac/python_projects/morgenroth/morgenrothproject/mapp/cl
 get_all_user_names_and_ids_failed
 
 Error in file: /Users/isaac/python_projects/morgenroth/morgenrothproject/mapp/classes/user_service.py, line: 23, in get_all_user_names_and_ids - type object 'UserService' has no attribute 'objects'
+PAYSLIP_DEBUG: Failed rate for karey@gmail.com
+
+Payslip Logic Error: Failed to fetch hourly rate
+
+PAYSLIP_DEBUG: Failed rate for karey@gmail.com
+
+Payslip Logic Error: Failed to fetch hourly rate
+
+PAYSLIP_DEBUG: Failed rate for karey@gmail.com
+
+Payslip Logic Error: Failed to fetch hourly rate
+
+PAYSLIP_DEBUG: Failed rate for karey@gmail.com
+
+Payslip Logic Error: Failed to fetch hourly rate
+
+PAYSLIP_DEBUG: Failed rate for karey@gmail.com
+
+Payslip Logic Error: Failed to fetch hourly rate
+
