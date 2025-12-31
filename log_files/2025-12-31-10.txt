@@ -1,0 +1,44 @@
+User logged in | user_id=eb3f74a2-1aa0-4135-be00-96177e45f334
+
+Fetched total working hours for user c069ae5c-6a12-4256-b280-0e13b0d29214 | 12/2025 | sessions=0 | corrections=9.00 | total=9.0
+
+Fetched total working hours for user b332ba54-5e18-428e-b567-374b43fadfc3 | 12/2025 | sessions=0 | corrections=13.50 | total=13.5
+
+Fetched total working hours for user 9b69d7d9-160b-4ddb-b8c2-fbbbda78594b | 12/2025 | sessions=0 | corrections=0 | total=0.0
+
+Fetched total working hours for user 254cb3d3-22f5-4887-9351-f6168af4a9b7 | 12/2025 | sessions=0.27 | corrections=13.50 | total=13.77
+
+Fetched total working hours for user eb3f74a2-1aa0-4135-be00-96177e45f334 | 12/2025 | sessions=0.06 | corrections=0 | total=0.06
+
+Fetched details for user None: {'email': None, 'phone_number': '0731257726', 'first_name': 'Isaac', 'last_name': 'Misiani', 'account': 'wGAgu', 'user_role': 'admin', 'id_number': None, 'nssf_number': None, 'shif_sha_number': None, 'hourly_rate': Decimal('0.00'), 'hourly_rate_currency': 'KES', 'lunch_start': None, 'lunch_end': None, 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': 'eb3f74a2-1aa0-4135-be00-96177e45f334', 'photo': '/media/staff_photos/cropped_african_man_ngkOCry.jpg'}
+
+Attendance history fetched: range 2025-12-01 to 2025-12-31 | user=ALL
+
+Attendance history fetched: range 2025-12-01 to 2025-12-31 | user=ALL
+
+User logged in | user_id=254cb3d3-22f5-4887-9351-f6168af4a9b7
+
+User logged in | user_id=eb3f74a2-1aa0-4135-be00-96177e45f334
+
+Fetched total working hours for user c069ae5c-6a12-4256-b280-0e13b0d29214 | 12/2025 | sessions=0 | corrections=9.00 | total=9.0
+
+Fetched total working hours for user b332ba54-5e18-428e-b567-374b43fadfc3 | 12/2025 | sessions=0 | corrections=13.50 | total=13.5
+
+Fetched total working hours for user 9b69d7d9-160b-4ddb-b8c2-fbbbda78594b | 12/2025 | sessions=0 | corrections=0 | total=0.0
+
+Fetched total working hours for user 254cb3d3-22f5-4887-9351-f6168af4a9b7 | 12/2025 | sessions=0.27 | corrections=13.50 | total=13.77
+
+Fetched total working hours for user eb3f74a2-1aa0-4135-be00-96177e45f334 | 12/2025 | sessions=0.06 | corrections=0 | total=0.06
+
+Attendance history fetched: range 2025-12-01 to 2025-12-31 | user=ALL
+
+Fetched total working hours for user c069ae5c-6a12-4256-b280-0e13b0d29214 | 12/2025 | sessions=0 | corrections=9.00 | total=9.0
+
+Fetched total working hours for user b332ba54-5e18-428e-b567-374b43fadfc3 | 12/2025 | sessions=0 | corrections=13.50 | total=13.5
+
+Fetched total working hours for user 9b69d7d9-160b-4ddb-b8c2-fbbbda78594b | 12/2025 | sessions=0 | corrections=0 | total=0.0
+
+Fetched total working hours for user 254cb3d3-22f5-4887-9351-f6168af4a9b7 | 12/2025 | sessions=0.27 | corrections=13.50 | total=13.77
+
+Fetched total working hours for user eb3f74a2-1aa0-4135-be00-96177e45f334 | 12/2025 | sessions=0.06 | corrections=0 | total=0.06
+

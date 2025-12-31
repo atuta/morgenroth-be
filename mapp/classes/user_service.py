@@ -634,19 +634,21 @@ class UserService:
         hourly_rate=None,
         lunch_start=None,
         lunch_end=None,
-        email=None,            # NEW
-        phone_number=None,     # NEW
-        id_number=None,        # NEW
-        user_role=None,        # NEW
+        email=None,
+        phone_number=None,
+        id_number=None,
+        user_role=None,
+        nssf_amount=None,   # ✅ NEW
     ):
         """
-        Update selected user fields including contact and role info.
+        Update selected user fields including contact, role, and statutory info.
         """
         try:
             Logs.atuta_logger(
                 f"Received update request for user {user_id}: "
-                f"nssf={nssf}, sha={sha}, hourly_rate={hourly_rate}, "
-                f"email={email}, phone={phone_number}, id_number={id_number}, role={user_role}"
+                f"nssf={nssf}, nssf_amount={nssf_amount}, sha={sha}, "
+                f"hourly_rate={hourly_rate}, email={email}, "
+                f"phone={phone_number}, id_number={id_number}, role={user_role}"
             )
 
             user = CustomUser.objects.get(user_id=user_id)
@@ -669,7 +671,6 @@ class UserService:
 
             # --- User Role ---
             if user_role not in (None, ""):
-                # Validate against model choices
                 valid_roles = [choice[0] for choice in CustomUser.USER_ROLE_CHOICES]
                 if user_role in valid_roles:
                     user.user_role = user_role
@@ -677,10 +678,18 @@ class UserService:
                 else:
                     return {"status": "error", "message": "invalid_user_role"}
 
-            # --- NSSF ---
+            # --- NSSF Number ---
             if nssf not in (None, ""):
                 user.nssf_number = str(nssf).strip()
                 updated_fields.append("nssf_number")
+
+            # --- NSSF Amount ---
+            if nssf_amount not in (None, ""):
+                try:
+                    user.nssf_amount = Decimal(nssf_amount)
+                    updated_fields.append("nssf_amount")
+                except (InvalidOperation, ValueError):
+                    return {"status": "error", "message": "invalid_nssf_amount"}
 
             # --- SHA ---
             if sha not in (None, ""):
@@ -713,15 +722,15 @@ class UserService:
             if not updated_fields:
                 return {"status": "info", "message": "no_fields_to_update"}
 
-            # Model-level validation (Checks unique constraints & lunch time logic)
+            # Model-level validation
             try:
                 user.full_clean()
             except ValidationError as ve:
                 Logs.atuta_logger(f"Validation failed for {user_id}: {ve.message_dict}")
                 return {
-                    "status": "error", 
-                    "message": "validation_failed", 
-                    "errors": ve.message_dict
+                    "status": "error",
+                    "message": "validation_failed",
+                    "errors": ve.message_dict,
                 }
 
             user.save(update_fields=updated_fields)
@@ -734,6 +743,7 @@ class UserService:
         except Exception as e:
             Logs.atuta_technical_logger("update_user_fields_failed", exc_info=e)
             return {"status": "error", "message": "update_failed"}
+
 
 
     @classmethod

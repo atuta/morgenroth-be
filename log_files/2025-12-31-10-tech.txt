@@ -1,0 +1,8 @@
+DEBUG: HourCorrection Request -> User: 254cb3d3-22f5-4887-9351-f6168af4a9b7, Range: 12/2025 to 12/2025
+
+DEBUG: Found 8 records in database for this filter.
+
+User clocked in | type=overtime | user=eb3f74a2-1aa0-4135-be00-96177e45f334 | session_id=c146d3c8-3f16-4863-b0a1-c8a53c2e2464
+
+Retrieved current session | user=eb3f74a2-1aa0-4135-be00-96177e45f334 | session_id=c146d3c8-3f16-4863-b0a1-c8a53c2e2464
+

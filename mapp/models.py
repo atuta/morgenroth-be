@@ -93,6 +93,12 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     # Staff info
     id_number = models.CharField(max_length=50, null=True, blank=True)
     nssf_number = models.CharField(max_length=50, null=True, blank=True)
+    nssf_amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=Decimal("0.00"),
+        help_text="Monthly NSSF contribution amount"
+    )
     shif_sha_number = models.CharField(max_length=50, null=True, blank=True)
     photo = models.ImageField(upload_to='staff_photos/', null=True, blank=True)
 

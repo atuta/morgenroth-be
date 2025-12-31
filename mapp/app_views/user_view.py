@@ -197,7 +197,7 @@ def upload_user_photo(request):
 def api_update_user_fields(request):
     """
     Admin updates a specific user's fields.
-    Now supports email, phone_number, id_number, and user_role.
+    Now supports email, phone_number, id_number, user_role, and nssf_amount.
     """
     try:
         user_id = request.data.get("user_id")
@@ -207,20 +207,20 @@ def api_update_user_fields(request):
                 status=400
             )
 
-        # Extracting standard fields
+        # Existing fields
         nssf = request.data.get("nssf")
         sha = request.data.get("sha")
         hourly_rate = request.data.get("hourly_rate")
         lunch_start = request.data.get("lunch_start")
         lunch_end = request.data.get("lunch_end")
 
-        # Extracting the new inclusions
+        # Newly supported fields
         email = request.data.get("email")
         phone_number = request.data.get("phone_number")
         id_number = request.data.get("id_number")
         user_role = request.data.get("user_role")
+        nssf_amount = request.data.get("nssf_amount")  # ✅ NEW
 
-        # Pass all arguments to the service layer
         result = UserService.update_user_fields(
             user_id=user_id,
             nssf=nssf,
@@ -232,14 +232,14 @@ def api_update_user_fields(request):
             phone_number=phone_number,
             id_number=id_number,
             user_role=user_role,
+            nssf_amount=nssf_amount,  # ✅ pass through
         )
 
-        # Map 'info' status to 200 as well (e.g., "no_fields_to_update")
         if result.get("status") in ("success", "info"):
             status_code = 200
         else:
             status_code = 400
-            
+
         return Response(result, status=status_code)
 
     except Exception as e:
@@ -248,6 +248,7 @@ def api_update_user_fields(request):
             {"status": "error", "message": "update_failed"},
             status=500
         )
+
 
     
 @api_view(['GET'])
