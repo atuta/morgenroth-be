@@ -226,29 +226,54 @@ def admin_generate_batch_payslips_pdf(request):
         return Response({"status": "error", "message": str(e)}, status=500)
 
 
-@api_view(['GET'])
+@api_view(['POST'])
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
 def generate_user_payslip_pdf(request):
-    """Single PDF for the logged-in user."""
-    user = request.user
-    month = int(request.GET.get('month', datetime.date.today().month))
-    year = int(request.GET.get('year', datetime.date.today().year))
+    """
+    Generates one or more PDFs for the logged-in user.
+    Accepts optional JSON payload:
+    {
+        "months": [1,2,3],       # optional, defaults to current month
+        "years": [2025,2025,2025] # optional, same length as months
+    }
+    Returns a single PDF with multiple pages (one per month/year).
+    """
+    try:
+        user = request.user
+        data = request.data or {}
+        months = data.get("months", [datetime.date.today().month])
+        years = data.get("years", [datetime.date.today().year])
 
-    result = PayrollService.generate_detailed_payslip(user, month, year)
-    if result["status"] != "success":
-        return Response({"status": "error", "message": "Data not found"}, status=404)
+        if len(months) != len(years):
+            return Response({"status": "error", "message": "months and years must match in length"}, status=400)
 
-    buffer = BytesIO()
-    doc = SimpleDocTemplate(buffer, pagesize=A4)
-    story = []
-    org = OrganizationDetail.objects.first()
-    _draw_payslip_page(story, user, result["message"], org, getSampleStyleSheet())
-    doc.build(story)
+        buffer = BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=A4, topMargin=1.5*cm, bottomMargin=1.5*cm)
+        story = []
+        org = OrganizationDetail.objects.first()
+        styles = getSampleStyleSheet()
 
-    response = HttpResponse(buffer.getvalue(), content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="Payslip_{month}_{year}.pdf"'
-    return response
+        for m, y in zip(months, years):
+            result = PayrollService.generate_detailed_payslip(user, m, y)
+            if result["status"] == "success":
+                _draw_payslip_page(story, user, result["message"], org, styles)
+            else:
+                # Skip months with no data
+                continue
+
+        if not story:
+            return Response({"status": "error", "message": "No payslip data found"}, status=404)
+
+        doc.build(story)
+        pdf_bytes = buffer.getvalue()
+        response = HttpResponse(pdf_bytes, content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="Payslip_{user.full_name}.pdf"'
+        return response
+
+    except Exception as e:
+        Logs.atuta_technical_logger("user_batch_pdf_failed", exc_info=e)
+        return Response({"status": "error", "message": str(e)}, status=500)
 
 
 @api_view(['GET'])
