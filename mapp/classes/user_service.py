@@ -108,7 +108,7 @@ class UserService:
         """
         Return payslip data for ALL users within a date range.
         Output → one record per user summarised + nested breakdowns.
-        Also logs per-user payroll details and final summary totals.
+        None values are safely converted to 0.00 for numeric calculations.
         """
 
         try:
@@ -139,13 +139,13 @@ class UserService:
 
             # --- Initialize overall totals ---
             overall_totals = {
-                "total_hours": 0,
-                "total_base_pay": 0,
-                "total_overtime": 0,
-                "gross_pay": 0,
-                "total_deductions": 0,
-                "total_advance": 0,
-                "net_pay": 0
+                "total_hours": 0.0,
+                "total_base_pay": 0.0,
+                "total_overtime": 0.0,
+                "gross_pay": 0.0,
+                "total_deductions": 0.0,
+                "total_advance": 0.0,
+                "net_pay": 0.0
             }
             overall_deductions = []
             overall_advances = []
@@ -159,12 +159,8 @@ class UserService:
 
                 # --- Hourly Rate ---
                 rate_result = PayrollService.get_hourly_rate(user)
-                if rate_result.get("status") != "success":
-                    hourly_rate = 0
-                    currency = "KES"
-                else:
-                    hourly_rate = rate_result["message"]["hourly_rate"]
-                    currency = rate_result["message"]["currency"]
+                hourly_rate = float(rate_result["message"]["hourly_rate"] or 0) if rate_result.get("status") == "success" else 0.0
+                currency = rate_result["message"]["currency"] if rate_result.get("status") == "success" else "KES"
 
                 # --- Attendance ---
                 attendance_qs = AttendanceSession.objects.filter(
@@ -175,8 +171,8 @@ class UserService:
                 ).order_by("date")
 
                 attendance_breakdown = []
-                total_hours = 0
-                total_base_pay = 0
+                total_hours = 0.0
+                total_base_pay = 0.0
 
                 for a in attendance_qs:
                     h = float(a.total_hours or 0)
@@ -191,7 +187,7 @@ class UserService:
                     })
 
                 if not attendance_qs.exists():
-                    attendance_breakdown.append({"date": None, "hours": 0, "pay": 0, "notes": ""})
+                    attendance_breakdown.append({"date": None, "hours": 0.0, "pay": 0.0, "notes": ""})
 
                 # --- Overtime ---
                 overtime_qs = OvertimeAllowance.objects.filter(
@@ -200,39 +196,51 @@ class UserService:
                 ).order_by("date")
 
                 overtime_breakdown = []
-                total_overtime = 0
+                total_overtime = 0.0
 
                 for o in overtime_qs:
                     amount = float(o.amount or 0)
+                    hours = float(o.hours or 0)
                     total_overtime += amount
                     overtime_breakdown.append({
                         "date": o.date.strftime("%Y-%m-%d"),
-                        "hours": float(o.hours),
+                        "hours": hours,
                         "amount": amount,
                         "remarks": o.remarks or ""
                     })
 
                 if not overtime_qs.exists():
-                    overtime_breakdown.append({"date": None, "hours": 0, "amount": 0, "remarks": ""})
+                    overtime_breakdown.append({"date": None, "hours": 0.0, "amount": 0.0, "remarks": ""})
 
                 # --- Gross Pay ---
                 gross = total_base_pay + total_overtime
 
-                # --- Deductions ---
+                # --- Deductions (including NSSF) ---
                 deductions_breakdown = []
-                total_deductions = 0
+                total_deductions = 0.0
 
+                # Add standard deductions
                 for d in deductions_list:
-                    amount = gross * (d.get("percentage", 0) / 100)
+                    amount = gross * (float(d.get("percentage") or 0) / 100)
                     total_deductions += amount
                     deductions_breakdown.append({
                         "name": d.get("name"),
-                        "percentage": d.get("percentage"),
+                        "percentage": float(d.get("percentage") or 0),
                         "amount": float(amount)
                     })
 
-                if not deductions_list:
-                    deductions_breakdown.append({"name": "None", "percentage": 0, "amount": 0})
+                # Add NSSF if defined per user
+                nssf_amount = float(user.nssf_amount or 0)
+                total_deductions += nssf_amount
+                if nssf_amount > 0:
+                    deductions_breakdown.append({
+                        "name": "NSSF",
+                        "percentage": None,
+                        "amount": nssf_amount
+                    })
+
+                if not deductions_breakdown:
+                    deductions_breakdown.append({"name": "None", "percentage": 0, "amount": 0.0})
 
                 # --- Advance Payments ---
                 advances_qs = AdvancePayment.objects.filter(
@@ -241,7 +249,7 @@ class UserService:
                 )
 
                 advance_breakdown = []
-                total_advance = 0
+                total_advance = 0.0
 
                 for ad in advances_qs:
                     amt = float(ad.amount or 0)
@@ -254,7 +262,7 @@ class UserService:
                     })
 
                 if not advances_qs.exists():
-                    advance_breakdown.append({"date": None, "amount": 0, "remarks": "", "approved_by": None})
+                    advance_breakdown.append({"date": None, "amount": 0.0, "remarks": "", "approved_by": None})
 
                 # --- Net Pay ---
                 net = gross - total_deductions - total_advance
@@ -272,19 +280,6 @@ class UserService:
                 overall_deductions.extend(deductions_breakdown)
                 overall_advances.extend(advance_breakdown)
                 overall_overtime.extend(overtime_breakdown)
-
-                # --- Enhanced Debug log per user ---
-                # --- Enhanced Debug log per user with full items ---
-                log_msg = (
-                    f"Payroll for user {user.full_name} | "
-                    f"attendance={attendance_qs.count()} | "
-                    f"hourly_rate={hourly_rate} | gross={gross} | "
-                    f"deductions_total={total_deductions} | advance_total={total_advance} | net_pay={net} | "
-                    f"deductions_items={deductions_breakdown} | "
-                    f"advances_items={advance_breakdown} | "
-                    f"overtime_items={overtime_breakdown}"
-                )
-                # Logs.atuta_technical_logger(f"payroll_user_debug: {log_msg}")
 
                 # --- Store per user ---
                 final_output.append({
@@ -309,22 +304,6 @@ class UserService:
                     "advances": advance_breakdown
                 })
 
-            # --- Final summary log after processing all users ---
-            summary_msg = (
-                f"Payroll Summary | total_users={len(users)} | "
-                f"total_hours={overall_totals['total_hours']} | "
-                f"total_base_pay={overall_totals['total_base_pay']} | "
-                f"total_overtime={overall_totals['total_overtime']} | "
-                f"gross_pay={overall_totals['gross_pay']} | "
-                f"total_deductions={overall_totals['total_deductions']} | "
-                f"total_advance={overall_totals['total_advance']} | "
-                f"net_pay={overall_totals['net_pay']} | "
-                f"deductions_items={len(overall_deductions)} | "
-                f"advances_items={len(overall_advances)} | "
-                f"overtime_items={len(overall_overtime)}"
-            )
-            # Logs.atuta_logger(f"payroll_summary_debug: {summary_msg}")
-
             payroll = {
                 "status": "success",
                 "message": {
@@ -337,12 +316,14 @@ class UserService:
                     "overtime_items": overall_overtime
                 }
             }
+
             Logs.atuta_logger(payroll)
             return payroll
 
         except Exception as e:
             Logs.atuta_technical_logger("payslip_range_error", exc_info=e)
             return {"status": "error", "message": "range_generation_failed"}
+
 
 
 
@@ -760,7 +741,8 @@ class UserService:
                 "first_name", "last_name", "email", "account", "user_role",
                 "phone_number", "id_number", "nssf_number", "shif_sha_number",
                 "hourly_rate", "hourly_rate_currency", "status",
-                "is_present_today", "is_on_leave", "lunch_start", "lunch_end"  # Added lunch fields
+                "is_present_today", "is_on_leave", "lunch_start", "lunch_end", 
+                "nssf_amount"  # <-- newly added field
             ]
 
             user_data = model_to_dict(user, fields=FIELDS_TO_INCLUDE)
@@ -792,6 +774,7 @@ class UserService:
                 "status": "error",
                 "message": "failed_to_fetch_user"
             }
+
 
 
     @classmethod

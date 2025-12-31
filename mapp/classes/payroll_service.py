@@ -223,17 +223,27 @@ class PayrollService:
                     amt = float(gross_pay) * (float(d["percentage"]) / 100)
                     total_deductions += amt
                     deductions_breakdown.append({
-                        "name": d["name"], "percentage": d["percentage"], "amount": float(amt)
+                        "name": d["name"],
+                        "percentage": d["percentage"],
+                        "amount": float(amt)
                     })
 
-            # 5. Advances (Fixed with explicit __month and __year lookups)
+            # --- Add NSSF Deduction from user record if present ---
+            if getattr(user, "nssf_amount", None):
+                nssf_amt = float(user.nssf_amount)
+                total_deductions += nssf_amt
+                deductions_breakdown.append({
+                    "name": "NSSF",
+                    "percentage": None,  # Fixed amount
+                    "amount": nssf_amt
+                })
+
+            # 5. Advances
             advance_qs = AdvancePayment.objects.filter(
                 user=user, 
                 created_at__month=month, 
                 created_at__year=year
             ).order_by('created_at')
-
-            Logs.atuta_technical_logger(f"PAYSLIP_DEBUG: Found {advance_qs.count()} advances for {user.full_name}")
 
             advance_breakdown = []
             total_advance = 0
@@ -269,6 +279,7 @@ class PayrollService:
         except Exception as e:
             Logs.atuta_technical_logger(f"Payslip Logic Error: {str(e)}", exc_info=True)
             return {"status": "error", "message": str(e)}
+
 
     @classmethod
     def generate_detailed_payslip_dep(cls, user: CustomUser, month: int, year: int):

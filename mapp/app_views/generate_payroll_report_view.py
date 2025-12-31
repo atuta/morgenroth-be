@@ -25,35 +25,35 @@ def format_deduction_name(name):
 def build_detail_table(header_text, detail_items, currency, NormalStyle, NormalRightStyle, DetailStyle, DetailHeaderRightStyle, width, start_date=None, end_date=None):
     """
     Creates a nested table for specific transaction details (Attendance, Advances, Deductions, Overtime).
+    Ensures None values are treated as 0.00 to avoid formatting errors.
     """
-    # Filter out items with zero value first
+    # Filter out items with non-zero value (treat None as 0)
     active_details = [
-        item for item in detail_items 
-        if item.get('amount', 0) > 0 or item.get('hours', 0) > 0 or item.get('pay', 0) > 0
+        item for item in detail_items
+        if (item.get('amount') or 0) > 0 or (item.get('hours') or 0) > 0 or (item.get('pay') or 0) > 0
     ]
-    
+
     if not active_details:
         return []
 
     Story = []
     detail_data = []
     style_commands = []
-    
+
+    # --- Attendance Table ---
     if header_text == "Attendance":
-        # --- SUMMARIZATION LOGIC ---
-        total_hours = sum(item.get('hours', 0.0) for item in active_details)
-        total_pay = sum(item.get('pay', 0.0) for item in active_details)
-        
+        total_hours = sum(float(item.get('hours') or 0) for item in active_details)
+        total_pay = sum(float(item.get('pay') or 0) for item in active_details)
+
         detail_header = [
-            Paragraph("Period", DetailStyle), 
-            Paragraph("Total Hours", DetailStyle), 
-            Paragraph("Base Pay", DetailHeaderRightStyle), 
+            Paragraph("Period", DetailStyle),
+            Paragraph("Total Hours", DetailStyle),
+            Paragraph("Base Pay", DetailHeaderRightStyle),
         ]
         col_widths = [0.4 * width, 0.25 * width, 0.35 * width]
-        
-        # Create a single row showing the summary
+
         period_text = f"{start_date} → {end_date}" if start_date and end_date else "Total Period"
-        
+
         detail_data = [
             [
                 Paragraph(period_text, NormalStyle),
@@ -61,56 +61,70 @@ def build_detail_table(header_text, detail_items, currency, NormalStyle, NormalR
                 Paragraph(f"{total_pay:.2f} {currency}", NormalRightStyle),
             ]
         ]
-        
-        # Base Pay column (index 2) needs explicit right alignment
         style_commands = [('ALIGN', (2, 0), (2, -1), 'RIGHT')]
-        
+
+    # --- Deductions Table ---
     elif header_text == "Deductions":
-        detail_header = [Paragraph("Name", DetailStyle), Paragraph("Rate", DetailStyle), Paragraph("Amount", DetailHeaderRightStyle)]
+        detail_header = [
+            Paragraph("Name", DetailStyle),
+            Paragraph("Rate", DetailStyle),
+            Paragraph("Amount", DetailHeaderRightStyle)
+        ]
         col_widths = [0.3 * width, 0.2 * width, 0.5 * width]
-        
+
         detail_data = [
             [
-                Paragraph(format_deduction_name(item["name"]), NormalStyle),
-                Paragraph(f"{item.get('percentage', 0):.2f}%", NormalStyle),
-                Paragraph(f"{item['amount']:.2f} {currency}", NormalRightStyle),
+                Paragraph(format_deduction_name(item.get("name") or "N/A"), NormalStyle),
+                Paragraph(f"{float(item.get('percentage') or 0):.2f}%", NormalStyle),
+                Paragraph(f"{float(item.get('amount') or 0):.2f} {currency}", NormalRightStyle),
             ] for item in active_details
         ]
-        
+
+    # --- Overtime Table ---
     elif header_text == "Overtime":
-        detail_header = [Paragraph("Date", DetailStyle), Paragraph("Hours", DetailStyle), Paragraph("Amount", DetailHeaderRightStyle), Paragraph("Remarks", DetailStyle)]
+        detail_header = [
+            Paragraph("Date", DetailStyle),
+            Paragraph("Hours", DetailStyle),
+            Paragraph("Amount", DetailHeaderRightStyle),
+            Paragraph("Remarks", DetailStyle)
+        ]
         col_widths = [0.2 * width, 0.15 * width, 0.25 * width, 0.4 * width]
-        
+
         detail_data = [
             [
-                Paragraph(item.get("date", "N/A"), NormalStyle),
-                Paragraph(f"{item.get('hours', 0):.1f}", NormalStyle),
-                Paragraph(f"{item['amount']:.2f} {currency}", NormalRightStyle),
-                Paragraph(item.get("remarks", ""), NormalStyle),
+                Paragraph(item.get("date") or "N/A", NormalStyle),
+                Paragraph(f"{float(item.get('hours') or 0):.1f}", NormalStyle),
+                Paragraph(f"{float(item.get('amount') or 0):.2f} {currency}", NormalRightStyle),
+                Paragraph(item.get("remarks") or "", NormalStyle),
             ] for item in active_details
         ]
         style_commands = [('ALIGN', (2, 1), (2, -1), 'RIGHT')]
-        
+
+    # --- Advances Table ---
     elif header_text == "Advances":
-        detail_header = [Paragraph("Date", DetailStyle), Paragraph("Amount", DetailHeaderRightStyle), Paragraph("Remarks", DetailStyle), Paragraph("Approved By", DetailStyle)]
+        detail_header = [
+            Paragraph("Date", DetailStyle),
+            Paragraph("Amount", DetailHeaderRightStyle),
+            Paragraph("Remarks", DetailStyle),
+            Paragraph("Approved By", DetailStyle)
+        ]
         col_widths = [0.2 * width, 0.2 * width, 0.3 * width, 0.3 * width]
-        
+
         detail_data = [
             [
-                Paragraph(item.get("date", "N/A"), NormalStyle),
-                Paragraph(f"{item['amount']:.2f} {currency}", NormalRightStyle),
-                Paragraph(item.get("remarks", ""), NormalStyle),
-                Paragraph(item.get("approved_by", "N/A"), NormalStyle),
+                Paragraph(item.get("date") or "N/A", NormalStyle),
+                Paragraph(f"{float(item.get('amount') or 0):.2f} {currency}", NormalRightStyle),
+                Paragraph(item.get("remarks") or "", NormalStyle),
+                Paragraph(item.get("approved_by") or "N/A", NormalStyle),
             ] for item in active_details
         ]
         style_commands = [('ALIGN', (1, 1), (1, -1), 'RIGHT')]
-    
 
     Story.append(Paragraph(f"<b>--- {header_text.upper()} DETAILS ---</b>", DetailStyle))
     detail_data.insert(0, detail_header)
 
     detail_table = Table(detail_data, colWidths=col_widths)
-    
+
     # Base styles for all detail tables
     base_styles = [
         ('GRID', (0, 0), (-1, -1), 0.25, colors.lightgrey),
@@ -120,22 +134,21 @@ def build_detail_table(header_text, detail_items, currency, NormalStyle, NormalR
         ('RIGHTPADDING', (0, 0), (-1, -1), 4),
         ('BOTTOMPADDING', (0, 0), (-1, -1), 2),
     ]
-    
-    # Add manual alignment commands for Attendance, Overtime, and Advances
+
     if header_text in ["Attendance", "Overtime", "Advances"]:
         base_styles.extend(style_commands)
-        
-    # Crucial: Apply right alignment to the last column for Deductions (since it's the amount)
+
     if header_text == "Deductions":
-        base_styles.append(('ALIGN', (-1, 1), (-1, -1), 'RIGHT')) 
+        base_styles.append(('ALIGN', (-1, 1), (-1, -1), 'RIGHT'))
 
     detail_table.setStyle(TableStyle(base_styles))
-    
+
     Story.append(Spacer(1, 0.1*cm))
     Story.append(detail_table)
     Story.append(Spacer(1, 0.3*cm))
-    
+
     return Story
+
 
 
 @api_view(["GET"])

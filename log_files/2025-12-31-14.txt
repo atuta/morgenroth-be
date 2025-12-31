@@ -1,0 +1,24 @@
+Successfully fetched 4 non-admin users
+
+Fetched details for user grace@gmail.com: {'email': 'grace@gmail.com', 'phone_number': '0786452560', 'first_name': 'Grace', 'last_name': 'Auma', 'account': 'PkA5H', 'user_role': 'teaching', 'id_number': '123456732', 'nssf_number': 'NSSF765478', 'nssf_amount': Decimal('2505.00'), 'shif_sha_number': 'SHA87697', 'hourly_rate': Decimal('175.00'), 'hourly_rate_currency': 'KES', 'lunch_start': 1100, 'lunch_end': 1250, 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': '254cb3d3-22f5-4887-9351-f6168af4a9b7', 'photo': '/media/staff_photos/cropped_images.jpg'}
+
+Fetched hourly rate snapshot for user 254cb3d3-22f5-4887-9351-f6168af4a9b7 | rate=175.0 KES | effective_from=2025-12-30 22:06:04.295198+00:00
+
+Fetched all statutory deductions from snapshots | count=2
+
+Successfully fetched 4 non-admin users
+
+Fetched details for user grace@gmail.com: {'email': 'grace@gmail.com', 'phone_number': '0786452560', 'first_name': 'Grace', 'last_name': 'Auma', 'account': 'PkA5H', 'user_role': 'teaching', 'id_number': '123456732', 'nssf_number': 'NSSF765478', 'nssf_amount': Decimal('2505.00'), 'shif_sha_number': 'SHA87697', 'hourly_rate': Decimal('175.00'), 'hourly_rate_currency': 'KES', 'lunch_start': 1100, 'lunch_end': 1250, 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': '254cb3d3-22f5-4887-9351-f6168af4a9b7', 'photo': '/media/staff_photos/cropped_images.jpg'}
+
+Fetched hourly rate snapshot for user 254cb3d3-22f5-4887-9351-f6168af4a9b7 | rate=175.0 KES | effective_from=2025-12-30 22:06:04.295198+00:00
+
+Fetched all statutory deductions from snapshots | count=2
+
+Fetched hourly rate snapshot for user 254cb3d3-22f5-4887-9351-f6168af4a9b7 | rate=175.0 KES | effective_from=2025-12-30 22:06:04.295198+00:00
+
+Fetched all statutory deductions from snapshots | count=2
+
+Fetched hourly rate snapshot for user 254cb3d3-22f5-4887-9351-f6168af4a9b7 | rate=175.0 KES | effective_from=2025-12-30 22:06:04.295198+00:00
+
+Fetched all statutory deductions from snapshots | count=2
+
