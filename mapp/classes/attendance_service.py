@@ -4,6 +4,8 @@ from decimal import Decimal
 from django.db.models import Sum, Q, Case, When, DecimalField
 from datetime import datetime
 import datetime
+import pytz
+import datetime as dt
 import base64
 import uuid
 from django.core.files.base import ContentFile
@@ -19,56 +21,98 @@ class AttendanceService:
     @classmethod
     def auto_clock_out_users_at_day_end(cls):
         """
-        Loop through all users and automatically clock them out
-        if current server time has passed their configured end-of-day time.
+        Loop through all active users who are currently present, evaluate their end-of-day
+        using Nairobi time, and automatically clock out regular sessions only.
+        Detailed logs for evaluation, skipped users, and clocked-out users.
         """
-        try:
-            now = timezone.localtime(timezone.now())
+        KENYA_TZ = pytz.timezone("Africa/Nairobi")
 
+        try:
+            # Current Kenya time
+            now = timezone.now().astimezone(KENYA_TZ)
+            now_str = now.strftime("%Y-%m-%d %H:%M:%S")
+            print(f"[INFO] Auto clock-out job started at {now_str}")
+
+            # Only active users who are present today
             users = CustomUser.objects.filter(
                 is_active=True,
                 is_present_today=True
             )
 
+            total_users = users.count()
+            clocked_out = 0
+            skipped_no_session = 0
+            skipped_no_config = 0
+
             for user in users:
                 try:
-                    # Get configured end time for today
+                    # Get today's end time for this user
                     day_config = cls.get_user_day_end_time(user.user_id)
 
-                    if not day_config:
+                    if not day_config or not day_config.get("end_time"):
+                        skipped_no_config += 1
+                        Logs.atuta_logger(
+                            f"[SKIP] User {user.user_id} ({user.full_name}) — no working hours config today"
+                        )
                         continue
 
-                    end_time = day_config.get("end_time")
-                    if not end_time:
-                        continue
+                    end_time = day_config["end_time"]
 
-                    # Combine today's date with configured end_time
-                    end_datetime = datetime.combine(
-                        now.date(),
-                        end_time
+                    # Combine today's date with end_time and localize to Nairobi
+                    end_datetime = dt.datetime.combine(now.date(), end_time)
+                    if timezone.is_naive(end_datetime):
+                        end_datetime = KENYA_TZ.localize(end_datetime)
+
+                    Logs.atuta_logger(
+                        f"[EVALUATE] User {user.user_id} ({user.full_name}) | "
+                        f"Now={now} | End_of_day={end_datetime}"
                     )
 
-                    if timezone.is_naive(end_datetime):
-                        end_datetime = timezone.make_aware(end_datetime)
-
-                    # Only clock out if current time >= configured end time
+                    # Only clock out if current Kenya time >= configured end time
                     if now >= end_datetime:
-                        cls.clock_out(
+                        result = cls.clock_out_regular_only(
                             user=user,
                             timestamp=now,
                             notes="Auto clock-out at end of working hours"
                         )
 
+                        if result.get("status") == "success":
+                            clocked_out += 1
+                            Logs.atuta_logger(
+                                f"[CLOCKED_OUT] User {user.user_id} ({user.full_name})"
+                            )
+                        else:
+                            skipped_no_session += 1
+                            Logs.atuta_logger(
+                                f"[SKIP] User {user.user_id} ({user.full_name}) — no open regular session"
+                            )
+                    else:
+                        Logs.atuta_logger(
+                            f"[SKIP] User {user.user_id} ({user.full_name}) — not yet end-of-day"
+                        )
+
                 except Exception as inner_exc:
                     Logs.atuta_technical_logger(
-                        f"Auto clock-out failed for user {user.user_id}: {str(inner_exc)}"
+                        f"Auto clock-out failed for user {user.user_id}",
+                        exc_info=inner_exc
                     )
+
+            # Summary
+            Logs.atuta_logger(
+                f"[SUMMARY] Total users evaluated: {total_users} | "
+                f"Clocked out: {clocked_out} | "
+                f"Skipped (no regular session): {skipped_no_session} | "
+                f"Skipped (no config): {skipped_no_config}"
+            )
+            print(f"[INFO] Auto clock-out job finished at {now_str}")
 
         except Exception as e:
             Logs.atuta_technical_logger(
-                f"Critical error in AttendanceService.auto_clock_out_users_at_day_end: {str(e)}"
+                f"Critical error in AttendanceService.auto_clock_out_users_at_day_end",
+                exc_info=e
             )
             raise e
+
 
     @classmethod
     def get_user_day_end_time(cls, user_id):
@@ -555,6 +599,55 @@ class AttendanceService:
             Logs.atuta_technical_logger(f"clock_in_failed_user_{user.user_id}", exc_info=e)
             return {"status": "error", "message": "clock_in_failed"}
 
+    @classmethod
+    def clock_out_regular_only(cls, user, timestamp: datetime.datetime, notes: str = None):
+        """
+        Clock out the current open session, mark status as 'closed', optionally save notes,
+        and update user's is_present_today to False.
+        """
+        try:
+            if timezone.is_naive(timestamp):
+                timestamp = timezone.make_aware(timestamp)
+
+            with transaction.atomic():
+                session = AttendanceSession.objects.select_for_update().filter(
+                    user=user,
+                    clockin_type='regular',
+                    status="open",
+                    clock_out_time__isnull=True
+                ).first()
+
+                if not session:
+                    return {"status": "error", "message": "no_active_session"}
+
+                session.clock_out_time = timestamp
+                session.status = "closed"
+
+                # Save optional notes
+                if notes:
+                    session.notes = notes
+
+                # Calculate total hours
+                delta = session.clock_out_time - session.clock_in_time
+                session.total_hours = round(delta.total_seconds() / 3600, 2)
+
+                session.save()
+
+                # Update user's present status
+                user.is_present_today = False
+                user.save(update_fields=["is_present_today"])
+
+            Logs.atuta_technical_logger(
+                f"User clocked out | user={user.user_id} | session_id={session.session_id}"
+            )
+
+            return {"status": "success", "message": "clock_out_recorded"}
+
+        except Exception as e:
+            Logs.atuta_technical_logger(
+                f"clock_out_failed_user_{user.user_id}", exc_info=e
+            )
+            return {"status": "error", "message": "clock_out_failed"}
 
     @classmethod
     def clock_out(cls, user, timestamp: datetime.datetime, notes: str = None):
