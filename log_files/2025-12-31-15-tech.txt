@@ -1,6 +1,0 @@
-An unexpected error occurred during PDF generation: unsupported format string passed to NoneType.__format__
-
-Error in file: /Users/isaac/python_projects/morgenroth/morgenrothproject/mapp/app_views/generate_payroll_report_view.py, line: 75, in build_detail_table - unsupported format string passed to NoneType.__format__
-An unexpected error occurred during PDF generation: unsupported format string passed to NoneType.__format__
-
-Error in file: /Users/isaac/python_projects/morgenroth/morgenrothproject/mapp/app_views/generate_payroll_report_view.py, line: 75, in build_detail_table - unsupported format string passed to NoneType.__format__

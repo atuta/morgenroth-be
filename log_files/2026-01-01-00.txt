@@ -1,0 +1,34 @@
+User logged in | user_id=eb3f74a2-1aa0-4135-be00-96177e45f334
+
+Fetched total working hours for user c069ae5c-6a12-4256-b280-0e13b0d29214 | 1/2026 | sessions=0 | corrections=0 | total=0.0
+
+Fetched total working hours for user 9b69d7d9-160b-4ddb-b8c2-fbbbda78594b | 1/2026 | sessions=0 | corrections=0 | total=0.0
+
+Fetched total working hours for user 254cb3d3-22f5-4887-9351-f6168af4a9b7 | 1/2026 | sessions=0 | corrections=0 | total=0.0
+
+Fetched total working hours for user b332ba54-5e18-428e-b567-374b43fadfc3 | 1/2026 | sessions=0 | corrections=0 | total=0.0
+
+Fetched total working hours for user eb3f74a2-1aa0-4135-be00-96177e45f334 | 1/2026 | sessions=0 | corrections=0 | total=0.0
+
+Attendance history fetched: range 2026-01-01 to 2026-01-31 | user=ALL
+
+Fetched total working hours for user c069ae5c-6a12-4256-b280-0e13b0d29214 | 1/2026 | sessions=0 | corrections=0 | total=0.0
+
+Fetched total working hours for user 9b69d7d9-160b-4ddb-b8c2-fbbbda78594b | 1/2026 | sessions=0 | corrections=0 | total=0.0
+
+Fetched total working hours for user 254cb3d3-22f5-4887-9351-f6168af4a9b7 | 1/2026 | sessions=0 | corrections=0 | total=0.0
+
+Fetched total working hours for user b332ba54-5e18-428e-b567-374b43fadfc3 | 1/2026 | sessions=0 | corrections=0 | total=0.0
+
+Fetched total working hours for user eb3f74a2-1aa0-4135-be00-96177e45f334 | 1/2026 | sessions=0 | corrections=0 | total=0.0
+
+Attendance history fetched: range 2026-01-01 to 2026-01-31 | user=ALL
+
+Attendance history fetched: range 2026-01-01 to 2026-01-31 | user=ALL
+
+Attendance history fetched: range 2026-12-01 to 2026-01-31 | user=ALL
+
+Attendance history fetched: range 2026-12-01 to 2026-01-31 | user=ALL
+
+Attendance history fetched: range 2025-12-01 to 2026-01-31 | user=ALL
+

@@ -10,11 +10,107 @@ from django.core.files.base import ContentFile
 from django.db import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
 
-from mapp.models import AttendanceSession, CustomUser, HourCorrection
+from mapp.models import AttendanceSession, CustomUser, HourCorrection, WorkingHoursConfig
 from mapp.classes.logs.logs import Logs
 
 
 class AttendanceService:
+
+    @classmethod
+    def auto_clock_out_users_at_day_end(cls):
+        """
+        Loop through all users and automatically clock them out
+        if current server time has passed their configured end-of-day time.
+        """
+        try:
+            now = timezone.localtime(timezone.now())
+
+            users = CustomUser.objects.filter(
+                is_active=True,
+                is_present_today=True
+            )
+
+            for user in users:
+                try:
+                    # Get configured end time for today
+                    day_config = cls.get_user_day_end_time(user.user_id)
+
+                    if not day_config:
+                        continue
+
+                    end_time = day_config.get("end_time")
+                    if not end_time:
+                        continue
+
+                    # Combine today's date with configured end_time
+                    end_datetime = datetime.combine(
+                        now.date(),
+                        end_time
+                    )
+
+                    if timezone.is_naive(end_datetime):
+                        end_datetime = timezone.make_aware(end_datetime)
+
+                    # Only clock out if current time >= configured end time
+                    if now >= end_datetime:
+                        cls.clock_out(
+                            user=user,
+                            timestamp=now,
+                            notes="Auto clock-out at end of working hours"
+                        )
+
+                except Exception as inner_exc:
+                    Logs.atuta_technical_logger(
+                        f"Auto clock-out failed for user {user.user_id}: {str(inner_exc)}"
+                    )
+
+        except Exception as e:
+            Logs.atuta_technical_logger(
+                f"Critical error in AttendanceService.auto_clock_out_users_at_day_end: {str(e)}"
+            )
+            raise e
+
+    @classmethod
+    def get_user_day_end_time(cls, user_id):
+        try:
+            # Fetch user
+            user = CustomUser.objects.get(user_id=user_id)
+
+            # Server time (timezone-aware)
+            now = timezone.localtime(timezone.now())
+
+            # Django weekday: Monday=0 → Sunday=6
+            day_of_week = now.weekday() + 1  # Convert to your 1–7 mapping
+
+            # Fetch working hours config
+            config = WorkingHoursConfig.objects.filter(
+                user_role=user.user_role,
+                day_of_week=day_of_week,
+                is_active=True
+            ).first()
+
+            if not config:
+                Logs.atuta_logger(
+                    f"No working hours config found for role={user.user_role}, day={day_of_week}"
+                )
+                return None
+
+            return {
+                "day": day_of_week,
+                "end_time": config.end_time,
+                "timezone": config.timezone
+            }
+
+        except CustomUser.DoesNotExist:
+            Logs.atuta_logger(f"User not found while fetching day end time: {user_id}")
+            return None
+
+        except Exception as e:
+            Logs.atuta_technical_logger(
+                f"Critical error in AttendanceService.get_user_day_end_time "
+                f"for user {user_id}: {str(e)}"
+            )
+            raise e
 
     @staticmethod
     def get_user_hour_corrections(user_id, start_month, start_year, end_month, end_year):
