@@ -947,6 +947,7 @@ class UserService:
         id_number: str = None,
         nssf_number: str = None,
         shif_sha_number: str = None,
+        kra_pin: str = None,  # <── Added here
         **extra_fields
     ):
         """
@@ -972,11 +973,12 @@ class UserService:
                 phone_number=phone_number,
                 password=password,
                 user_role=user_role,
-                username=username,         # <── auto inserted here
+                username=username,
                 email=email,
                 id_number=id_number,
                 nssf_number=nssf_number,
                 shif_sha_number=shif_sha_number,
+                kra_pin=kra_pin,  # <── Inserted into create_user
                 **extra_fields
             )
 
@@ -984,12 +986,13 @@ class UserService:
                 "status": "success",
                 "message": f"user_created_{user.user_id}",
                 "user_id": user.user_id,
-                "username": user.username     # Return for login usage
+                "username": user.username
             }
 
         except IntegrityError as e:
             Logs.atuta_technical_logger(f"user_creation_failed_{email}", exc_info=e)
-            return {"status": "error", "message": "email_or_phone_exists"}
+            # Added kra_pin to the context of common integrity errors
+            return {"status": "error", "message": "identity_detail_already_exists"}
 
         except Exception as e:
             Logs.atuta_technical_logger(f"user_creation_failed_{email}", exc_info=e)

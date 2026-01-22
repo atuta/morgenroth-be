@@ -409,6 +409,7 @@ def api_add_user(request):
         id_number = data.get("id_number")
         nssf_number = data.get("nssf_number")
         shif_sha_number = data.get("shif_sha_number")
+        kra_pin = data.get("kra_pin")  # <── Added extraction
 
         # Basic validation
         if not phone_number or not first_name or not last_name:
@@ -426,7 +427,8 @@ def api_add_user(request):
             phone_number=phone_number,
             id_number=id_number,
             nssf_number=nssf_number,
-            shif_sha_number=shif_sha_number
+            shif_sha_number=shif_sha_number,
+            kra_pin=kra_pin  # <── Added to service call
         )
 
         return Response(result, status=200 if result["status"] == "success" else 400)

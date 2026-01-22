@@ -152,3 +152,25 @@ Successfully fetched 1 non-admin users
 
 Successfully fetched 1 non-admin users
 
+Successfully fetched 2 non-admin users
+
+Successfully fetched 2 non-admin users
+
+Received holiday status update for user 5be20d5e-2928-4a32-9a91-9d87506b01a5: is_on_holiday=yes
+
+Successfully updated holiday status for user 5be20d5e-2928-4a32-9a91-9d87506b01a5 to True
+
+Fetched details for user 343434@hhhc.sss: {'email': '343434@hhhc.sss', 'phone_number': '34343434343', 'first_name': '4343', 'last_name': '343434', 'account': 'Bd67p', 'user_role': 'subordinate', 'id_number': '43434', 'kra_pin': None, 'nssf_number': '34343', 'nssf_amount': Decimal('0.00'), 'shif_sha_number': '434343', 'hourly_rate': Decimal('0.00'), 'hourly_rate_currency': 'KES', 'lunch_start': None, 'lunch_end': None, 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': '5be20d5e-2928-4a32-9a91-9d87506b01a5', 'photo': None}
+
+Successfully fetched 2 non-admin users
+
+API Request: User None is deleting staff ID 5be20d5e-2928-4a32-9a91-9d87506b01a5
+
+INITIATING DELETE: User 4343 343434 (343434@hhhc.sss) with ID 5be20d5e-2928-4a32-9a91-9d87506b01a5
+
+SUCCESS: User 343434@hhhc.sss and all related records have been purged.
+
+Working hours retrieved | role=subordinate, tz=Africa/Nairobi
+
+Working hours retrieved | role=subordinate, tz=Africa/Nairobi
+
