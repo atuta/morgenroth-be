@@ -638,8 +638,11 @@ class UserService:
     def update_user_fields(
         cls,
         user_id,
+        first_name=None,    # ✅ NEW
+        last_name=None,     # ✅ NEW
         nssf=None,
         sha=None,
+        kra_pin=None,
         hourly_rate=None,
         lunch_start=None,
         lunch_end=None,
@@ -647,7 +650,7 @@ class UserService:
         phone_number=None,
         id_number=None,
         user_role=None,
-        nssf_amount=None,   # ✅ NEW
+        nssf_amount=None,
     ):
         """
         Update selected user fields including contact, role, and statutory info.
@@ -655,13 +658,23 @@ class UserService:
         try:
             Logs.atuta_logger(
                 f"Received update request for user {user_id}: "
-                f"nssf={nssf}, nssf_amount={nssf_amount}, sha={sha}, "
-                f"hourly_rate={hourly_rate}, email={email}, "
+                f"name={first_name} {last_name}, nssf={nssf}, nssf_amount={nssf_amount}, "
+                f"sha={sha}, kra_pin={kra_pin}, hourly_rate={hourly_rate}, email={email}, "
                 f"phone={phone_number}, id_number={id_number}, role={user_role}"
             )
 
             user = CustomUser.objects.get(user_id=user_id)
             updated_fields = []
+
+            # --- First Name ---
+            if first_name not in (None, ""):
+                user.first_name = str(first_name).strip()
+                updated_fields.append("first_name")
+
+            # --- Last Name ---
+            if last_name not in (None, ""):
+                user.last_name = str(last_name).strip()
+                updated_fields.append("last_name")
 
             # --- Email ---
             if email not in (None, ""):
@@ -686,6 +699,11 @@ class UserService:
                     updated_fields.append("user_role")
                 else:
                     return {"status": "error", "message": "invalid_user_role"}
+
+            # --- KRA PIN ---
+            if kra_pin not in (None, ""):
+                user.kra_pin = str(kra_pin).strip().upper()
+                updated_fields.append("kra_pin")
 
             # --- NSSF Number ---
             if nssf not in (None, ""):
@@ -766,16 +784,29 @@ class UserService:
 
             # List of fields to include
             FIELDS_TO_INCLUDE = [
-                "first_name", "last_name", "email", "account", "user_role",
-                "phone_number", "id_number", "nssf_number", "shif_sha_number",
-                "hourly_rate", "hourly_rate_currency", "status",
-                "is_present_today", "is_on_leave", "lunch_start", "lunch_end", 
-                "nssf_amount"  # <-- newly added field
+                "first_name",         # Added/Ensured
+                "last_name",          # Added/Ensured
+                "email", 
+                "account", 
+                "user_role",
+                "phone_number", 
+                "id_number", 
+                "kra_pin",            # ✅ NEW
+                "nssf_number", 
+                "shif_sha_number",
+                "hourly_rate", 
+                "hourly_rate_currency", 
+                "status",
+                "is_present_today", 
+                "is_on_leave", 
+                "lunch_start", 
+                "lunch_end", 
+                "nssf_amount"
             ]
 
             user_data = model_to_dict(user, fields=FIELDS_TO_INCLUDE)
 
-            # Ensure primary key (UUID) is included
+            # Ensure primary key (UUID) is included as a string for JSON serialization
             user_data["user_id"] = str(user.user_id)
 
             # Handle photo field safely

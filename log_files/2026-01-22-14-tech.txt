@@ -1,0 +1,18 @@
+api_login_failed
+
+Error in file: /Users/isaac/python_projects/morgenroth/morgenroth_env/lib/python3.12/site-packages/django/db/backends/utils.py, line: 105, in _execute - column mapp_customuser.kra_pin does not exist
+LINE 1: ...user"."user_role", "mapp_customuser"."id_number", "mapp_cust...
+                                                             ^
+
+api_login_failed
+
+Error in file: /Users/isaac/python_projects/morgenroth/morgenroth_env/lib/python3.12/site-packages/django/db/backends/utils.py, line: 105, in _execute - column mapp_customuser.kra_pin does not exist
+LINE 1: ...user"."user_role", "mapp_customuser"."id_number", "mapp_cust...
+                                                             ^
+
+api_login_failed
+
+Error in file: /Users/isaac/python_projects/morgenroth/morgenroth_env/lib/python3.12/site-packages/django/db/backends/utils.py, line: 105, in _execute - column mapp_customuser.kra_pin does not exist
+LINE 1: ...user"."user_role", "mapp_customuser"."id_number", "mapp_cust...
+                                                             ^
+

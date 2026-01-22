@@ -92,6 +92,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
     # Staff info
     id_number = models.CharField(max_length=50, null=True, blank=True)
+    kra_pin = models.CharField(max_length=50, null=True, blank=True)
     nssf_number = models.CharField(max_length=50, null=True, blank=True)
     nssf_amount = models.DecimalField(
         max_digits=10,
@@ -836,6 +837,7 @@ class OrganizationDetail(models.Model):
     physical_address = models.TextField(null=True, blank=True)
     postal_address = models.CharField(max_length=255, null=True, blank=True)
     telephone = models.CharField(max_length=20, null=True, blank=True)
+    kra_pin = models.CharField(max_length=20, null=True, blank=True)
     email = models.EmailField(null=True, blank=True)
 
     def __str__(self):

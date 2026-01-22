@@ -216,7 +216,7 @@ def upload_user_photo(request):
 def api_update_user_fields(request):
     """
     Admin updates a specific user's fields.
-    Now supports email, phone_number, id_number, user_role, and nssf_amount.
+    Now supports names, contact info, statutory details, and kra_pin.
     """
     try:
         user_id = request.data.get("user_id")
@@ -226,32 +226,43 @@ def api_update_user_fields(request):
                 status=400
             )
 
-        # Existing fields
-        nssf = request.data.get("nssf")
-        sha = request.data.get("sha")
-        hourly_rate = request.data.get("hourly_rate")
-        lunch_start = request.data.get("lunch_start")
-        lunch_end = request.data.get("lunch_end")
+        # Names (NEW)
+        first_name = request.data.get("first_name")
+        last_name = request.data.get("last_name")
 
-        # Newly supported fields
+        # Identity & Contact
         email = request.data.get("email")
         phone_number = request.data.get("phone_number")
         id_number = request.data.get("id_number")
         user_role = request.data.get("user_role")
-        nssf_amount = request.data.get("nssf_amount")  # ✅ NEW
+        
+        # Statutory & Financial
+        nssf = request.data.get("nssf")
+        sha = request.data.get("sha")
+        kra_pin = request.data.get("kra_pin")  # ✅ NEW
+        nssf_amount = request.data.get("nssf_amount")
+        hourly_rate = request.data.get("hourly_rate")
 
+        # Policy
+        lunch_start = request.data.get("lunch_start")
+        lunch_end = request.data.get("lunch_end")
+
+        # Pass everything to the service layer
         result = UserService.update_user_fields(
             user_id=user_id,
-            nssf=nssf,
-            sha=sha,
-            hourly_rate=hourly_rate,
-            lunch_start=lunch_start,
-            lunch_end=lunch_end,
+            first_name=first_name,
+            last_name=last_name,
             email=email,
             phone_number=phone_number,
             id_number=id_number,
             user_role=user_role,
-            nssf_amount=nssf_amount,  # ✅ pass through
+            nssf=nssf,
+            sha=sha,
+            kra_pin=kra_pin,
+            nssf_amount=nssf_amount,
+            hourly_rate=hourly_rate,
+            lunch_start=lunch_start,
+            lunch_end=lunch_end,
         )
 
         if result.get("status") in ("success", "info"):
