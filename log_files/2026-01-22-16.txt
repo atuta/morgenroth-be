@@ -1,0 +1,86 @@
+Successfully fetched 4 non-admin users
+
+Fetched details for user karey@gmail.com: {'email': 'karey@gmail.com', 'phone_number': '08762565', 'first_name': 'Mary', 'last_name': 'Karey', 'account': 'Py8LC', 'user_role': 'teaching', 'id_number': '345678', 'kra_pin': None, 'nssf_number': '23456', 'nssf_amount': Decimal('0.00'), 'shif_sha_number': '3345', 'hourly_rate': Decimal('0.00'), 'hourly_rate_currency': 'KES', 'lunch_start': None, 'lunch_end': None, 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': '9b69d7d9-160b-4ddb-b8c2-fbbbda78594b', 'photo': None}
+
+Received update request for user 9b69d7d9-160b-4ddb-b8c2-fbbbda78594b: name=Mary Kareys, nssf=23456, nssf_amount=130, sha=3345, kra_pin=None, hourly_rate=0, email=karey@gmail.com, phone=08762565, id_number=345678, role=teaching
+
+Successfully updated 9b69d7d9-160b-4ddb-b8c2-fbbbda78594b: first_name, last_name, email, phone_number, id_number, user_role, nssf_number, nssf_amount, shif_sha_number, hourly_rate
+
+Fetched details for user karey@gmail.com: {'email': 'karey@gmail.com', 'phone_number': '08762565', 'first_name': 'Mary', 'last_name': 'Kareys', 'account': 'Py8LC', 'user_role': 'teaching', 'id_number': '345678', 'kra_pin': None, 'nssf_number': '23456', 'nssf_amount': Decimal('130.00'), 'shif_sha_number': '3345', 'hourly_rate': Decimal('0.00'), 'hourly_rate_currency': 'KES', 'lunch_start': None, 'lunch_end': None, 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': '9b69d7d9-160b-4ddb-b8c2-fbbbda78594b', 'photo': None}
+
+Fetched details for user karey@gmail.com: {'email': 'karey@gmail.com', 'phone_number': '08762565', 'first_name': 'Mary', 'last_name': 'Kareys', 'account': 'Py8LC', 'user_role': 'teaching', 'id_number': '345678', 'kra_pin': None, 'nssf_number': '23456', 'nssf_amount': Decimal('130.00'), 'shif_sha_number': '3345', 'hourly_rate': Decimal('0.00'), 'hourly_rate_currency': 'KES', 'lunch_start': None, 'lunch_end': None, 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': '9b69d7d9-160b-4ddb-b8c2-fbbbda78594b', 'photo': None}
+
+User logged in | user_id=eb3f74a2-1aa0-4135-be00-96177e45f334
+
+Fetched total working hours for user 9b69d7d9-160b-4ddb-b8c2-fbbbda78594b | 1/2026 | sessions=0 | corrections=0 | total=0.0
+
+Fetched total working hours for user 254cb3d3-22f5-4887-9351-f6168af4a9b7 | 1/2026 | sessions=0 | corrections=0 | total=0.0
+
+Fetched total working hours for user b332ba54-5e18-428e-b567-374b43fadfc3 | 1/2026 | sessions=0 | corrections=0 | total=0.0
+
+Fetched total working hours for user eb3f74a2-1aa0-4135-be00-96177e45f334 | 1/2026 | sessions=0 | corrections=0 | total=0.0
+
+Fetched total working hours for user c069ae5c-6a12-4256-b280-0e13b0d29214 | 1/2026 | sessions=0 | corrections=0 | total=0.0
+
+Successfully fetched 4 non-admin users
+
+Successfully fetched 4 non-admin users
+
+Fetched details for user karey@gmail.com: {'email': 'karey@gmail.com', 'phone_number': '08762565', 'first_name': 'Mary', 'last_name': 'Kareys', 'account': 'Py8LC', 'user_role': 'teaching', 'id_number': '345678', 'kra_pin': None, 'nssf_number': '23456', 'nssf_amount': Decimal('130.00'), 'shif_sha_number': '3345', 'hourly_rate': Decimal('0.00'), 'hourly_rate_currency': 'KES', 'lunch_start': None, 'lunch_end': None, 'is_present_today': False, 'is_on_leave': False, 'status': 'active', 'user_id': '9b69d7d9-160b-4ddb-b8c2-fbbbda78594b', 'photo': None}
+
+Successfully fetched 4 non-admin users
+
+Successfully fetched 4 non-admin users
+
+Successfully fetched 4 non-admin users
+
+Successfully fetched 4 non-admin users
+
+API Request: User None is deleting staff ID 254cb3d3-22f5-4887-9351-f6168af4a9b7
+
+INITIATING DELETE: User Grace Auma (grace@gmail.com) with ID 254cb3d3-22f5-4887-9351-f6168af4a9b7
+
+SUCCESS: User grace@gmail.com and all related records have been purged.
+
+Successfully fetched 3 non-admin users
+
+Successfully fetched 3 non-admin users
+
+Received holiday status update for user b332ba54-5e18-428e-b567-374b43fadfc3: is_on_holiday=yes
+
+Successfully updated holiday status for user b332ba54-5e18-428e-b567-374b43fadfc3 to True
+
+Received holiday status update for user b332ba54-5e18-428e-b567-374b43fadfc3: is_on_holiday=no
+
+Successfully updated holiday status for user b332ba54-5e18-428e-b567-374b43fadfc3 to False
+
+Received leave status update for user b332ba54-5e18-428e-b567-374b43fadfc3: is_on_leave=yes
+
+Successfully updated leave status for user b332ba54-5e18-428e-b567-374b43fadfc3 to True
+
+Received holiday status update for user 9b69d7d9-160b-4ddb-b8c2-fbbbda78594b: is_on_holiday=yes
+
+Successfully updated holiday status for user 9b69d7d9-160b-4ddb-b8c2-fbbbda78594b to True
+
+Received holiday status update for user b332ba54-5e18-428e-b567-374b43fadfc3: is_on_holiday=yes
+
+Successfully updated holiday status for user b332ba54-5e18-428e-b567-374b43fadfc3 to True
+
+Successfully fetched 3 non-admin users
+
+Successfully fetched 3 non-admin users
+
+Received holiday status update for user 9b69d7d9-160b-4ddb-b8c2-fbbbda78594b: is_on_holiday=no
+
+Successfully updated holiday status for user 9b69d7d9-160b-4ddb-b8c2-fbbbda78594b to False
+
+Received holiday status update for user 9b69d7d9-160b-4ddb-b8c2-fbbbda78594b: is_on_holiday=yes
+
+Successfully updated holiday status for user 9b69d7d9-160b-4ddb-b8c2-fbbbda78594b to True
+
+Received leave status update for user 9b69d7d9-160b-4ddb-b8c2-fbbbda78594b: is_on_leave=yes
+
+Successfully updated leave status for user 9b69d7d9-160b-4ddb-b8c2-fbbbda78594b to True
+
+Successfully fetched 3 non-admin users
+

@@ -14,6 +14,54 @@ from mapp.classes.logs.logs import Logs
 
 
 class UserService:
+
+    @classmethod
+    def delete_user(cls, user_id):
+        """
+        Deletes a user and ensures related records are handled.
+        Logging is performed before and after to maintain an audit trail.
+        """
+        try:
+            # 1. Fetch the user
+            user = CustomUser.objects.get(user_id=user_id)
+            email = user.email
+            full_name = user.full_name
+
+            Logs.atuta_logger(f"INITIATING DELETE: User {full_name} ({email}) with ID {user_id}")
+
+            # 2. Manual cleanup for non-database assets (e.g., ImageFields)
+            # Files on disk aren't automatically deleted by Django's CASCADE.
+            if user.photo:
+                try:
+                    user.photo.delete(save=False)
+                except Exception as e:
+                    Logs.atuta_technical_logger(f"File delete failed for user {user_id}", exc_info=e)
+
+            # 3. Perform the deletion
+            # If your related models (Attendance, Payslips, etc.) use models.CASCADE,
+            # they will be deleted here automatically.
+            user.delete()
+
+            Logs.atuta_logger(f"SUCCESS: User {email} and all related records have been purged.")
+
+            return {
+                "status": "success",
+                "message": "user_deleted_successfully"
+            }
+
+        except ObjectDoesNotExist:
+            Logs.atuta_logger(f"DELETE FAILED: User ID {user_id} not found.")
+            return {
+                "status": "error",
+                "message": "user_not_found"
+            }
+        except Exception as e:
+            Logs.atuta_technical_logger("delete_user_failed", exc_info=e)
+            return {
+                "status": "error",
+                "message": "failed_to_delete_user"
+            }
+        
     @classmethod
     def get_all_user_names_and_ids(cls):
         """
@@ -45,7 +93,7 @@ class UserService:
     @staticmethod
     def get_latest_organization():
         """
-        Fetches the latest organization details.
+        Fetches the latest organization details including KRA PIN.
         """
         try:
             # Since we don't have updated_at, we just fetch the first record available.
@@ -62,6 +110,7 @@ class UserService:
                 "physical_address": org.physical_address,
                 "postal_address": org.postal_address,
                 "telephone": org.telephone,
+                "kra_pin": org.kra_pin,  # ✅ NEW
                 "email": org.email,
                 "logo": org.logo.url if org.logo else None,
             }
@@ -79,6 +128,7 @@ class UserService:
     def create_organization_record(data, logo_file=None):
         """
         Inserts or Updates an OrganizationDetail record based on the name (case-insensitive).
+        Now includes kra_pin.
         """
         try:
             # 1. Validation: Name is compulsory
@@ -87,7 +137,6 @@ class UserService:
                 return {"status": "error", "message": "Organization name is required"}
 
             # 2. Check for existing record (Case-Insensitive)
-            # .iexact handles the "not case sensitive" requirement
             org = OrganizationDetail.objects.filter(name__iexact=name.strip()).first()
 
             if org:
@@ -98,6 +147,7 @@ class UserService:
                 org.postal_address = data.get("postal_address")
                 org.telephone = data.get("telephone")
                 org.email = data.get("email")
+                org.kra_pin = data.get("kra_pin")  # ✅ NEW
             else:
                 # --- CREATE NEW ---
                 action = "created"
@@ -106,14 +156,15 @@ class UserService:
                     physical_address=data.get("physical_address"),
                     postal_address=data.get("postal_address"),
                     telephone=data.get("telephone"),
-                    email=data.get("email")
+                    email=data.get("email"),
+                    kra_pin=data.get("kra_pin")  # ✅ NEW
                 )
 
-            # 3. Handle Logo if provided (Overwrites old logo on update)
+            # 3. Handle Logo if provided
             if logo_file:
                 org.logo = logo_file
 
-            # 4. Save (Django handles Insert vs Update automatically based on PK)
+            # 4. Save
             org.save()
 
             Logs.atuta_technical_logger(f"SUCCESS: Organization '{name}' {action} with UUID {org.org_uuid}")

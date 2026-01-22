@@ -45,6 +45,7 @@ urlpatterns = [
     # User endpoints
     path('api/admin-dashboard-metrics/', user_view.api_admin_dashboard_metrics, name='admin_dashboard_metrics'),
     path('api/api-get-all-user-names-and-ids/', user_view.api_get_all_user_names_and_ids, name='api_get_all_user_names_and_ids'),
+    path('api/api-delete-user/', user_view.api_delete_user, name='api_delete_user'),
     path('api/add-user/', user_view.api_add_user, name='add_user'),
     path('api/update-user-holiday-status/', user_view.api_update_user_holiday_status, name='update_user_holiday_status'),
     path('api/update-user-leave-status/', user_view.api_update_user_leave_status, name='update_user_leave_status'),

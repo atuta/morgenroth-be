@@ -15,6 +15,56 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from mapp.classes.user_service import UserService
 from mapp.classes.logs.logs import Logs
 
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def api_delete_user(request):
+    """
+    Admin/Super Admin endpoint to permanently delete a staff member.
+    This triggers the deletion of all related records (Attendance, Payroll, etc.)
+    via the UserService and database CASCADE settings.
+    """
+    try:
+        # 1. Permission Check (Optional but recommended)
+        # Ensuring only 'super' or 'admin' roles can perform a deletion
+        if request.user.user_role not in ['super', 'admin']:
+            return Response(
+                {"status": "error", "message": "unauthorized_action"}, 
+                status=403
+            )
+
+        # 2. Extract and Validate user_id
+        user_id = request.data.get("user_id")
+        if not user_id:
+            return Response(
+                {"status": "error", "message": "user_id_required"}, 
+                status=400
+            )
+
+        # 3. Log the attempt at the view level
+        Logs.atuta_logger(f"API Request: User {request.user.email} is deleting staff ID {user_id}")
+
+        # 4. Call Service Layer
+        result = UserService.delete_user(user_id=user_id)
+
+        # 5. Determine status code based on service result
+        if result.get("status") == "success":
+            status_code = 200
+        elif result.get("message") == "user_not_found":
+            status_code = 404
+        else:
+            status_code = 400
+
+        return Response(result, status=status_code)
+
+    except Exception as e:
+        # Technical logger for unexpected crashes (e.g. DB connection issues)
+        Logs.atuta_technical_logger("api_delete_user_crash", exc_info=e)
+        return Response(
+            {"status": "error", "message": "internal_server_error_during_deletion"}, 
+            status=500
+        )
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def api_get_all_user_names_and_ids(request):

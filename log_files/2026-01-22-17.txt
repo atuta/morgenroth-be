@@ -1,0 +1,158 @@
+Successfully fetched 3 non-admin users
+
+Successfully fetched 3 non-admin users
+
+Received holiday status update for user 9b69d7d9-160b-4ddb-b8c2-fbbbda78594b: is_on_holiday=no
+
+Successfully updated holiday status for user 9b69d7d9-160b-4ddb-b8c2-fbbbda78594b to False
+
+Received holiday status update for user 9b69d7d9-160b-4ddb-b8c2-fbbbda78594b: is_on_holiday=yes
+
+Successfully updated holiday status for user 9b69d7d9-160b-4ddb-b8c2-fbbbda78594b to True
+
+Received leave status update for user 9b69d7d9-160b-4ddb-b8c2-fbbbda78594b: is_on_leave=no
+
+Successfully updated leave status for user 9b69d7d9-160b-4ddb-b8c2-fbbbda78594b to False
+
+Successfully fetched 3 non-admin users
+
+Received leave status update for user b332ba54-5e18-428e-b567-374b43fadfc3: is_on_leave=no
+
+Successfully updated leave status for user b332ba54-5e18-428e-b567-374b43fadfc3 to False
+
+Successfully fetched 3 non-admin users
+
+Received holiday status update for user 9b69d7d9-160b-4ddb-b8c2-fbbbda78594b: is_on_holiday=no
+
+Successfully updated holiday status for user 9b69d7d9-160b-4ddb-b8c2-fbbbda78594b to False
+
+Received holiday status update for user 9b69d7d9-160b-4ddb-b8c2-fbbbda78594b: is_on_holiday=yes
+
+Successfully updated holiday status for user 9b69d7d9-160b-4ddb-b8c2-fbbbda78594b to True
+
+Received leave status update for user 9b69d7d9-160b-4ddb-b8c2-fbbbda78594b: is_on_leave=yes
+
+Successfully updated leave status for user 9b69d7d9-160b-4ddb-b8c2-fbbbda78594b to True
+
+Received holiday status update for user c069ae5c-6a12-4256-b280-0e13b0d29214: is_on_holiday=yes
+
+Successfully updated holiday status for user c069ae5c-6a12-4256-b280-0e13b0d29214 to True
+
+Received holiday status update for user b332ba54-5e18-428e-b567-374b43fadfc3: is_on_holiday=no
+
+Successfully updated holiday status for user b332ba54-5e18-428e-b567-374b43fadfc3 to False
+
+Received holiday status update for user b332ba54-5e18-428e-b567-374b43fadfc3: is_on_holiday=yes
+
+Successfully updated holiday status for user b332ba54-5e18-428e-b567-374b43fadfc3 to True
+
+Successfully fetched 3 non-admin users
+
+Received holiday status update for user 9b69d7d9-160b-4ddb-b8c2-fbbbda78594b: is_on_holiday=no
+
+Successfully updated holiday status for user 9b69d7d9-160b-4ddb-b8c2-fbbbda78594b to False
+
+Received leave status update for user 9b69d7d9-160b-4ddb-b8c2-fbbbda78594b: is_on_leave=no
+
+Successfully updated leave status for user 9b69d7d9-160b-4ddb-b8c2-fbbbda78594b to False
+
+Received leave status update for user 9b69d7d9-160b-4ddb-b8c2-fbbbda78594b: is_on_leave=yes
+
+Successfully updated leave status for user 9b69d7d9-160b-4ddb-b8c2-fbbbda78594b to True
+
+Successfully fetched 3 non-admin users
+
+Received holiday status update for user c069ae5c-6a12-4256-b280-0e13b0d29214: is_on_holiday=no
+
+Successfully updated holiday status for user c069ae5c-6a12-4256-b280-0e13b0d29214 to False
+
+Successfully fetched 3 non-admin users
+
+Received holiday status update for user b332ba54-5e18-428e-b567-374b43fadfc3: is_on_holiday=no
+
+Successfully updated holiday status for user b332ba54-5e18-428e-b567-374b43fadfc3 to False
+
+Received leave status update for user b332ba54-5e18-428e-b567-374b43fadfc3: is_on_leave=yes
+
+Successfully updated leave status for user b332ba54-5e18-428e-b567-374b43fadfc3 to True
+
+Successfully fetched 3 non-admin users
+
+Successfully fetched 3 non-admin users
+
+Successfully fetched 3 non-admin users
+
+Received holiday status update for user b332ba54-5e18-428e-b567-374b43fadfc3: is_on_holiday=yes
+
+Successfully updated holiday status for user b332ba54-5e18-428e-b567-374b43fadfc3 to True
+
+Received holiday status update for user b332ba54-5e18-428e-b567-374b43fadfc3: is_on_holiday=yes
+
+Successfully updated holiday status for user b332ba54-5e18-428e-b567-374b43fadfc3 to True
+
+Received leave status update for user b332ba54-5e18-428e-b567-374b43fadfc3: is_on_leave=no
+
+Successfully updated leave status for user b332ba54-5e18-428e-b567-374b43fadfc3 to False
+
+Successfully fetched 3 non-admin users
+
+Received holiday status update for user b332ba54-5e18-428e-b567-374b43fadfc3: is_on_holiday=no
+
+Successfully updated holiday status for user b332ba54-5e18-428e-b567-374b43fadfc3 to False
+
+Successfully fetched 3 non-admin users
+
+Successfully fetched 3 non-admin users
+
+Successfully fetched 3 non-admin users
+
+Received leave status update for user b332ba54-5e18-428e-b567-374b43fadfc3: is_on_leave=yes
+
+Successfully updated leave status for user b332ba54-5e18-428e-b567-374b43fadfc3 to True
+
+Received holiday status update for user b332ba54-5e18-428e-b567-374b43fadfc3: is_on_holiday=yes
+
+Successfully updated holiday status for user b332ba54-5e18-428e-b567-374b43fadfc3 to True
+
+Successfully fetched 3 non-admin users
+
+Successfully fetched 3 non-admin users
+
+Received holiday status update for user b332ba54-5e18-428e-b567-374b43fadfc3: is_on_holiday=no
+
+Successfully updated holiday status for user b332ba54-5e18-428e-b567-374b43fadfc3 to False
+
+Received holiday status update for user b332ba54-5e18-428e-b567-374b43fadfc3: is_on_holiday=no
+
+Successfully updated holiday status for user b332ba54-5e18-428e-b567-374b43fadfc3 to False
+
+Received holiday status update for user 9b69d7d9-160b-4ddb-b8c2-fbbbda78594b: is_on_holiday=yes
+
+Successfully updated holiday status for user 9b69d7d9-160b-4ddb-b8c2-fbbbda78594b to True
+
+Received holiday status update for user c069ae5c-6a12-4256-b280-0e13b0d29214: is_on_holiday=yes
+
+Successfully updated holiday status for user c069ae5c-6a12-4256-b280-0e13b0d29214 to True
+
+Successfully fetched 3 non-admin users
+
+Successfully fetched 3 non-admin users
+
+Successfully fetched 3 non-admin users
+
+Successfully fetched 3 non-admin users
+
+API Request: User None is deleting staff ID b332ba54-5e18-428e-b567-374b43fadfc3
+
+INITIATING DELETE: User Tom Ouma (tom@gmail.com) with ID b332ba54-5e18-428e-b567-374b43fadfc3
+
+SUCCESS: User tom@gmail.com and all related records have been purged.
+
+Received leave status update for user c069ae5c-6a12-4256-b280-0e13b0d29214: is_on_leave=yes
+
+Successfully updated leave status for user c069ae5c-6a12-4256-b280-0e13b0d29214 to True
+
+Received leave status update for user c069ae5c-6a12-4256-b280-0e13b0d29214: is_on_leave=no
+
+Successfully updated leave status for user c069ae5c-6a12-4256-b280-0e13b0d29214 to False
+
