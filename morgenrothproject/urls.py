@@ -73,6 +73,12 @@ urlpatterns = [
     path('api/total-hours/', attendance_view.api_get_total_hours, name='total_hours'),
     path('api/get-today-user-time-summary/', attendance_view.api_get_today_user_time_summary, name='get_today_user_time_summary'),
     path('api/attendance/current-session/', attendance_view.api_get_current_session, name='current_session'),
+    # Working hours check
+    path(
+        'api/attendance/is-within-working-hours/',
+        attendance_view.api_is_within_working_hours,
+        name='is_within_working_hours'
+    ),
 
     # New ones ↓
     path('api/attendance/history/', attendance_view.api_get_user_attendance_history, name='user_attendance_history'),

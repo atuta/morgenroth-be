@@ -29,6 +29,38 @@ from mapp.classes.attendance_service import AttendanceService
 from mapp.models import AttendanceSession
 from mapp.classes.logs.logs import Logs
 
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def api_is_within_working_hours(request):
+    """
+    Check if the authenticated user is currently within
+    their configured working hours.
+    """
+
+    try:
+        user = request.user
+
+        result = AttendanceService.is_within_working_hours(user.user_id)
+
+        return Response(
+            {
+                "status": "success",
+                "within_working_hours": "yes" if result else "no"
+            },
+            status=200
+        )
+
+    except Exception as e:
+        Logs.atuta_technical_logger(
+            f"api_is_within_working_hours_failed_user_{request.user.user_id}",
+            exc_info=e
+        )
+        return Response(
+            {"status": "error", "message": "server_error"},
+            status=500
+        )
+
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def api_generate_attendance_pdf(request):

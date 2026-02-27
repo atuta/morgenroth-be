@@ -2,3 +2,11 @@ Retrieved current session | user=eb3f74a2-1aa0-4135-be00-96177e45f334 | session_
 
 User clocked out | user=eb3f74a2-1aa0-4135-be00-96177e45f334 | session_id=eb97d5b0-eeea-4468-b699-6e598cd13526
 
+User clocked in | type=overtime | user=eb3f74a2-1aa0-4135-be00-96177e45f334 | session_id=82f43f81-f196-4a7a-bb88-db07b458782e
+
+Retrieved current session | user=eb3f74a2-1aa0-4135-be00-96177e45f334 | session_id=82f43f81-f196-4a7a-bb88-db07b458782e
+
+Retrieved current session | user=eb3f74a2-1aa0-4135-be00-96177e45f334 | session_id=82f43f81-f196-4a7a-bb88-db07b458782e
+
+User clocked out | user=eb3f74a2-1aa0-4135-be00-96177e45f334 | session_id=82f43f81-f196-4a7a-bb88-db07b458782e
+
