@@ -520,21 +520,29 @@ def api_clock_in(request):
 @permission_classes([IsAuthenticated])
 def api_clock_out(request):
     """
-    Clock out a user with optional notes.
+    Clock out a user with optional notes + optional logout photo.
+
     Expected payload:
     {
-        "timestamp": "2025-12-02T17:00:00",
-        "notes": "Leaving early today"  # optional
+        "timestamp": "2025-12-02T17:00:00Z" or "2025-12-02T17:00:00+00:00",
+        "notes": "Leaving early today",          # optional
+        "photo_base64": "data:image/jpeg;base64,...."  # optional
     }
     """
     try:
-        timestamp = request.data.get("timestamp")
+        timestamp_str = request.data.get("timestamp")
         notes = request.data.get("notes")  # optional
+        photo_base64 = request.data.get("photo_base64") or None  # optional
 
-        if not timestamp:
+        if not timestamp_str:
             return Response({"status": "error", "message": "missing_timestamp"}, status=400)
 
-        timestamp = datetime.datetime.fromisoformat(timestamp)
+        # Robust parsing that handles Z suffix and offsets
+        try:
+            timestamp = datetime.datetime.fromisoformat(timestamp_str.replace("Z", "+00:00"))
+        except Exception:
+            return Response({"status": "error", "message": "invalid_timestamp_format"}, status=400)
+
         from django.utils import timezone
         if timezone.is_naive(timestamp):
             timestamp = timezone.make_aware(timestamp)
@@ -542,15 +550,26 @@ def api_clock_out(request):
         result = AttendanceService.clock_out(
             user=request.user,
             timestamp=timestamp,
-            notes=notes
+            notes=notes,
+            photo_base64=photo_base64
         )
 
-        if result["status"] == "error":
-            if result["message"] == "no_active_session":
-                return Response(result, status=409)  # Conflict
+        if result["status"] == "success":
+            return Response(result, status=200)
+
+        # Logic-based errors
+        if result["message"] == "no_active_session":
+            return Response(result, status=409)  # Conflict
+
+        # Validation errors
+        if result["message"] in ["invalid_photo_data"]:
+            return Response(result, status=422)  # Unprocessable Entity
+
+        if result["message"] == "missing_timestamp":
             return Response(result, status=400)
 
-        return Response(result, status=200)
+        # Default
+        return Response(result, status=400)
 
     except Exception as e:
         Logs.atuta_technical_logger("api_clock_out_failed", exc_info=e)

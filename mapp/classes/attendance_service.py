@@ -650,12 +650,15 @@ class AttendanceService:
             return {"status": "error", "message": "clock_out_failed"}
 
     @classmethod
-    def clock_out(cls, user, timestamp: datetime.datetime, notes: str = None):
+    def clock_out(cls, user, timestamp: datetime.datetime, notes: str = None, photo_base64: str = None):
         """
-        Clock out the current open session, mark status as 'closed', optionally save notes,
+        Clock out the current open session, mark status as 'closed', optionally save notes + clock-out photo,
         and update user's is_present_today to False.
         """
         try:
+            if timestamp is None:
+                return {"status": "error", "message": "missing_timestamp"}
+
             if timezone.is_naive(timestamp):
                 timestamp = timezone.make_aware(timestamp)
 
@@ -675,6 +678,26 @@ class AttendanceService:
                 # Save optional notes
                 if notes:
                     session.notes = notes
+
+                # Save optional clock-out photo (same pattern as clock_in)
+                if photo_base64:
+                    try:
+                        if ";base64," in photo_base64:
+                            format_part, imgstr = photo_base64.split(";base64,")
+                            ext = format_part.split("/")[-1]
+                        else:
+                            imgstr = photo_base64
+                            ext = "jpg"
+
+                        decoded = base64.b64decode(imgstr)
+                        file = ContentFile(decoded, name=f"{uuid.uuid4()}.{ext}")
+                        session.clock_out_photo = file
+                    except Exception as e:
+                        Logs.atuta_technical_logger(
+                            f"clock_out_photo_save_failed_user_{user.user_id}",
+                            exc_info=e
+                        )
+                        return {"status": "error", "message": "invalid_photo_data"}
 
                 # Calculate total hours
                 delta = session.clock_out_time - session.clock_in_time

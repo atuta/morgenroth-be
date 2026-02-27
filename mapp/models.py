@@ -211,6 +211,7 @@ class AttendanceSession(models.Model):
 
     # Photo verification
     clock_in_photo = models.ImageField(upload_to='attendance_photos/', blank=True, null=True)
+    clock_out_photo = models.ImageField(upload_to='attendance_photos/', blank=True, null=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -223,8 +224,7 @@ class AttendanceSession(models.Model):
     class Meta:
         ordering = ['-date', '-created_at']
         indexes = [
-            # Added clockin_type to the index to optimize payroll reporting/filtering
-            models.Index(fields=['user', 'date', 'clockin_type']), 
+            models.Index(fields=['user', 'date', 'clockin_type']),
         ]
 
     def __str__(self):

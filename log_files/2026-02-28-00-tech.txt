@@ -1,0 +1,4 @@
+Retrieved current session | user=eb3f74a2-1aa0-4135-be00-96177e45f334 | session_id=eb97d5b0-eeea-4468-b699-6e598cd13526
+
+User clocked out | user=eb3f74a2-1aa0-4135-be00-96177e45f334 | session_id=eb97d5b0-eeea-4468-b699-6e598cd13526
+
