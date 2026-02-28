@@ -9,7 +9,7 @@ import datetime as dt
 import base64
 import uuid
 from django.core.files.base import ContentFile
-from django.core.paginator import Paginator, EmptyPage
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
 
@@ -1116,69 +1116,117 @@ class AttendanceService:
             raise e
 
     @classmethod
-    def get_attendance_history(cls, start_date=None, end_date=None, user_id=None):
+    def get_attendance_history(cls, start_date=None, end_date=None, user_id=None, page=1, page_size=50):
         """
-        Returns attendance sessions with date range filtering.
+        Returns attendance sessions with date range filtering + pagination.
         If user_id is provided, filters for that specific user.
         If user_id is None, returns records for all users (Admin view).
+
+        Response shape (frontend-friendly):
+        {
+        "status": "success",
+        "data": {
+            "results": [...],
+            "pagination": {...}
+        }
+        }
         """
         try:
-            # 1. Base Queryset with optimization
+            # 1) Base Queryset (optimized)
             sessions = AttendanceSession.objects.select_related("user")
 
-            # 2. Filter by User if provided
+            # 2) Filter by user (optional)
             if user_id:
                 sessions = sessions.filter(user__user_id=user_id)
 
-            # 3. Date Range Filtering
+            # 3) Date range filters
             if start_date:
                 sessions = sessions.filter(date__gte=start_date)
             if end_date:
                 sessions = sessions.filter(date__lte=end_date)
 
-            # 4. Ordering
+            # 4) Ordering
             sessions = sessions.order_by("-date", "-created_at")
 
-            data = []
+            # 5) Pagination parsing/safety
+            try:
+                page = int(page) if page is not None else 1
+            except (TypeError, ValueError):
+                page = 1
 
-            for session in sessions:
-                # Handle photo URL safely
+            try:
+                page_size = int(page_size) if page_size is not None else 50
+            except (TypeError, ValueError):
+                page_size = 50
+
+            if page < 1:
+                page = 1
+            if page_size < 1:
+                page_size = 50
+            if page_size > 500:
+                page_size = 500
+
+            paginator = Paginator(sessions, page_size)
+
+            try:
+                page_obj = paginator.page(page)
+            except PageNotAnInteger:
+                page = 1
+                page_obj = paginator.page(page)
+            except EmptyPage:
+                page = paginator.num_pages if paginator.num_pages > 0 else 1
+                page_obj = paginator.page(page)
+
+            results = []
+
+            for session in page_obj.object_list:
+                # Safe photo url
                 try:
                     clock_in_photo_url = session.clock_in_photo.url if session.clock_in_photo else None
                 except Exception:
                     clock_in_photo_url = None
 
-                data.append({
+                results.append({
                     "session_id": str(session.session_id),
                     "user_id": str(session.user.user_id),
                     "full_name": session.user.full_name,
-                    "date": session.date,
-                    "clock_in_time": session.clock_in_time,
-                    "lunch_in": session.lunch_in,
-                    "lunch_out": session.lunch_out,
-                    "clock_out_time": session.clock_out_time,
-                    "clockin_type": session.clockin_type,  # Added new field
-                    "total_hours": session.total_hours,
+
+                    "date": session.date.isoformat() if session.date else None,
+                    "clock_in_time": session.clock_in_time.isoformat() if session.clock_in_time else None,
+                    "lunch_in": session.lunch_in.isoformat() if session.lunch_in else None,
+                    "lunch_out": session.lunch_out.isoformat() if session.lunch_out else None,
+                    "clock_out_time": session.clock_out_time.isoformat() if session.clock_out_time else None,
+
+                    "clockin_type": session.clockin_type,
+                    "total_hours": str(session.total_hours) if session.total_hours is not None else None,
                     "status": session.status,
                     "notes": session.notes,
-                    "clock_in_photo_url": clock_in_photo_url, # Included as requested
+                    "clock_in_photo_url": clock_in_photo_url,
                 })
 
-            # Log the successful fetch
-            Logs.atuta_logger(f"Attendance history fetched: range {start_date} to {end_date} | user={user_id or 'ALL'}")
+            Logs.atuta_logger(
+                f"Attendance history fetched (paginated): range {start_date} to {end_date} | "
+                f"user={user_id or 'ALL'} | page={page} | page_size={page_size} | total={paginator.count}"
+            )
 
             return {
                 "status": "success",
-                "message": data,
+                "data": {
+                    "results": results,
+                    "pagination": {
+                        "page": page,
+                        "page_size": page_size,
+                        "total_pages": paginator.num_pages,
+                        "total_records": paginator.count,
+                        "has_next": page_obj.has_next(),
+                        "has_previous": page_obj.has_previous(),
+                    }
+                },
             }
 
         except Exception as e:
-            # Log technical details for debugging
-            Logs.atuta_technical_logger(f"get_attendance_history_failed", exc_info=e)
-            return {
-                "status": "error",
-                "message": "attendance_history_fetch_failed",
-            }
+            Logs.atuta_technical_logger("get_attendance_history_failed", exc_info=e)
+            return {"status": "error", "message": "attendance_history_fetch_failed"}
 
     @classmethod
     def get_user_attendance_history(cls, user_id, start_date=None, end_date=None):

@@ -420,63 +420,86 @@ def api_get_detailed_attendance_report(request):
             "message": "An internal server error occurred while generating the report."
         }, status=500)
 
-@api_view(['GET'])
+@api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def api_get_attendance_history(request):
     """
-    Retrieves attendance records based on date range and optional user filtering.
-    QueryParams: start_date (YYYY-MM-DD), end_date (YYYY-MM-DD), user_id (optional)
+    Retrieves attendance records based on date range + optional user filtering + pagination.
+
+    QueryParams:
+      - start_date (YYYY-MM-DD)
+      - end_date (YYYY-MM-DD)
+      - user_id (optional; admins only)
+      - page (optional; default=1)
+      - page_size (optional; default=50)
     """
     try:
-        # 1. Extract Query Parameters
         start_date_str = request.query_params.get("start_date")
         end_date_str = request.query_params.get("end_date")
         requested_user_id = request.query_params.get("user_id")
 
-        # 2. Permission Logic (RBAC)
-        # If the user is NOT an admin/super, they are locked to their own ID
-        if request.user.user_role not in ['super', 'admin']:
+        page_str = request.query_params.get("page", "1")
+        page_size_str = request.query_params.get("page_size", "50")
+
+        # RBAC
+        if request.user.user_role not in ["super", "admin"]:
             target_user_id = str(request.user.user_id)
         else:
-            # Admins can filter by a specific user or pass None for all users
-            target_user_id = requested_user_id
+            target_user_id = requested_user_id or None
 
-        # 3. Date Parsing & Validation
+        # Date parsing
         start_date = None
         end_date = None
-
         try:
             if start_date_str:
                 start_date = datetime.datetime.strptime(start_date_str, "%Y-%m-%d").date()
             if end_date_str:
                 end_date = datetime.datetime.strptime(end_date_str, "%Y-%m-%d").date()
         except ValueError:
-            return Response({
-                "status": "error", 
-                "message": "invalid_date_format_use_YYYY-MM-DD"
-            }, status=400)
+            return Response(
+                {"status": "error", "message": "invalid_date_format_use_YYYY-MM-DD"},
+                status=400,
+            )
 
-        # 4. Call the Service Layer
+        if start_date and end_date and start_date > end_date:
+            return Response(
+                {"status": "error", "message": "start_date_cannot_be_after_end_date"},
+                status=400,
+            )
+
+        # Pagination parsing
+        try:
+            page = int(page_str)
+            page_size = int(page_size_str)
+        except ValueError:
+            return Response({"status": "error", "message": "invalid_pagination_params"}, status=400)
+
+        if page < 1:
+            return Response({"status": "error", "message": "page_must_be_greater_than_zero"}, status=400)
+        if page_size < 1:
+            return Response({"status": "error", "message": "page_size_must_be_greater_than_zero"}, status=400)
+        if page_size > 500:
+            page_size = 500
+
         result = AttendanceService.get_attendance_history(
             start_date=start_date,
             end_date=end_date,
-            user_id=target_user_id
+            user_id=target_user_id,
+            page=page,
+            page_size=page_size,
         )
 
-        # 5. Response Mapping
-        if result["status"] == "success":
+        if result.get("status") == "success":
             return Response(result, status=200)
-        
+
+        if result.get("message") == "attendance_history_fetch_failed":
+            return Response(result, status=500)
+
         return Response(result, status=400)
 
     except Exception as e:
-        # Technical log for server-side issues
-        Logs.atuta_technical_logger(f"api_attendance_history_view_failed", exc_info=e)
-        return Response({
-            "status": "error",
-            "message": "internal_server_error"
-        }, status=500)
-
+        Logs.atuta_technical_logger("api_attendance_history_view_failed", exc_info=e)
+        return Response({"status": "error", "message": "internal_server_error"}, status=500)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])

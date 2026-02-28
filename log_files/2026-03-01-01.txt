@@ -40,3 +40,5 @@ Fetched total working hours for user c069ae5c-6a12-4256-b280-0e13b0d29214 | 3/20
 
 Successfully fetched 2 non-admin users
 
+Attendance history fetched: range 2026-03-01 to 2026-03-31 | user=ALL
+
