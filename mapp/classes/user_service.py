@@ -1,4 +1,6 @@
 import datetime
+from django.contrib.auth.hashers import make_password
+from django.db import transaction
 from django.db.models import Max, Sum
 from django.utils.dateparse import parse_date
 from datetime import datetime as dt_datetime, date as dt_date, time as dt_time
@@ -14,6 +16,49 @@ from mapp.classes.logs.logs import Logs
 
 
 class UserService:
+
+    @classmethod
+    def reset_user_password_to_default(cls, user_id):
+        """
+        Reset a user's password to the system default: 'changeme123'.
+        """
+
+        try:
+            with transaction.atomic():
+                user = CustomUser.objects.select_for_update().get(user_id=user_id)
+
+                # Set new password using Django's built-in hashing
+                user.set_password("changeme123")
+                user.save(update_fields=["password"])
+
+            Logs.atuta_logger(
+                f"Password reset to default for user {user.user_id} ({user.full_name})"
+            )
+
+            return {
+                "status": "success",
+                "message": "password_reset_successful",
+                "user_id": str(user.user_id),
+            }
+
+        except CustomUser.DoesNotExist:
+            Logs.atuta_logger(
+                f"Password reset failed: user not found | user_id={user_id}"
+            )
+            return {
+                "status": "error",
+                "message": "user_not_found",
+            }
+
+        except Exception as e:
+            Logs.atuta_technical_logger(
+                f"password_reset_failed_user_{user_id}",
+                exc_info=e,
+            )
+            return {
+                "status": "error",
+                "message": "password_reset_failed",
+            }
 
     @classmethod
     def delete_user(cls, user_id):
@@ -896,7 +941,7 @@ class UserService:
         Includes NSSF, SHA, hourly rate, and lunch start/end times.
         """
         FIELDS_TO_INCLUDE = [
-            'first_name', 'last_name', 'email', 'account', 
+            'first_name', 'last_name', 'username', 'email', 'account', 
             'user_role', 'phone_number', 'hourly_rate', 
             'hourly_rate_currency', 'photo', 'status',
             'nssf_number', 'shif_sha_number', 'lunch_start', 'lunch_end'

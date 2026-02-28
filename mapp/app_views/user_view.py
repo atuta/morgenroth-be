@@ -15,6 +15,70 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from mapp.classes.user_service import UserService
 from mapp.classes.logs.logs import Logs
 
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def api_reset_user_password(request):
+    """
+    Reset a user's password to system default ('changeme123').
+    Requires: user_id
+    Only accessible to 'super' and 'admin' roles.
+    """
+
+    try:
+        # 🔒 Role restriction
+        if request.user.user_role not in ["super", "admin"]:
+            Logs.atuta_logger(
+                f"[PASSWORD_RESET_DENIED] User {request.user.user_id} "
+                f"({request.user.full_name}) attempted unauthorized reset"
+            )
+            return Response(
+                {"status": "error", "message": "permission_denied"},
+                status=403
+            )
+
+        user_id = request.data.get("user_id")
+
+        if not user_id:
+            return Response(
+                {"status": "error", "message": "missing_user_id"},
+                status=400
+            )
+
+        result = UserService.reset_user_password_to_default(user_id)
+
+        if result.get("status") == "success":
+            return Response(
+                {
+                    "status": "success",
+                    "message": "password_reset_successful",
+                    "data": {
+                        "user_id": result.get("user_id")
+                    }
+                },
+                status=200
+            )
+
+        elif result.get("message") == "user_not_found":
+            return Response(
+                {"status": "error", "message": "user_not_found"},
+                status=404
+            )
+
+        else:
+            return Response(
+                {"status": "error", "message": "password_reset_failed"},
+                status=400
+            )
+
+    except Exception as e:
+        Logs.atuta_technical_logger(
+            "api_reset_user_password_failed",
+            exc_info=e
+        )
+        return Response(
+            {"status": "error", "message": "server_error"},
+            status=500
+        )
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
