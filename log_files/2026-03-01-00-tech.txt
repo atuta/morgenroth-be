@@ -1,0 +1,10 @@
+Retrieved current session | user=fce43586-89f5-4a39-87c4-4ce7af6fc60a | session_id=d6d05c52-8641-4d1a-9fe9-45484fe321d6
+
+User clocked out | user=fce43586-89f5-4a39-87c4-4ce7af6fc60a | session_id=d6d05c52-8641-4d1a-9fe9-45484fe321d6
+
+get_lateness_records_paginated_failed
+
+Error in file: /Users/isaac/python_projects/morgenroth/morgenrothproject/mapp/classes/attendance_service.py, line: 96, in get_lateness_records_paginated - name 'Paginator' is not defined
+get_lateness_records_paginated_failed
+
+Error in file: /Users/isaac/python_projects/morgenroth/morgenrothproject/mapp/classes/attendance_service.py, line: 96, in get_lateness_records_paginated - name 'Paginator' is not defined

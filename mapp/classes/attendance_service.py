@@ -9,14 +9,382 @@ import datetime as dt
 import base64
 import uuid
 from django.core.files.base import ContentFile
+from django.core.paginator import Paginator, EmptyPage
 from django.db import IntegrityError
 from django.core.exceptions import ObjectDoesNotExist
 
-from mapp.models import AttendanceSession, CustomUser, HourCorrection, WorkingHoursConfig
+from mapp.models import AttendanceSession, CustomUser, HourCorrection, WorkingHoursConfig, LateArrival
+from mapp.classes.payroll_service import PayrollService
 from mapp.classes.logs.logs import Logs
 
 
 class AttendanceService:
+
+    @classmethod
+    def get_lateness_records_paginated(
+        cls,
+        page: int = 1,
+        page_size: int = 20,
+        user_id: str = None,
+        start_date=None,   # "YYYY-MM-DD" or date
+        end_date=None,     # "YYYY-MM-DD" or date
+        session: str = None,     # "first" | "second"
+        is_excused=None,         # True | False | None
+        search: str = None       # optional name/phone search
+    ):
+        """
+        Retrieve lateness records with pagination.
+        Returns stable response structure with page metadata.
+        """
+        try:
+            # ---------
+            # Sanitize pagination
+            # ---------
+            try:
+                page = int(page) if page else 1
+            except Exception:
+                page = 1
+
+            try:
+                page_size = int(page_size) if page_size else 20
+            except Exception:
+                page_size = 20
+
+            if page < 1:
+                page = 1
+            if page_size < 1:
+                page_size = 20
+            if page_size > 200:
+                page_size = 200  # safety cap
+
+            qs = LateArrival.objects.select_related("user", "excused_by").all()
+
+            # ---------
+            # Filters
+            # ---------
+            if user_id:
+                qs = qs.filter(user__user_id=user_id)
+
+            if start_date:
+                qs = qs.filter(date__gte=start_date)
+
+            if end_date:
+                qs = qs.filter(date__lte=end_date)
+
+            if session in ["first", "second"]:
+                qs = qs.filter(session=session)
+
+            if is_excused is True:
+                qs = qs.filter(is_excused=True)
+            elif is_excused is False:
+                qs = qs.filter(is_excused=False)
+
+            if search:
+                s = search.strip()
+                if s:
+                    qs = qs.filter(
+                        Q(user__first_name__icontains=s) |
+                        Q(user__last_name__icontains=s) |
+                        Q(user__phone_number__icontains=s) |
+                        Q(user__username__icontains=s)
+                    )
+
+            total_records = qs.count()
+
+            # ---------
+            # Pagination
+            # ---------
+            paginator = Paginator(qs, page_size)
+
+            try:
+                page_obj = paginator.page(page)
+            except EmptyPage:
+                # If page is out of range, return empty but valid payload
+                page_obj = []
+
+            # ---------
+            # Serialize
+            # ---------
+            results = []
+            if page_obj:
+                for r in page_obj.object_list:
+                    results.append({
+                        "late_id": str(r.late_id),
+                        "date": r.date.isoformat(),
+                        "session": r.session,
+                        "lateness_hours": str(r.lateness_hours),
+
+                        "reason": r.reason,
+                        "is_excused": r.is_excused,
+                        "excused_at": r.excused_at.isoformat() if r.excused_at else None,
+
+                        "expected_start_time": r.expected_start_time.isoformat() if r.expected_start_time else None,
+                        "actual_clock_in_time": r.actual_clock_in_time.isoformat() if r.actual_clock_in_time else None,
+
+                        "user": {
+                            "user_id": str(r.user.user_id),
+                            "full_name": r.user.full_name,
+                            "phone_number": r.user.phone_number,
+                            "user_role": r.user.user_role,
+                        },
+
+                        "excused_by": {
+                            "user_id": str(r.excused_by.user_id),
+                            "full_name": r.excused_by.full_name,
+                        } if r.excused_by else None,
+
+                        "created_at": r.created_at.isoformat() if r.created_at else None,
+                        "updated_at": r.updated_at.isoformat() if r.updated_at else None,
+                    })
+
+            # Use correct page info even if out-of-range
+            page_number = page if page_obj else page
+            total_pages = paginator.num_pages if total_records > 0 else 0
+            has_next = page_obj.has_next() if page_obj else False
+            has_prev = page_obj.has_previous() if page_obj else False
+
+            Logs.atuta_logger(
+                f"[LATENESS_LIST] page={page_number} size={page_size} total={total_records} "
+                f"filters: user_id={user_id} start_date={start_date} end_date={end_date} "
+                f"session={session} is_excused={is_excused} search={search}"
+            )
+
+            return {
+                "status": "success",
+                "message": "lateness_records_retrieved",
+                "data": {
+                    "results": results,
+                    "pagination": {
+                        "page": page_number,
+                        "page_size": page_size,
+                        "total_records": total_records,
+                        "total_pages": total_pages,
+                        "has_next": has_next,
+                        "has_previous": has_prev,
+                    },
+                },
+            }
+
+        except Exception as e:
+            Logs.atuta_technical_logger("get_lateness_records_paginated_failed", exc_info=e)
+            return {
+                "status": "error",
+                "message": "get_lateness_records_paginated_failed",
+            }
+
+    @classmethod
+    def check_lateness(cls, user: CustomUser, timestamp: dt.datetime):
+        """
+        Check lateness ONLY on clock-in, using your strict rules:
+
+        Session detection (today only):
+        - FIRST: user has no AttendanceSession record today
+        - SECOND: user HAS a record today AND the latest is status='closed' and notes='break'
+        - Ignore everything else (return status='ignored')
+
+        Lateness thresholds:
+        - FIRST: WorkingHoursConfig.start_time + 10 minutes
+        - SECOND: CustomUser.lunch_start (HHMM int) + 10 minutes
+
+        If late, INSERT/UPSERT LateArrival for (user, date, session).
+        Fractions allowed; lateness stored in hours (Decimal 2dp).
+        """
+        KENYA_TZ = pytz.timezone("Africa/Nairobi")
+
+        try:
+            if timestamp is None:
+                return {"status": "error", "message": "missing_timestamp"}
+
+            if timezone.is_naive(timestamp):
+                timestamp = timezone.make_aware(timestamp)
+
+            # Work in Nairobi time
+            ts_local = timestamp.astimezone(KENYA_TZ)
+            today = ts_local.date()
+
+            # Get today's latest session for this user (if any)
+            latest_session = (
+                AttendanceSession.objects.filter(user=user, date=today)
+                .order_by("-created_at")
+                .first()
+            )
+
+            # Determine FIRST vs SECOND (strict rules)
+            if not latest_session:
+                session_name = LateArrival.SessionChoices.FIRST
+            else:
+                if latest_session.status == "closed" and (latest_session.notes or "").strip().lower() == "break":
+                    session_name = LateArrival.SessionChoices.SECOND
+                else:
+                    # Ignore everything else
+                    Logs.atuta_logger(
+                        f"[LATE_IGNORE] User {user.user_id} ({user.full_name}) | "
+                        f"date={today} | reason=invalid_session_state | "
+                        f"latest_status={latest_session.status} | latest_notes={latest_session.notes}"
+                    )
+                    return {"status": "ignored", "message": "invalid_session_state"}
+
+            # Compute expected start datetime (local) + 10 min grace
+            expected_dt_local = None
+
+            if session_name == LateArrival.SessionChoices.FIRST:
+                # Django weekday: Monday=0 -> Sunday=6, your mapping is 1-7
+                day_of_week = ts_local.weekday() + 1
+
+                config = WorkingHoursConfig.objects.filter(
+                    user_role=user.user_role,
+                    day_of_week=day_of_week,
+                    is_active=True
+                ).first()
+
+                if not config:
+                    Logs.atuta_logger(
+                        f"[LATE_IGNORE] No working hours config for user {user.user_id} ({user.full_name}) | "
+                        f"role={user.user_role} | day={day_of_week}"
+                    )
+                    return {"status": "ignored", "message": "no_working_hours_config"}
+
+                expected_dt_local = dt.datetime.combine(today, config.start_time)
+                if timezone.is_naive(expected_dt_local):
+                    expected_dt_local = KENYA_TZ.localize(expected_dt_local)
+
+            else:
+                # SECOND session: compare against CustomUser.lunch_start (HHMM int)
+                lunch_start = user.lunch_start
+                if lunch_start is None:
+                    Logs.atuta_logger(
+                        f"[LATE_IGNORE] No lunch_start for user {user.user_id} ({user.full_name}) | date={today}"
+                    )
+                    return {"status": "ignored", "message": "missing_lunch_start"}
+
+                # Convert HHMM int -> hour/minute
+                hour = int(lunch_start) // 100
+                minute = int(lunch_start) % 100
+
+                # Safety (even though your clean() enforces it)
+                if hour < 0 or hour > 23 or minute < 0 or minute > 59:
+                    Logs.atuta_logger(
+                        f"[LATE_IGNORE] Invalid lunch_start for user {user.user_id} ({user.full_name}) | "
+                        f"lunch_start={lunch_start}"
+                    )
+                    return {"status": "ignored", "message": "invalid_lunch_start"}
+
+                expected_dt_local = dt.datetime.combine(today, dt.time(hour, minute, 0))
+                if timezone.is_naive(expected_dt_local):
+                    expected_dt_local = KENYA_TZ.localize(expected_dt_local)
+
+            # Add 10-minute grace
+            grace_dt_local = expected_dt_local + dt.timedelta(minutes=10)
+
+            # If on time (<= grace), do nothing
+            if ts_local <= grace_dt_local:
+                Logs.atuta_logger(
+                    f"[LATE_OK] User {user.user_id} ({user.full_name}) | date={today} | session={session_name} | "
+                    f"clock_in={ts_local} | grace={grace_dt_local}"
+                )
+                return {"status": "success", "message": "not_late", "session": session_name, "lateness_hours": "0.00"}
+
+            # Late: compute lateness in hours beyond grace time
+            late_seconds = (ts_local - grace_dt_local).total_seconds()
+            lateness_hours = Decimal(str(late_seconds / 3600)).quantize(Decimal("0.01"))
+
+            with transaction.atomic():
+                # UPSERT behavior via update_or_create (unique constraint user/date/session)
+                record, created = LateArrival.objects.update_or_create(
+                    user=user,
+                    date=today,
+                    session=session_name,
+                    defaults={
+                        "lateness_hours": lateness_hours,
+                        "expected_start_time": expected_dt_local.astimezone(pytz.utc),
+                        "actual_clock_in_time": ts_local.astimezone(pytz.utc),
+                        "reason": "Late clock-in",
+                    },
+                )
+
+            Logs.atuta_logger(
+                f"[LATE_RECORDED] User {user.user_id} ({user.full_name}) | date={today} | session={session_name} | "
+                f"lateness_hours={lateness_hours} | expected={expected_dt_local} | grace={grace_dt_local} | actual={ts_local} | "
+                f"{'created' if created else 'updated'}"
+            )
+
+            return {
+                "status": "success",
+                "message": "late_recorded",
+                "session": session_name,
+                "lateness_hours": str(lateness_hours),
+                "late_id": str(record.late_id),
+            }
+
+        except Exception as e:
+            Logs.atuta_technical_logger(
+                f"check_lateness_failed_user_{getattr(user, 'user_id', 'unknown')}",
+                exc_info=e
+            )
+            return {"status": "error", "message": "check_lateness_failed"}
+
+    @classmethod
+    def get_hours_between_end_time_and_anchor(cls, user_id, anchor_time: dt.datetime):
+        """
+        Uses get_user_day_end_time(user_id) to fetch today's configured end_time,
+        then calculates hours between (today at end_time) and anchor_time.
+
+        - anchor_time: timezone-aware datetime (when system auto-clocked out user)
+        Returns:
+            {
+            "status": "success",
+            "day": <1-7>,
+            "end_datetime": <aware datetime>,
+            "anchor_datetime": <aware datetime>,
+            "hours": <float>  # >= 0
+            }
+        Or:
+            None / {"status":"error", "message": "..."}
+        """
+        try:
+            if anchor_time is None:
+                return {"status": "error", "message": "missing_anchor_time"}
+
+            # Ensure anchor_time is aware
+            if timezone.is_naive(anchor_time):
+                anchor_time = timezone.make_aware(anchor_time)
+
+            day_config = cls.get_user_day_end_time(user_id)
+            if not day_config or not day_config.get("end_time"):
+                return {"status": "error", "message": "no_working_hours_config"}
+
+            end_time = day_config["end_time"]
+            tz_name = day_config.get("timezone") or "Africa/Nairobi"
+            tz = pytz.timezone(tz_name)
+
+            # Convert anchor_time to the config timezone for correct comparison
+            anchor_local = anchor_time.astimezone(tz)
+
+            # Build end-of-day datetime on the anchor_local date
+            end_dt_local = dt.datetime.combine(anchor_local.date(), end_time)
+            if timezone.is_naive(end_dt_local):
+                end_dt_local = tz.localize(end_dt_local)
+
+            # Compute difference (clamp to 0 for "extra time" concept)
+            diff_seconds = (anchor_local - end_dt_local).total_seconds()
+            hours = round(max(diff_seconds, 0) / 3600, 2)
+
+            return {
+                "status": "success",
+                "day": day_config["day"],
+                "end_datetime": end_dt_local,
+                "anchor_datetime": anchor_local,
+                "hours": hours,
+                "timezone": tz_name,
+            }
+
+        except Exception as e:
+            Logs.atuta_technical_logger(
+                f"Critical error in AttendanceService.get_hours_between_end_time_and_anchor "
+                f"for user {user_id}: {str(e)}",
+                exc_info=e
+            )
+            return {"status": "error", "message": "calculation_failed"}
 
     @classmethod
     def is_within_working_hours(cls, user_id):
@@ -252,6 +620,141 @@ class AttendanceService:
 
     @classmethod
     def auto_clock_out_users_at_day_end(cls):
+        """
+        Auto clock-out job:
+        - Uses Nairobi time
+        - At/after 19:00 Nairobi time, automatically clocks out ALL present users (regular sessions only)
+        - Uses 19:00 as ANCHOR time for calculations (even if cron runs later)
+        - Calculates hours between configured end_time and 19:00 anchor time
+        - Records a NEGATIVE hour correction to subtract those hours
+        """
+        KENYA_TZ = pytz.timezone("Africa/Nairobi")
+
+        try:
+            # Current Kenya time
+            now = timezone.now().astimezone(KENYA_TZ)
+            now_str = now.strftime("%Y-%m-%d %H:%M:%S")
+            print(f"[INFO] Auto clock-out job started at {now_str}")
+
+            # Hard cutoff time: 19:00 Nairobi time (today) => this is the ANCHOR
+            cutoff_time = dt.time(19, 0, 0)
+            cutoff_dt = dt.datetime.combine(now.date(), cutoff_time)
+            if timezone.is_naive(cutoff_dt):
+                cutoff_dt = KENYA_TZ.localize(cutoff_dt)
+
+            Logs.atuta_logger(f"[INFO] Auto clock-out cutoff/anchor set to {cutoff_dt}")
+
+            # If it's not yet 19:00 Nairobi time, skip the entire run
+            if now < cutoff_dt:
+                Logs.atuta_logger(
+                    f"[SKIP] Not yet cutoff time. Now={now} | Cutoff={cutoff_dt}"
+                )
+                print(f"[INFO] Auto clock-out job finished at {now_str}")
+                return
+
+            # Only active users who are present today
+            users = CustomUser.objects.filter(is_active=True, is_present_today=True)
+
+            total_users = users.count()
+            clocked_out = 0
+            skipped_no_session = 0
+            corrections_recorded = 0
+            corrections_skipped = 0
+
+            for user in users:
+                try:
+                    Logs.atuta_logger(
+                        f"[EVALUATE] User {user.user_id} ({user.full_name}) | Now={now} | Anchor={cutoff_dt}"
+                    )
+
+                    # Always attempt to clock out regular sessions only
+                    # IMPORTANT: We pass ANCHOR (19:00) as the timestamp for the clock out.
+                    result = cls.clock_out_regular_only(
+                        user=user,
+                        timestamp=cutoff_dt,
+                        notes="Auto clock-out at 19:00 Nairobi time"
+                    )
+
+                    if result.get("status") == "success":
+                        clocked_out += 1
+                        Logs.atuta_logger(
+                            f"[CLOCKED_OUT] User {user.user_id} ({user.full_name})"
+                        )
+
+                        # After successful clock-out, calculate hours between configured end_time and ANCHOR (19:00)
+                        diff_res = cls.get_hours_between_end_time_and_anchor(
+                            user_id=user.user_id,
+                            anchor_time=cutoff_dt
+                        )
+
+                        if diff_res and diff_res.get("status") == "success":
+                            hours_to_deduct = diff_res.get("hours", 0)
+
+                            # Only record correction if there's something to deduct
+                            if hours_to_deduct and float(hours_to_deduct) > 0:
+                                correction_result = PayrollService.record_hour_correction(
+                                    user=user,
+                                    hours=-float(hours_to_deduct),  # NEGATIVE to subtract
+                                    reason="Auto correction: deducted hours between configured end time and 19:00 auto clock-out",
+                                    corrected_by=None,
+                                    month=cutoff_dt.month,
+                                    year=cutoff_dt.year,
+                                )
+
+                                if correction_result.get("status") == "success":
+                                    corrections_recorded += 1
+                                    Logs.atuta_logger(
+                                        f"[CORRECTION_RECORDED] User {user.user_id} ({user.full_name}) | "
+                                        f"hours_deducted=-{hours_to_deduct} | anchor={cutoff_dt}"
+                                    )
+                                else:
+                                    corrections_skipped += 1
+                                    Logs.atuta_logger(
+                                        f"[CORRECTION_FAILED] User {user.user_id} ({user.full_name}) | "
+                                        f"hours_to_deduct={hours_to_deduct} | message={correction_result.get('message')}"
+                                    )
+                            else:
+                                corrections_skipped += 1
+                                Logs.atuta_logger(
+                                    f"[CORRECTION_SKIP] User {user.user_id} ({user.full_name}) | nothing to deduct (hours={hours_to_deduct})"
+                                )
+                        else:
+                            corrections_skipped += 1
+                            Logs.atuta_logger(
+                                f"[CORRECTION_SKIP] User {user.user_id} ({user.full_name}) | could not compute hours to deduct"
+                            )
+
+                    else:
+                        skipped_no_session += 1
+                        Logs.atuta_logger(
+                            f"[SKIP] User {user.user_id} ({user.full_name}) — no open regular session"
+                        )
+
+                except Exception as inner_exc:
+                    Logs.atuta_technical_logger(
+                        f"Auto clock-out failed for user {user.user_id}",
+                        exc_info=inner_exc
+                    )
+
+            # Summary
+            Logs.atuta_logger(
+                f"[SUMMARY] Total users evaluated: {total_users} | "
+                f"Clocked out: {clocked_out} | "
+                f"Skipped (no regular session): {skipped_no_session} | "
+                f"Corrections recorded: {corrections_recorded} | "
+                f"Corrections skipped/failed: {corrections_skipped}"
+            )
+            print(f"[INFO] Auto clock-out job finished at {now_str}")
+
+        except Exception as e:
+            Logs.atuta_technical_logger(
+                "Critical error in AttendanceService.auto_clock_out_users_at_day_end",
+                exc_info=e
+            )
+            raise
+
+    @classmethod
+    def auto_clock_out_users_at_day_end_dep(cls):
         """
         Auto clock-out job:
         - Uses Nairobi time
@@ -838,6 +1341,11 @@ class AttendanceService:
         """
         Create a new attendance session for a user.
         Now supports clockin_type: 'regular' or 'overtime'.
+
+        FIXED:
+        - check_lateness() is executed BEFORE creating the AttendanceSession
+        so it can correctly detect FIRST vs SECOND session.
+        - Lateness check never blocks clock-in; failures are logged and ignored.
         """
         try:
             if timestamp is None:
@@ -854,9 +1362,19 @@ class AttendanceService:
             if timezone.is_naive(timestamp):
                 timestamp = timezone.make_aware(timestamp)
 
+            # ✅ Run lateness check BEFORE session creation
+            lateness_result = None
+            try:
+                lateness_result = cls.check_lateness(user=user, timestamp=timestamp)
+            except Exception as e:
+                Logs.atuta_technical_logger(
+                    f"check_lateness_failed_before_clock_in_user_{user.user_id}",
+                    exc_info=e
+                )
+                lateness_result = {"status": "error", "message": "check_lateness_failed"}
+
             with transaction.atomic():
-                # Ensure no active session for this specific type (or overall if preferred)
-                # Logic: We check for ANY 'open' session for this user
+                # Ensure no active session for this user
                 existing = AttendanceSession.objects.select_for_update().filter(
                     user=user,
                     status="open",
@@ -868,10 +1386,12 @@ class AttendanceService:
 
                 attendance_data = {
                     "user": user,
-                    "date": timestamp.date(),
+                    # ✅ Use the same date basis as lateness check expects (Nairobi date)
+                    # If you want to keep the old behavior (timestamp.date()), revert this line.
+                    "date": timezone.localtime(timestamp).date(),
                     "clock_in_time": timestamp,
-                    "clockin_type": clockin_type,  # NEW
-                    "status": "open"
+                    "clockin_type": clockin_type,
+                    "status": "open",
                 }
 
                 if photo_base64:
@@ -887,14 +1407,16 @@ class AttendanceService:
                         file = ContentFile(decoded, name=f"{uuid.uuid4()}.{ext}")
                         attendance_data["clock_in_photo"] = file
                     except Exception as e:
-                        Logs.atuta_technical_logger(f"clock_in_photo_save_failed_user_{user.user_id}", exc_info=e)
+                        Logs.atuta_technical_logger(
+                            f"clock_in_photo_save_failed_user_{user.user_id}",
+                            exc_info=e
+                        )
                         return {"status": "error", "message": "invalid_photo_data"}
 
                 # Create attendance session
                 session = AttendanceSession.objects.create(**attendance_data)
 
-                # Mark user as present today (Only if it's a regular clock-in or always?)
-                # Usually, if they are working overtime, they are also "present".
+                # Mark user as present today
                 if not user.is_present_today:
                     user.is_present_today = True
                     user.save(update_fields=["is_present_today"])
@@ -903,12 +1425,17 @@ class AttendanceService:
                 f"User clocked in | type={clockin_type} | user={user.user_id} | session_id={session.session_id}"
             )
 
-            return {
+            response = {
                 "status": "success",
                 "message": "clock_in_recorded",
                 "session_id": str(session.session_id),
-                "clockin_type": clockin_type
+                "clockin_type": clockin_type,
             }
+
+            if lateness_result:
+                response["lateness"] = lateness_result
+
+            return response
 
         except Exception as e:
             Logs.atuta_technical_logger(f"clock_in_failed_user_{user.user_id}", exc_info=e)

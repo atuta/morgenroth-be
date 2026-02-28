@@ -179,6 +179,72 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
                     "Lunch end time must be after lunch start time"
                 )
 
+class LateArrival(models.Model):
+    class SessionChoices(models.TextChoices):
+        FIRST = "first", "First"
+        SECOND = "second", "Second"
+
+    late_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
+    # Who / when
+    user = models.ForeignKey(
+        "CustomUser",
+        on_delete=models.CASCADE,
+        related_name="late_arrivals"
+    )
+    date = models.DateField(db_index=True)
+
+    # Which session of the day (you asked for first/second)
+    session = models.CharField(
+        max_length=10,
+        choices=SessionChoices.choices,
+        default=SessionChoices.FIRST,
+        db_index=True
+    )
+
+    # Lateness (hours; decimals allowed) e.g. 0.25 = 15 mins
+    lateness_hours = models.DecimalField(
+        max_digits=6,
+        decimal_places=2,
+        default=Decimal("0.00"),
+        help_text="Hours late. Decimals allowed (e.g., 0.25 = 15 minutes)."
+    )
+
+    # Optional: actual vs expected for audit/debug
+    expected_start_time = models.DateTimeField(null=True, blank=True)
+    actual_clock_in_time = models.DateTimeField(null=True, blank=True)
+
+    # Optional: reason & workflow
+    reason = models.CharField(max_length=255, null=True, blank=True)
+    is_excused = models.BooleanField(default=False)
+    excused_by = models.ForeignKey(
+        "CustomUser",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="lateness_excused_by"
+    )
+    excused_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-date", "-created_at"]
+        # Prevent duplicate lateness records per user/date/session
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "date", "session"],
+                name="uniq_latearrival_user_date_session"
+            )
+        ]
+        indexes = [
+            models.Index(fields=["user", "date"]),
+            models.Index(fields=["date", "session"]),
+            models.Index(fields=["is_excused", "date"]),
+        ]
+
+    def __str__(self):
+        return f"{self.user.full_name} | {self.date} | {self.session} | {self.lateness_hours}h"
 
 # -----------------
 # 2. AttendanceSession

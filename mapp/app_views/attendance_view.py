@@ -30,6 +30,97 @@ from mapp.models import AttendanceSession
 from mapp.classes.logs.logs import Logs
 
 
+def _parse_bool(val):
+    if val is None:
+        return None
+    v = str(val).strip().lower()
+    if v in ["true", "1", "yes", "y"]:
+        return True
+    if v in ["false", "0", "no", "n"]:
+        return False
+    return None
+
+
+def _parse_date(val):
+    """
+    Accepts YYYY-MM-DD and returns a date, else None.
+    """
+    if not val:
+        return None
+    try:
+        return datetime.date.fromisoformat(str(val).strip())
+    except Exception:
+        return None
+    
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def api_get_lateness_records(request):
+    """
+    Paginated lateness records.
+
+    Query params (all optional):
+      - page: int
+      - page_size: int
+      - user_id: uuid
+      - start_date: YYYY-MM-DD
+      - end_date: YYYY-MM-DD
+      - session: first|second
+      - is_excused: true|false
+      - search: string (name/phone/username)
+    """
+    try:
+        page = request.query_params.get("page", 1)
+        page_size = request.query_params.get("page_size", 20)
+        user_id = request.query_params.get("user_id")
+        start_date = _parse_date(request.query_params.get("start_date"))
+        end_date = _parse_date(request.query_params.get("end_date"))
+        session = request.query_params.get("session")
+        is_excused = _parse_bool(request.query_params.get("is_excused"))
+        search = request.query_params.get("search")
+
+        # Validate session filter
+        if session and session not in ["first", "second"]:
+            return Response(
+                {"status": "error", "message": "invalid_session_filter"},
+                status=400
+            )
+
+        # Validate date filters
+        if request.query_params.get("start_date") and not start_date:
+            return Response(
+                {"status": "error", "message": "invalid_start_date"},
+                status=400
+            )
+        if request.query_params.get("end_date") and not end_date:
+            return Response(
+                {"status": "error", "message": "invalid_end_date"},
+                status=400
+            )
+
+        result = AttendanceService.get_lateness_records_paginated(
+            page=page,
+            page_size=page_size,
+            user_id=user_id,
+            start_date=start_date,
+            end_date=end_date,
+            session=session,
+            is_excused=is_excused,
+            search=search,
+        )
+
+        if result.get("status") == "success":
+            return Response(result, status=200)
+
+        # Service failure
+        if result.get("message") == "get_lateness_records_paginated_failed":
+            return Response(result, status=500)
+
+        return Response(result, status=400)
+
+    except Exception as e:
+        Logs.atuta_technical_logger("api_get_lateness_records_failed", exc_info=e)
+        return Response({"status": "error", "message": "server_error"}, status=500)
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def api_is_within_working_hours(request):
