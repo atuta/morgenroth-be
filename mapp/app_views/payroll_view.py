@@ -58,6 +58,9 @@ def _draw_payslip_page(story, user, data, org, styles):
     title_style = ParagraphStyle('TitleFlush', fontName='Helvetica-Bold', fontSize=14, leftIndent=0, firstLineIndent=0)
     contact_style = ParagraphStyle('ContactFlush', fontName='Helvetica', fontSize=9, leftIndent=0, firstLineIndent=0)
 
+    # NEW smaller style for statutory numbers
+    small_style = ParagraphStyle('SmallFlush', fontName='Helvetica', fontSize=8, leftIndent=0, firstLineIndent=0)
+
     # --- Header Table (Logo + Org details + Title) ---
     logo_cell = Spacer(1, 0)
     if org and getattr(org, "logo", None):
@@ -100,7 +103,7 @@ def _draw_payslip_page(story, user, data, org, styles):
         [Paragraph(f"<b>Employee:</b> {user.full_name}", normal_style),
          Paragraph(f"<b>Period:</b> {data.get('month','N/A')}/{data.get('year','N/A')}", normal_style)],
         [Paragraph(f"<b>Email:</b> {user.email or 'N/A'}", normal_style),
-         Paragraph(f"<b>Rate:</b> {data.get('hourly_rate',0.0)} {data.get('currency','')}/hr", normal_style)]
+         Paragraph(f"<b>Rate:</b> {data.get('hourly_rate',0.0)} {data.get('currency','')}/hr", normal_style)],
     ]
     emp_table = Table(emp_data, colWidths=[page_width*0.65, page_width*0.35])
     emp_table.setStyle(TableStyle([
@@ -108,36 +111,54 @@ def _draw_payslip_page(story, user, data, org, styles):
         ('BOTTOMPADDING', (0,0), (-1,-1), 4),
     ]))
     story.append(emp_table)
+    story.append(Spacer(1, 0.2*cm))
+
+    # --- Horizontal line above statutory numbers ---
+    line_table = Table([[""]], colWidths=[page_width])
+    line_table.setStyle(TableStyle([
+        ('LINEABOVE', (0,0), (-1,0), 0.8, colors.grey),
+    ]))
+    story.append(line_table)
+    story.append(Spacer(1, 0.15*cm))
+
+    # --- KRA | NSSF | SHA in one straight line ---
+    statutory_text = (
+        f"KRA PIN: {getattr(user, 'kra_pin', None) or 'N/A'}   |   "
+        f"NSSF No: {getattr(user, 'nssf_number', None) or 'N/A'}   |   "
+        f"SHA No: {getattr(user, 'shif_sha_number', None) or 'N/A'}"
+    )
+
+    statutory_table = Table([[Paragraph(statutory_text, small_style)]], colWidths=[page_width])
+    statutory_table.setStyle(TableStyle([
+        ('LEFTPADDING', (0,0), (-1,-1), 0),
+    ]))
+
+    story.append(statutory_table)
     story.append(Spacer(1, 0.3*cm))
 
     # --- Financial Table ---
     table_data = []
 
-    # Header
     table_data.append([
         Paragraph('<b>DESCRIPTION</b>', normal_style),
         Paragraph('<b>AMOUNT</b>', normal_style)
     ])
 
-    # Keep track of row indices for background
     bg_rows = []
 
-    # Earnings section
     table_data.append([Paragraph('<b>A. EARNINGS</b>', bold_style), ''])
-    bg_rows.append(len(table_data)-1)  # row index for background
+    bg_rows.append(len(table_data)-1)
     table_data.append([f"Base Pay ({data.get('total_hours',0):.2f} Hrs)", f"{data.get('total_base_pay',0.0):.2f}"])
     table_data.append([f"Overtime Pay", f"{data.get('total_overtime',0.0):.2f}"])
     table_data.append([Paragraph('<b>GROSS PAY</b>', bold_style), Paragraph(f"<b>{data.get('gross_pay',0.0):.2f}</b>", bold_style)])
-    table_data.append(['',''])  # spacing
+    table_data.append(['',''])
 
-    # Statutory deductions section
     table_data.append([Paragraph('<b>B. STATUTORY DEDUCTIONS</b>', bold_style), ''])
     bg_rows.append(len(table_data)-1)
     for d in data.get('deductions_breakdown', []):
         table_data.append([d['name'].replace('_',' ').upper(), f"-{d['amount']:.2f}"])
-    table_data.append(['',''])  # spacing
+    table_data.append(['',''])
 
-    # Advances section
     table_data.append([Paragraph('<b>C. ADVANCES / LOANS</b>', bold_style), ''])
     bg_rows.append(len(table_data)-1)
     advances = data.get('advance_breakdown', [])
@@ -146,9 +167,8 @@ def _draw_payslip_page(story, user, data, org, styles):
             table_data.append([f"Advance ({a.get('date','N/A')})", f"-{a['amount']:.2f}"])
     else:
         table_data.append(["No Advances", "0.00"])
-    table_data.append(['',''])  # spacing
+    table_data.append(['',''])
 
-    # Net pay
     table_data.append([
         Paragraph('<b>NET PAYABLE</b>', bold_style),
         Paragraph(f"<b>{data.get('net_pay',0.0):.2f} {data.get('currency','')}</b>", bold_style)
@@ -161,12 +181,10 @@ def _draw_payslip_page(story, user, data, org, styles):
         ('ALIGN', (1,0), (1,-1), 'RIGHT'),
         ('LEFTPADDING', (0,0), (-1,-1), 10),
         ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-        # Apply grey background to subsection titles and net pay
         *[(('BACKGROUND', (0,row), (-1,row), colors.whitesmoke)) for row in bg_rows],
     ]))
     story.append(t)
 
-    # --- Signature ---
     story.append(Spacer(1, 1.5*cm))
     sig_data = [['Employee Signature: ____________________', 'Authorized By: ____________________']]
     sig_table = Table(sig_data, colWidths=[page_width/2, page_width/2])
