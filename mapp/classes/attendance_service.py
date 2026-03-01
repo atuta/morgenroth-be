@@ -21,6 +21,35 @@ from mapp.classes.logs.logs import Logs
 class AttendanceService:
 
     @classmethod
+    def has_break_record_today(cls, user_id: str) -> bool:
+        """
+        Returns True if the user has an AttendanceSession for TODAY (Africa/Nairobi)
+        where status="closed" and notes="break". Otherwise False.
+        """
+        try:
+            if not user_id:
+                return False
+
+            nairobi_tz = pytz.timezone("Africa/Nairobi")
+            today_nairobi = timezone.now().astimezone(nairobi_tz).date()
+
+            exists = AttendanceSession.objects.filter(
+                user__user_id=user_id,
+                date=today_nairobi,
+                status="closed",
+                notes="break",
+            ).exists()
+
+            Logs.atuta_logger(
+                f"[BREAK_CHECK] user_id={user_id} date={today_nairobi} exists={exists}"
+            )
+            return bool(exists)
+
+        except Exception as e:
+            Logs.atuta_technical_logger("has_break_record_today_failed", exc_info=e)
+            return False
+
+    @classmethod
     def get_lateness_records_paginated(
         cls,
         page: int = 1,
@@ -627,8 +656,14 @@ class AttendanceService:
         - Uses 19:00 as ANCHOR time for calculations (even if cron runs later)
         - Calculates hours between configured end_time and 19:00 anchor time
         - Records a NEGATIVE hour correction to subtract those hours
+
+        NEW (Lunch rule):
+        - If user has NO 'break' record today (Nairobi timezone), deduct 1 hour (-1) once per Nairobi day
+        via PayrollService.record_hour_correction.
+        - Prevent double-deduction via HourCorrection existence check.
         """
         KENYA_TZ = pytz.timezone("Africa/Nairobi")
+        AUTO_LUNCH_REASON = "Auto lunch deduction (no break record)"
 
         try:
             # Current Kenya time
@@ -658,8 +693,15 @@ class AttendanceService:
             total_users = users.count()
             clocked_out = 0
             skipped_no_session = 0
+
             corrections_recorded = 0
             corrections_skipped = 0
+
+            lunch_deductions_applied = 0
+            lunch_deductions_skipped = 0
+            lunch_deductions_failed = 0
+
+            today_nairobi = now.date()
 
             for user in users:
                 try:
@@ -680,6 +722,54 @@ class AttendanceService:
                         Logs.atuta_logger(
                             f"[CLOCKED_OUT] User {user.user_id} ({user.full_name})"
                         )
+
+                        # --- NEW: Apply lunch deduction rule (once/day) ---
+                        try:
+                            has_break = cls.has_break_record_today(str(user.user_id))
+                            if not has_break:
+                                already_deducted = HourCorrection.objects.filter(
+                                    user=user,
+                                    date=today_nairobi,
+                                    hours=-1,
+                                    reason=AUTO_LUNCH_REASON
+                                ).exists()
+
+                                if already_deducted:
+                                    lunch_deductions_skipped += 1
+                                    Logs.atuta_logger(
+                                        f"[LUNCH_DEDUCTION_SKIP] User {user.user_id} ({user.full_name}) | already deducted today"
+                                    )
+                                else:
+                                    lunch_res = PayrollService.record_hour_correction(
+                                        user=user,
+                                        hours=-1,
+                                        reason=AUTO_LUNCH_REASON,
+                                        corrected_by=None,
+                                        month=cutoff_dt.month,
+                                        year=cutoff_dt.year,
+                                    )
+
+                                    if lunch_res and lunch_res.get("status") == "success":
+                                        lunch_deductions_applied += 1
+                                        Logs.atuta_logger(
+                                            f"[LUNCH_DEDUCTION_APPLIED] User {user.user_id} ({user.full_name}) | hours=-1 | date={today_nairobi}"
+                                        )
+                                    else:
+                                        lunch_deductions_failed += 1
+                                        Logs.atuta_logger(
+                                            f"[LUNCH_DEDUCTION_FAILED] User {user.user_id} ({user.full_name}) | res={lunch_res}"
+                                        )
+                            else:
+                                lunch_deductions_skipped += 1
+                                Logs.atuta_logger(
+                                    f"[LUNCH_DEDUCTION_SKIP] User {user.user_id} ({user.full_name}) | break record exists today"
+                                )
+                        except Exception as lunch_exc:
+                            lunch_deductions_failed += 1
+                            Logs.atuta_technical_logger(
+                                f"Auto lunch deduction failed for user {user.user_id}",
+                                exc_info=lunch_exc
+                            )
 
                         # After successful clock-out, calculate hours between configured end_time and ANCHOR (19:00)
                         diff_res = cls.get_hours_between_end_time_and_anchor(
@@ -741,6 +831,9 @@ class AttendanceService:
                 f"[SUMMARY] Total users evaluated: {total_users} | "
                 f"Clocked out: {clocked_out} | "
                 f"Skipped (no regular session): {skipped_no_session} | "
+                f"Lunch deductions applied: {lunch_deductions_applied} | "
+                f"Lunch deductions skipped: {lunch_deductions_skipped} | "
+                f"Lunch deductions failed: {lunch_deductions_failed} | "
                 f"Corrections recorded: {corrections_recorded} | "
                 f"Corrections skipped/failed: {corrections_skipped}"
             )
@@ -837,100 +930,6 @@ class AttendanceService:
             )
             raise
 
-    @classmethod
-    def auto_clock_out_users_at_day_end_dep(cls):
-        """
-        Loop through all active users who are currently present, evaluate their end-of-day
-        using Nairobi time, and automatically clock out regular sessions only.
-        Detailed logs for evaluation, skipped users, and clocked-out users.
-        """
-        KENYA_TZ = pytz.timezone("Africa/Nairobi")
-
-        try:
-            # Current Kenya time
-            now = timezone.now().astimezone(KENYA_TZ)
-            now_str = now.strftime("%Y-%m-%d %H:%M:%S")
-            print(f"[INFO] Auto clock-out job started at {now_str}")
-
-            # Only active users who are present today
-            users = CustomUser.objects.filter(
-                is_active=True,
-                is_present_today=True
-            )
-
-            total_users = users.count()
-            clocked_out = 0
-            skipped_no_session = 0
-            skipped_no_config = 0
-
-            for user in users:
-                try:
-                    # Get today's end time for this user
-                    day_config = cls.get_user_day_end_time(user.user_id)
-
-                    if not day_config or not day_config.get("end_time"):
-                        skipped_no_config += 1
-                        Logs.atuta_logger(
-                            f"[SKIP] User {user.user_id} ({user.full_name}) — no working hours config today"
-                        )
-                        continue
-
-                    end_time = day_config["end_time"]
-
-                    # Combine today's date with end_time and localize to Nairobi
-                    end_datetime = dt.datetime.combine(now.date(), end_time)
-                    if timezone.is_naive(end_datetime):
-                        end_datetime = KENYA_TZ.localize(end_datetime)
-
-                    Logs.atuta_logger(
-                        f"[EVALUATE] User {user.user_id} ({user.full_name}) | "
-                        f"Now={now} | End_of_day={end_datetime}"
-                    )
-
-                    # Only clock out if current Kenya time >= configured end time
-                    if now >= end_datetime:
-                        result = cls.clock_out_regular_only(
-                            user=user,
-                            timestamp=now,
-                            notes="Auto clock-out at end of working hours"
-                        )
-
-                        if result.get("status") == "success":
-                            clocked_out += 1
-                            Logs.atuta_logger(
-                                f"[CLOCKED_OUT] User {user.user_id} ({user.full_name})"
-                            )
-                        else:
-                            skipped_no_session += 1
-                            Logs.atuta_logger(
-                                f"[SKIP] User {user.user_id} ({user.full_name}) — no open regular session"
-                            )
-                    else:
-                        Logs.atuta_logger(
-                            f"[SKIP] User {user.user_id} ({user.full_name}) — not yet end-of-day"
-                        )
-
-                except Exception as inner_exc:
-                    Logs.atuta_technical_logger(
-                        f"Auto clock-out failed for user {user.user_id}",
-                        exc_info=inner_exc
-                    )
-
-            # Summary
-            Logs.atuta_logger(
-                f"[SUMMARY] Total users evaluated: {total_users} | "
-                f"Clocked out: {clocked_out} | "
-                f"Skipped (no regular session): {skipped_no_session} | "
-                f"Skipped (no config): {skipped_no_config}"
-            )
-            print(f"[INFO] Auto clock-out job finished at {now_str}")
-
-        except Exception as e:
-            Logs.atuta_technical_logger(
-                f"Critical error in AttendanceService.auto_clock_out_users_at_day_end",
-                exc_info=e
-            )
-            raise e
 
     @classmethod
     def get_user_day_end_time(cls, user_id):
@@ -1593,14 +1592,33 @@ class AttendanceService:
     def clock_out(cls, user, timestamp: datetime.datetime, notes: str = None, photo_base64: str = None):
         """
         Clock out the current open session, mark status as 'closed', optionally save notes + clock-out photo,
-        and update user's is_present_today to False.
+        update user's is_present_today to False.
+
+        RULE:
+        - Lunch (-1 hour) deduction applies ONLY when:
+            1) clockin_type="regular"
+            2) notes == "end"  (i.e. end-of-shift clock-out)
+        - If end-of-shift AND user has NO 'break' record today (Nairobi timezone), deduct 1 hour (-1)
+        via PayrollService.record_hour_correction.
+        - Prevent double-deduction: only apply the auto deduction once per user per Nairobi day.
+        - If user is clocking out for break (notes="break"), DO NOT run lunch deduction checks.
         """
+        AUTO_LUNCH_REASON = "Auto lunch deduction (no break record)"
+        NAIROBI_TZ = pytz.timezone("Africa/Nairobi")
+
         try:
+            if not user:
+                return {"status": "error", "message": "missing_user"}
+
             if timestamp is None:
                 return {"status": "error", "message": "missing_timestamp"}
 
             if timezone.is_naive(timestamp):
                 timestamp = timezone.make_aware(timestamp)
+
+            # normalize notes for rule checks (but keep original for storage)
+            notes_normalized = (notes or "").strip().lower()
+            is_end_clockout = (notes_normalized == "end")
 
             with transaction.atomic():
                 session = AttendanceSession.objects.select_for_update().filter(
@@ -1612,6 +1630,38 @@ class AttendanceService:
                 if not session:
                     return {"status": "error", "message": "no_active_session"}
 
+                # --- Lunch deduction: ONLY for regular sessions AND only when notes="end" ---
+                has_break = None
+                auto_deducted = False
+
+                if session.clockin_type == "regular" and is_end_clockout:
+                    has_break = cls.has_break_record_today(str(user.user_id))
+
+                    if not has_break:
+                        today_nairobi = timezone.now().astimezone(NAIROBI_TZ).date()
+
+                        already_deducted = HourCorrection.objects.filter(
+                            user=user,
+                            date=today_nairobi,
+                            hours=-1,
+                            reason=AUTO_LUNCH_REASON
+                        ).exists()
+
+                        if not already_deducted:
+                            correction_res = PayrollService.record_hour_correction(
+                                user=user,
+                                hours=-1,
+                                reason=AUTO_LUNCH_REASON
+                            )
+
+                            if not correction_res or correction_res.get("status") != "success":
+                                Logs.atuta_technical_logger(
+                                    f"auto_break_deduction_failed_user_{user.user_id} | res={correction_res}"
+                                )
+                                return {"status": "error", "message": "auto_break_deduction_failed"}
+
+                            auto_deducted = True
+
                 session.clock_out_time = timestamp
                 session.status = "closed"
 
@@ -1619,7 +1669,7 @@ class AttendanceService:
                 if notes:
                     session.notes = notes
 
-                # Save optional clock-out photo (same pattern as clock_in)
+                # Save optional clock-out photo
                 if photo_base64:
                     try:
                         if ";base64," in photo_base64:
@@ -1640,6 +1690,9 @@ class AttendanceService:
                         return {"status": "error", "message": "invalid_photo_data"}
 
                 # Calculate total hours
+                if not session.clock_in_time:
+                    return {"status": "error", "message": "missing_clock_in_time"}
+
                 delta = session.clock_out_time - session.clock_in_time
                 session.total_hours = round(delta.total_seconds() / 3600, 2)
 
@@ -1649,15 +1702,18 @@ class AttendanceService:
                 user.is_present_today = False
                 user.save(update_fields=["is_present_today"])
 
-            Logs.atuta_technical_logger(
-                f"User clocked out | user={user.user_id} | session_id={session.session_id}"
+            Logs.atuta_logger(
+                f"User clocked out | user={user.user_id} | session_id={session.session_id} | "
+                f"clockin_type={session.clockin_type} | notes={notes_normalized or None} | "
+                f"is_end_clockout={is_end_clockout} | has_break={has_break} | auto_break_deducted={auto_deducted}"
             )
 
             return {"status": "success", "message": "clock_out_recorded"}
 
         except Exception as e:
             Logs.atuta_technical_logger(
-                f"clock_out_failed_user_{user.user_id}", exc_info=e
+                f"clock_out_failed_user_{getattr(user, 'user_id', 'unknown')}",
+                exc_info=e
             )
             return {"status": "error", "message": "clock_out_failed"}
 

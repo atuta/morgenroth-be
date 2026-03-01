@@ -1,7 +1,8 @@
 from typing import Optional
 from datetime import date
 from dateutil.relativedelta import relativedelta
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
+from django.db import transaction
 from django.db.models import Sum, Q
 from mapp.models import (
     CustomUser,
@@ -81,61 +82,65 @@ class PayrollService:
     def record_hour_correction(
         cls,
         user: CustomUser,
-        hours: float,
+        hours,
         reason: str,
         corrected_by: Optional[CustomUser] = None,
         month: Optional[int] = None,
         year: Optional[int] = None,
     ):
-        """
-        Record a manual hour correction for a user.
-        Positive hours = add hours
-        Negative hours = deduct hours
-        """
-
         try:
+            if not user:
+                return {"status": "error", "message": "invalid_user"}
+
+            reason = (reason or "").strip()
+            if not reason:
+                return {"status": "error", "message": "reason_required"}
+
+            try:
+                hours_dec = Decimal(str(hours))
+            except (InvalidOperation, TypeError, ValueError):
+                return {"status": "error", "message": "invalid_hours"}
+
+            if hours_dec == Decimal("0"):
+                return {"status": "error", "message": "hours_cannot_be_zero"}
+
             now = timezone.now()
-            month = month or now.month
-            year = year or now.year
+            month = int(month or now.month)
+            year = int(year or now.year)
 
-            # Pull hourly_rate directly from user
-            hourly_rate = user.hourly_rate
+            hourly_rate = user.hourly_rate  # assumed DecimalField
 
-            correction = HourCorrection.objects.create(
-                user=user,
-                hours=hours,
-                hourly_rate=hourly_rate,
-                reason=reason,
-                corrected_by=corrected_by,
-                month=month,
-                year=year,
-                date=now.date(),
-            )
+            with transaction.atomic():
+                correction = HourCorrection.objects.create(
+                    user=user,
+                    hours=hours_dec,
+                    hourly_rate=hourly_rate,
+                    reason=reason,
+                    corrected_by=corrected_by,
+                    month=month,
+                    year=year,
+                    date=now.date(),
+                )
 
             Logs.atuta_logger(
-                f"Hour correction recorded for user {user.user_id} | "
-                f"hours={hours} | "
-                f"rate={correction.hourly_rate} | "
-                f"amount={correction.amount} | "
-                f"month={month}/{year} | "
+                f"[HOUR_CORRECTION] user_id={user.user_id} "
+                f"hours={hours_dec} rate={correction.hourly_rate} amount={getattr(correction, 'amount', None)} "
+                f"month={month}/{year} corrected_by={getattr(corrected_by, 'user_id', None)} "
                 f"reason={reason}"
             )
 
             return {
                 "status": "success",
                 "message": "hour_correction_recorded",
-                "correction_id": str(correction.correction_id),
+                "data": {"correction_id": str(correction.correction_id)},
             }
 
         except Exception as e:
             Logs.atuta_technical_logger(
-                f"hour_correction_record_failed_user_{user.user_id}",
+                f"hour_correction_record_failed_user_{getattr(user, 'user_id', 'unknown')}",
                 exc_info=e,
             )
-            return {
-                "status": "error",
-                "message": "hour_correction_record_failed",
-            }
+            return {"status": "error", "message": "hour_correction_record_failed"}
 
     @classmethod
     def generate_batch_payslips(cls, user_ids, start_month, start_year, end_month, end_year):

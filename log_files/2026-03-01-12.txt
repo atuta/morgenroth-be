@@ -1,0 +1,42 @@
+User logged in | user_id=fce43586-89f5-4a39-87c4-4ce7af6fc60a
+
+No working hours config found for role=teaching, day=7
+
+No working hours config found for role=teaching, day=7
+
+[LATE_IGNORE] No working hours config for user fce43586-89f5-4a39-87c4-4ce7af6fc60a (Dan Omato) | role=teaching | day=7
+
+User logged in | user_id=fce43586-89f5-4a39-87c4-4ce7af6fc60a
+
+No working hours config found for role=teaching, day=7
+
+No working hours config found for role=teaching, day=7
+
+[BREAK_CHECK] user_id=fce43586-89f5-4a39-87c4-4ce7af6fc60a date=2026-03-01 exists=False
+
+[HOUR_CORRECTION] user_id=fce43586-89f5-4a39-87c4-4ce7af6fc60a hours=-1 rate=125.00 amount=-125.00 month=3/2026 corrected_by=None reason=Auto lunch deduction (no break record)
+
+User clocked out | user=fce43586-89f5-4a39-87c4-4ce7af6fc60a | session_id=3119a78e-83a2-4fc8-b5ed-b404d02616bb | auto_break_deducted=True
+
+User logged in | user_id=fce43586-89f5-4a39-87c4-4ce7af6fc60a
+
+No working hours config found for role=teaching, day=7
+
+User logged in | user_id=f0541e22-5afd-476d-9962-0427c83d912e
+
+Fetched total working hours for user eb3f74a2-1aa0-4135-be00-96177e45f334 | 3/2026 | sessions=0 | corrections=0 | total=0.0
+
+Fetched total working hours for user f0541e22-5afd-476d-9962-0427c83d912e | 3/2026 | sessions=0 | corrections=0 | total=0.0
+
+Fetched total working hours for user fce43586-89f5-4a39-87c4-4ce7af6fc60a | 3/2026 | sessions=0 | corrections=0 | total=0.0
+
+Fetched total working hours for user c069ae5c-6a12-4256-b280-0e13b0d29214 | 3/2026 | sessions=0 | corrections=0 | total=0.0
+
+Working hours retrieved | role=subordinate, tz=Africa/Nairobi
+
+Working hours retrieved | role=teaching, tz=Africa/Nairobi
+
+Working hours created | day=7, role=teaching, start=08:00, end=13:00, tz=Africa/Nairobi
+
+User logged in | user_id=fce43586-89f5-4a39-87c4-4ce7af6fc60a
+

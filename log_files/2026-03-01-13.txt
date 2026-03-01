@@ -1,0 +1,72 @@
+User logged in | user_id=f0541e22-5afd-476d-9962-0427c83d912e
+
+Fetched total working hours for user eb3f74a2-1aa0-4135-be00-96177e45f334 | 3/2026 | sessions=0 | corrections=0 | total=0.0
+
+Fetched total working hours for user f0541e22-5afd-476d-9962-0427c83d912e | 3/2026 | sessions=0 | corrections=0 | total=0.0
+
+Fetched total working hours for user fce43586-89f5-4a39-87c4-4ce7af6fc60a | 3/2026 | sessions=0 | corrections=0 | total=0.0
+
+Fetched total working hours for user c069ae5c-6a12-4256-b280-0e13b0d29214 | 3/2026 | sessions=0 | corrections=0 | total=0.0
+
+Working hours retrieved | role=subordinate, tz=Africa/Nairobi
+
+Working hours created | day=7, role=subordinate, start=08:00, end=17:00, tz=Africa/Nairobi
+
+User logged in | user_id=fce43586-89f5-4a39-87c4-4ce7af6fc60a
+
+User logged in | user_id=f0541e22-5afd-476d-9962-0427c83d912e
+
+Fetched total working hours for user eb3f74a2-1aa0-4135-be00-96177e45f334 | 3/2026 | sessions=0 | corrections=0 | total=0.0
+
+Fetched total working hours for user f0541e22-5afd-476d-9962-0427c83d912e | 3/2026 | sessions=0 | corrections=0 | total=0.0
+
+Fetched total working hours for user fce43586-89f5-4a39-87c4-4ce7af6fc60a | 3/2026 | sessions=0 | corrections=0 | total=0.0
+
+Fetched total working hours for user c069ae5c-6a12-4256-b280-0e13b0d29214 | 3/2026 | sessions=0 | corrections=0 | total=0.0
+
+Working hours retrieved | role=subordinate, tz=Africa/Nairobi
+
+Working hours retrieved | role=teaching, tz=Africa/Nairobi
+
+Working hours updated | day=7, role=teaching, start=08:00, end=17:00, tz=Africa/Nairobi
+
+User logged in | user_id=fce43586-89f5-4a39-87c4-4ce7af6fc60a
+
+[LATE_RECORDED] User fce43586-89f5-4a39-87c4-4ce7af6fc60a (Dan Omato) | date=2026-03-01 | session=first | lateness_hours=4.88 | expected=2026-03-01 08:00:00+03:00 | grace=2026-03-01 08:10:00+03:00 | actual=2026-03-01 13:02:55.477000+03:00 | created
+
+User logged in | user_id=fce43586-89f5-4a39-87c4-4ce7af6fc60a
+
+[BREAK_CHECK] user_id=fce43586-89f5-4a39-87c4-4ce7af6fc60a date=2026-03-01 exists=False
+
+[HOUR_CORRECTION] user_id=fce43586-89f5-4a39-87c4-4ce7af6fc60a hours=-1 rate=125.00 amount=-125.00 month=3/2026 corrected_by=None reason=Auto lunch deduction (no break record)
+
+User clocked out | user=fce43586-89f5-4a39-87c4-4ce7af6fc60a | session_id=4a1e5cab-f281-4da8-9b8b-6268219be7bd | clockin_type=regular | has_break=False | auto_break_deducted=True
+
+[LATE_RECORDED] User fce43586-89f5-4a39-87c4-4ce7af6fc60a (Dan Omato) | date=2026-03-01 | session=first | lateness_hours=4.99 | expected=2026-03-01 08:00:00+03:00 | grace=2026-03-01 08:10:00+03:00 | actual=2026-03-01 13:09:08.284000+03:00 | created
+
+User logged in | user_id=fce43586-89f5-4a39-87c4-4ce7af6fc60a
+
+[BREAK_CHECK] user_id=fce43586-89f5-4a39-87c4-4ce7af6fc60a date=2026-03-01 exists=False
+
+[HOUR_CORRECTION] user_id=fce43586-89f5-4a39-87c4-4ce7af6fc60a hours=-1 rate=125.00 amount=-125.00 month=3/2026 corrected_by=None reason=Auto lunch deduction (no break record)
+
+User clocked out | user=fce43586-89f5-4a39-87c4-4ce7af6fc60a | session_id=f098556b-e804-40aa-a2bf-d09f513a9935 | clockin_type=regular | has_break=False | auto_break_deducted=True
+
+[LATE_RECORDED] User fce43586-89f5-4a39-87c4-4ce7af6fc60a (Dan Omato) | date=2026-03-01 | session=first | lateness_hours=5.13 | expected=2026-03-01 08:00:00+03:00 | grace=2026-03-01 08:10:00+03:00 | actual=2026-03-01 13:17:31.191000+03:00 | created
+
+User clocked out | user=fce43586-89f5-4a39-87c4-4ce7af6fc60a | session_id=c187a28f-a968-4a3e-91f4-c69d2dc3d278 | clockin_type=regular | notes=break | is_end_clockout=False | has_break=None | auto_break_deducted=False
+
+[LATE_IGNORE] No lunch_start for user fce43586-89f5-4a39-87c4-4ce7af6fc60a (Dan Omato) | date=2026-03-01
+
+User logged in | user_id=fce43586-89f5-4a39-87c4-4ce7af6fc60a
+
+User clocked out | user=fce43586-89f5-4a39-87c4-4ce7af6fc60a | session_id=ad515798-5d05-4b9a-8f74-3566cbac87e0 | clockin_type=regular | notes=break | is_end_clockout=False | has_break=None | auto_break_deducted=False
+
+[LATE_IGNORE] No lunch_start for user fce43586-89f5-4a39-87c4-4ce7af6fc60a (Dan Omato) | date=2026-03-01
+
+User logged in | user_id=fce43586-89f5-4a39-87c4-4ce7af6fc60a
+
+[BREAK_CHECK] user_id=fce43586-89f5-4a39-87c4-4ce7af6fc60a date=2026-03-01 exists=True
+
+User clocked out | user=fce43586-89f5-4a39-87c4-4ce7af6fc60a | session_id=3b417e18-d0a3-491b-baff-fb6bf533350b | clockin_type=regular | notes=end | is_end_clockout=True | has_break=True | auto_break_deducted=False
+

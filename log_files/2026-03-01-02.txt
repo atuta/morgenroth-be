@@ -54,3 +54,5 @@ Attendance history fetched (paginated): range 2026-03-27 to 2026-03-31 | user=AL
 
 Attendance history fetched (paginated): range 2026-02-27 to 2026-03-31 | user=ALL | page=1 | page_size=20 | total=1
 
+Attendance history fetched (paginated): range 2026-02-27 to 2026-03-05 | user=ALL | page=1 | page_size=20 | total=1
+
