@@ -119,13 +119,17 @@ def _draw_payslip_page(story, user, data, org, styles):
         ('LINEABOVE', (0,0), (-1,0), 0.8, colors.grey),
     ]))
     story.append(line_table)
-    story.append(Spacer(1, 0.15*cm))
+
+    # Reduced space below line
+    story.append(Spacer(1, 0.05*cm))
 
     # --- KRA | NSSF | SHA in one straight line ---
     statutory_text = (
-        f"KRA PIN: {getattr(user, 'kra_pin', None) or 'N/A'}   |   "
-        f"NSSF No: {getattr(user, 'nssf_number', None) or 'N/A'}   |   "
-        f"SHA No: {getattr(user, 'shif_sha_number', None) or 'N/A'}"
+        f"<b>KRA PIN:</b> {getattr(user, 'kra_pin', None) or 'N/A'}"
+        f"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
+        f"<b>NSSF No:</b> {getattr(user, 'nssf_number', None) or 'N/A'}"
+        f"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
+        f"<b>SHA No:</b> {getattr(user, 'shif_sha_number', None) or 'N/A'}"
     )
 
     statutory_table = Table([[Paragraph(statutory_text, small_style)]], colWidths=[page_width])

@@ -1,8 +1,0 @@
-User clocked in | type=overtime | user=fce43586-89f5-4a39-87c4-4ce7af6fc60a | session_id=3119a78e-83a2-4fc8-b5ed-b404d02616bb
-
-Retrieved current session | user=fce43586-89f5-4a39-87c4-4ce7af6fc60a | session_id=3119a78e-83a2-4fc8-b5ed-b404d02616bb
-
-Retrieved current session | user=fce43586-89f5-4a39-87c4-4ce7af6fc60a | session_id=3119a78e-83a2-4fc8-b5ed-b404d02616bb
-
-Retrieved current session | user=fce43586-89f5-4a39-87c4-4ce7af6fc60a | session_id=3119a78e-83a2-4fc8-b5ed-b404d02616bb
-
