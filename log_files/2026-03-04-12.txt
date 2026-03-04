@@ -1,0 +1,14 @@
+User logged in | user_id=f0541e22-5afd-476d-9962-0427c83d912e
+
+Fetched total working hours for user eb3f74a2-1aa0-4135-be00-96177e45f334 | 3/2026 | sessions=0 | corrections=0 | total=0.0
+
+Fetched total working hours for user fce43586-89f5-4a39-87c4-4ce7af6fc60a | 3/2026 | sessions=0.03 | corrections=-8.00 | total=-7.97
+
+Fetched total working hours for user f0541e22-5afd-476d-9962-0427c83d912e | 3/2026 | sessions=0 | corrections=0 | total=0.0
+
+Fetched total working hours for user c069ae5c-6a12-4256-b280-0e13b0d29214 | 3/2026 | sessions=0 | corrections=0 | total=0.0
+
+Attendance history fetched (paginated): range 2026-03-01 to 2026-03-31 | user=ALL | page=1 | page_size=20 | total=2
+
+Attendance history fetched (paginated): range 2026-03-01 to 2026-03-31 | user=ALL | page=1 | page_size=20 | total=2
+
