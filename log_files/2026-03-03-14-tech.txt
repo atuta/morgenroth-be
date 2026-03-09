@@ -1,6 +1,0 @@
-User clocked in | type=regular | user=f0541e22-5afd-476d-9962-0427c83d912e | session_id=6a302378-5536-438f-80a9-13f268def7f4
-
-Retrieved current session | user=f0541e22-5afd-476d-9962-0427c83d912e | session_id=6a302378-5536-438f-80a9-13f268def7f4
-
-Retrieved current session | user=f0541e22-5afd-476d-9962-0427c83d912e | session_id=6a302378-5536-438f-80a9-13f268def7f4
-

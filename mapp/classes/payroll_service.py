@@ -22,12 +22,13 @@ import os
 
 class PayrollService:
 
-    def get_hour_corrections(user_id=None, month=None, year=None, page=1, per_page=20):
+    def get_hour_corrections(user_id=None, day=None, month=None, year=None, page=1, per_page=20):
         """
         Returns a paginated list of HourCorrection records.
 
         Optional filters:
             - user_id: filter by specific user
+            - day: filter by day (1-31)
             - month: filter by month (1-12)
             - year: filter by year
         Pagination:
@@ -35,10 +36,12 @@ class PayrollService:
             - per_page: number of records per page (default 20)
         """
 
-        corrections = HourCorrection.objects.select_related('user').all()
+        corrections = HourCorrection.objects.select_related("user").all()
 
         if user_id:
             corrections = corrections.filter(user__user_id=user_id)
+        if day:
+            corrections = corrections.filter(day=day)
         if month:
             corrections = corrections.filter(month=month)
         if year:
@@ -47,7 +50,6 @@ class PayrollService:
         paginator = Paginator(corrections, per_page)
         page_obj = paginator.get_page(page)
 
-        # Prepare serialized data
         results = []
         for correction in page_obj.object_list:
             user = correction.user
@@ -55,13 +57,14 @@ class PayrollService:
                 "correction_id": str(correction.correction_id),
                 "user_id": str(user.user_id),
                 "full_name": user.full_name,
-                "user_role": user.user_role,  # <-- added this line
+                "user_role": user.user_role,
                 "photo": user.photo.url if user.photo else None,
                 "hours": float(correction.hours),
                 "hourly_rate": float(correction.hourly_rate),
                 "amount": float(correction.amount),
                 "reason": correction.reason,
                 "date": correction.date.isoformat(),
+                "day": correction.day,
                 "month": correction.month,
                 "year": correction.year,
                 "corrected_by_id": str(correction.corrected_by.user_id) if correction.corrected_by else None,
@@ -85,6 +88,7 @@ class PayrollService:
         hours,
         reason: str,
         corrected_by: Optional[CustomUser] = None,
+        day: Optional[int] = None,
         month: Optional[int] = None,
         year: Optional[int] = None,
     ):
@@ -105,6 +109,7 @@ class PayrollService:
                 return {"status": "error", "message": "hours_cannot_be_zero"}
 
             now = timezone.now()
+            day = int(day or now.day)
             month = int(month or now.month)
             year = int(year or now.year)
 
@@ -117,6 +122,7 @@ class PayrollService:
                     hourly_rate=hourly_rate,
                     reason=reason,
                     corrected_by=corrected_by,
+                    day=day,
                     month=month,
                     year=year,
                     date=now.date(),
@@ -125,7 +131,7 @@ class PayrollService:
             Logs.atuta_logger(
                 f"[HOUR_CORRECTION] user_id={user.user_id} "
                 f"hours={hours_dec} rate={correction.hourly_rate} amount={getattr(correction, 'amount', None)} "
-                f"month={month}/{year} corrected_by={getattr(corrected_by, 'user_id', None)} "
+                f"date={day}/{month}/{year} corrected_by={getattr(corrected_by, 'user_id', None)} "
                 f"reason={reason}"
             )
 

@@ -6,6 +6,77 @@ from mapp.models import CustomUser
 from mapp.classes.advance_service import AdvanceService
 from mapp.classes.logs.logs import Logs
 
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def api_update_advance(request):
+    """Update an advance record. Only provided fields will be updated."""
+    try:
+        advance_id = request.data.get("advance_id")
+        remarks = request.data.get("remarks")
+        day = request.data.get("day")
+        month = request.data.get("month")
+        year = request.data.get("year")
+
+        if not advance_id:
+            return Response(
+                {"status": "error", "message": "missing_advance_id"},
+                status=400
+            )
+
+        result = AdvanceService.update_advance(
+            advance_id=advance_id,
+            remarks=remarks,
+            day=day,
+            month=month,
+            year=year
+        )
+
+        if result["status"] == "success":
+            return Response(result, status=200)
+
+        if result["message"] == "advance_not_found":
+            return Response(result, status=404)
+
+        return Response(result, status=500)
+
+    except Exception as e:
+        Logs.atuta_technical_logger("api_update_advance_failed", exc_info=e)
+        return Response(
+            {"status": "error", "message": "server_error"},
+            status=500
+        )
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def api_get_advance_by_id(request):
+    """Fetch a single advance record by advance_id."""
+    try:
+        advance_id = request.query_params.get("advance_id")
+
+        if not advance_id:
+            return Response(
+                {"status": "error", "message": "missing_advance_id"},
+                status=400
+            )
+
+        result = AdvanceService.get_advance_by_id(advance_id=advance_id)
+
+        if result["status"] == "success":
+            return Response(result, status=200)
+
+        if result["message"] == "advance_not_found":
+            return Response(result, status=404)
+
+        return Response(result, status=500)
+
+    except Exception as e:
+        Logs.atuta_technical_logger("api_get_advance_by_id_failed", exc_info=e)
+        return Response(
+            {"status": "error", "message": "server_error"},
+            status=500
+        )
+
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def api_admin_get_user_advances(request):
@@ -59,13 +130,27 @@ def api_get_user_advances(request):
 def api_get_all_advances(request):
     """
     Admin/staff fetches all advance payments.
-    Optional query params: start_date, end_date
+    Optional query params: start_date, end_date, page, per_page
     """
     try:
         start_date = request.GET.get("start_date")
         end_date = request.GET.get("end_date")
 
-        result = AdvanceService.get_all_advances(start_date=start_date, end_date=end_date)
+        try:
+            page = int(request.GET.get("page", 1))
+            per_page = int(request.GET.get("per_page", 20))
+        except ValueError:
+            return Response(
+                {"status": "error", "message": "invalid_pagination_params"},
+                status=400
+            )
+
+        result = AdvanceService.get_all_advances(
+            start_date=start_date,
+            end_date=end_date,
+            page=page,
+            per_page=per_page
+        )
 
         status_code = 200 if result.get("status") == "success" else 400
         return Response(result, status=status_code)
@@ -87,14 +172,16 @@ def api_admin_create_advance(request):
         "user_id": "<uuid>",
         "amount": 1200,
         "remarks": "optional notes",
-        "month": 11,    # optional, defaults to current month
-        "year": 2025    # optional, defaults to current year
+        "day": 8,      # optional, defaults to current day
+        "month": 11,   # optional, defaults to current month
+        "year": 2025   # optional, defaults to current year
     }
     """
     try:
         user_id = request.data.get("user_id")
         amount = request.data.get("amount")
         remarks = request.data.get("remarks", "")
+        day = request.data.get("day")
         month = request.data.get("month")
         year = request.data.get("year")
 
@@ -115,9 +202,10 @@ def api_admin_create_advance(request):
             user=user,
             amount=amount,
             remarks=remarks,
+            day=day,
             month=month,
             year=year,
-            approved_by=request.user  # admin is the approver
+            approved_by=request.user
         )
 
         return Response(result, status=200 if result["status"] == "success" else 500)

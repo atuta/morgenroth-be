@@ -426,7 +426,7 @@ def api_get_attendance_history(request):
     """
     Retrieves attendance records based on date range + optional user filtering + pagination.
 
-    QueryParams:
+    Query params:
       - start_date (YYYY-MM-DD)
       - end_date (YYYY-MM-DD)
       - user_id (optional; admins only)
@@ -452,9 +452,9 @@ def api_get_attendance_history(request):
         end_date = None
         try:
             if start_date_str:
-                start_date = datetime.datetime.strptime(start_date_str, "%Y-%m-%d").date()
+                start_date = datetime.date.fromisoformat(start_date_str)
             if end_date_str:
-                end_date = datetime.datetime.strptime(end_date_str, "%Y-%m-%d").date()
+                end_date = datetime.date.fromisoformat(end_date_str)
         except ValueError:
             return Response(
                 {"status": "error", "message": "invalid_date_format_use_YYYY-MM-DD"},
@@ -471,13 +471,24 @@ def api_get_attendance_history(request):
         try:
             page = int(page_str)
             page_size = int(page_size_str)
-        except ValueError:
-            return Response({"status": "error", "message": "invalid_pagination_params"}, status=400)
+        except (TypeError, ValueError):
+            return Response(
+                {"status": "error", "message": "invalid_pagination_params"},
+                status=400,
+            )
 
         if page < 1:
-            return Response({"status": "error", "message": "page_must_be_greater_than_zero"}, status=400)
+            return Response(
+                {"status": "error", "message": "page_must_be_greater_than_zero"},
+                status=400,
+            )
+
         if page_size < 1:
-            return Response({"status": "error", "message": "page_size_must_be_greater_than_zero"}, status=400)
+            return Response(
+                {"status": "error", "message": "page_size_must_be_greater_than_zero"},
+                status=400,
+            )
+
         if page_size > 500:
             page_size = 500
 
@@ -492,14 +503,27 @@ def api_get_attendance_history(request):
         if result.get("status") == "success":
             return Response(result, status=200)
 
-        if result.get("message") == "attendance_history_fetch_failed":
-            return Response(result, status=500)
-
-        return Response(result, status=400)
+        Logs.atuta_technical_logger(
+            "api_get_attendance_history_service_failed",
+            extra={
+                "start_date": str(start_date) if start_date else None,
+                "end_date": str(end_date) if end_date else None,
+                "user_id": target_user_id,
+                "page": page,
+                "page_size": page_size,
+            },
+        )
+        return Response(
+            {"status": "error", "message": "attendance_history_fetch_failed"},
+            status=500,
+        )
 
     except Exception as e:
         Logs.atuta_technical_logger("api_attendance_history_view_failed", exc_info=e)
-        return Response({"status": "error", "message": "internal_server_error"}, status=500)
+        return Response(
+            {"status": "error", "message": "internal_server_error"},
+            status=500,
+        )
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])

@@ -1120,34 +1120,20 @@ class AttendanceService:
         Returns attendance sessions with date range filtering + pagination.
         If user_id is provided, filters for that specific user.
         If user_id is None, returns records for all users (Admin view).
-
-        Response shape (frontend-friendly):
-        {
-        "status": "success",
-        "data": {
-            "results": [...],
-            "pagination": {...}
-        }
-        }
         """
         try:
-            # 1) Base Queryset (optimized)
             sessions = AttendanceSession.objects.select_related("user")
 
-            # 2) Filter by user (optional)
             if user_id:
                 sessions = sessions.filter(user__user_id=user_id)
 
-            # 3) Date range filters
             if start_date:
                 sessions = sessions.filter(date__gte=start_date)
             if end_date:
                 sessions = sessions.filter(date__lte=end_date)
 
-            # 4) Ordering
             sessions = sessions.order_by("-date", "-created_at")
 
-            # 5) Pagination parsing/safety
             try:
                 page = int(page) if page is not None else 1
             except (TypeError, ValueError):
@@ -1167,41 +1153,59 @@ class AttendanceService:
 
             paginator = Paginator(sessions, page_size)
 
-            try:
-                page_obj = paginator.page(page)
-            except PageNotAnInteger:
+            if paginator.count == 0:
                 page = 1
-                page_obj = paginator.page(page)
-            except EmptyPage:
-                page = paginator.num_pages if paginator.num_pages > 0 else 1
-                page_obj = paginator.page(page)
-
-            results = []
-
-            for session in page_obj.object_list:
-                # Safe photo url
+                results = []
+                pagination = {
+                    "page": 1,
+                    "page_size": page_size,
+                    "total_pages": 0,
+                    "total_records": 0,
+                    "has_next": False,
+                    "has_previous": False,
+                }
+            else:
                 try:
-                    clock_in_photo_url = session.clock_in_photo.url if session.clock_in_photo else None
-                except Exception:
-                    clock_in_photo_url = None
+                    page_obj = paginator.page(page)
+                except PageNotAnInteger:
+                    page = 1
+                    page_obj = paginator.page(page)
+                except EmptyPage:
+                    page = paginator.num_pages
+                    page_obj = paginator.page(page)
 
-                results.append({
-                    "session_id": str(session.session_id),
-                    "user_id": str(session.user.user_id),
-                    "full_name": session.user.full_name,
+                results = []
 
-                    "date": session.date.isoformat() if session.date else None,
-                    "clock_in_time": session.clock_in_time.isoformat() if session.clock_in_time else None,
-                    "lunch_in": session.lunch_in.isoformat() if session.lunch_in else None,
-                    "lunch_out": session.lunch_out.isoformat() if session.lunch_out else None,
-                    "clock_out_time": session.clock_out_time.isoformat() if session.clock_out_time else None,
+                for session in page_obj.object_list:
+                    try:
+                        clock_in_photo_url = session.clock_in_photo.url if session.clock_in_photo else None
+                    except Exception:
+                        clock_in_photo_url = None
 
-                    "clockin_type": session.clockin_type,
-                    "total_hours": str(session.total_hours) if session.total_hours is not None else None,
-                    "status": session.status,
-                    "notes": session.notes,
-                    "clock_in_photo_url": clock_in_photo_url,
-                })
+                    results.append({
+                        "session_id": str(session.session_id),
+                        "user_id": str(session.user.user_id),
+                        "full_name": session.user.full_name,
+                        "date": session.date.isoformat() if session.date else None,
+                        "clock_in_time": session.clock_in_time.isoformat() if session.clock_in_time else None,
+                        "lunch_in": session.lunch_in.isoformat() if session.lunch_in else None,
+                        "lunch_out": session.lunch_out.isoformat() if session.lunch_out else None,
+                        "clock_out_time": session.clock_out_time.isoformat() if session.clock_out_time else None,
+                        "clockin_type": session.clockin_type,
+                        "total_hours": str(session.total_hours) if session.total_hours is not None else None,
+                        "status": session.status,
+                        "notes": session.notes,
+                        "clock_in_photo_url": clock_in_photo_url,
+                    })
+
+                pagination = {
+                    "page": page,
+                    "page_size": page_size,
+                    "total_pages": paginator.num_pages,
+                    "total_records": paginator.count,
+                    "has_next": page_obj.has_next(),
+                    "has_previous": page_obj.has_previous(),
+                }
 
             Logs.atuta_logger(
                 f"Attendance history fetched (paginated): range {start_date} to {end_date} | "
@@ -1212,14 +1216,7 @@ class AttendanceService:
                 "status": "success",
                 "data": {
                     "results": results,
-                    "pagination": {
-                        "page": page,
-                        "page_size": page_size,
-                        "total_pages": paginator.num_pages,
-                        "total_records": paginator.count,
-                        "has_next": page_obj.has_next(),
-                        "has_previous": page_obj.has_previous(),
-                    }
+                    "pagination": pagination,
                 },
             }
 

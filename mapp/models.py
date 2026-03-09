@@ -14,6 +14,10 @@ def generate_account_id():
     characters = ''.join([c for c in string.ascii_letters + string.digits if c not in '10oil'])
     return ''.join(random.choice(characters) for _ in range(5))
 
+
+def current_day():
+    return timezone.now().day
+
 def current_month():
     return timezone.now().month
 
@@ -337,7 +341,8 @@ class AdvancePayment(models.Model):
 
     amount = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'))
 
-    # new month/year fields
+    # new day/month/year fields
+    day = models.PositiveSmallIntegerField(default=current_day)
     month = models.PositiveSmallIntegerField(default=current_month)
     year = models.PositiveSmallIntegerField(default=current_year)
 
@@ -354,7 +359,7 @@ class AdvancePayment(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ['-year', '-month', '-created_at']
+        ordering = ['-year', '-month', '-day', '-created_at']
         indexes = [
             models.Index(fields=['user', 'year', 'month']),
             models.Index(fields=['year', 'month']),
@@ -639,6 +644,7 @@ class HourCorrection(models.Model):
     )
 
     date = models.DateField(default=timezone.now)
+    day = models.PositiveSmallIntegerField(default=current_day)
     month = models.PositiveSmallIntegerField(default=current_month)
     year = models.PositiveSmallIntegerField(default=current_year)
 

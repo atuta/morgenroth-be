@@ -50,78 +50,143 @@ def _draw_payslip_page(story, user, data, org, styles):
     Org details appear immediately below the logo.
     Financial table: grey background for section titles and net pay.
     """
-    page_width = A4[0] - 3*cm
+    page_width = A4[0] - 3 * cm
 
     # --- Styles ---
-    bold_style = ParagraphStyle('BoldNormal', fontName='Helvetica-Bold', fontSize=10, leftIndent=0, firstLineIndent=0)
-    normal_style = ParagraphStyle('NormalFlush', fontName='Helvetica', fontSize=10, leftIndent=0, firstLineIndent=0)
-    title_style = ParagraphStyle('TitleFlush', fontName='Helvetica-Bold', fontSize=14, leftIndent=0, firstLineIndent=0)
-    contact_style = ParagraphStyle('ContactFlush', fontName='Helvetica', fontSize=9, leftIndent=0, firstLineIndent=0)
+    bold_style = ParagraphStyle(
+        "BoldNormal",
+        fontName="Helvetica-Bold",
+        fontSize=10,
+        leftIndent=0,
+        firstLineIndent=0,
+    )
+    normal_style = ParagraphStyle(
+        "NormalFlush",
+        fontName="Helvetica",
+        fontSize=10,
+        leftIndent=0,
+        firstLineIndent=0,
+    )
+    title_style = ParagraphStyle(
+        "TitleFlush",
+        fontName="Helvetica-Bold",
+        fontSize=14,
+        leftIndent=0,
+        firstLineIndent=0,
+    )
+    contact_style = ParagraphStyle(
+        "ContactFlush",
+        fontName="Helvetica",
+        fontSize=9,
+        leftIndent=0,
+        firstLineIndent=0,
+    )
 
     # NEW smaller style for statutory numbers
-    small_style = ParagraphStyle('SmallFlush', fontName='Helvetica', fontSize=8, leftIndent=0, firstLineIndent=0)
+    small_style = ParagraphStyle(
+        "SmallFlush",
+        fontName="Helvetica",
+        fontSize=8,
+        leftIndent=0,
+        firstLineIndent=0,
+    )
 
     # --- Header Table (Logo + Org details + Title) ---
     logo_cell = Spacer(1, 0)
     if org and getattr(org, "logo", None):
         try:
-            logo_img = Image(org.logo.path, width=2.2*cm, height=2.2*cm)
-            logo_img.hAlign = 'LEFT'
+            logo_img = Image(org.logo.path, width=2.2 * cm, height=2.2 * cm)
+            logo_img.hAlign = "LEFT"
             logo_cell = logo_img
-        except:
-            logo_cell = Spacer(1, 2.2*cm)
+        except Exception:
+            logo_cell = Spacer(1, 2.2 * cm)
 
     right_content = []
     org_name = (org.name if org else "MORGENROTH").upper()
     right_content.append(Paragraph(org_name, bold_style))
+
     if org:
         if getattr(org, "physical_address", None):
-            right_content.append(Paragraph(f"Address: {org.physical_address}", contact_style))
+            right_content.append(
+                Paragraph(f"Address: {org.physical_address}", contact_style)
+            )
+
         contact_parts = []
-        for attr, label in [("postal_address", "P.O. Box"), ("telephone", "Tel"), ("email", "Email")]:
+        for attr, label in [
+            ("postal_address", "P.O. Box"),
+            ("telephone", "Tel"),
+            ("email", "Email"),
+        ]:
             val = getattr(org, attr, None)
             if val:
                 contact_parts.append(f"{label}: {val}")
+
         if contact_parts:
             right_content.append(Paragraph(" | ".join(contact_parts), contact_style))
-    right_content.append(Spacer(1, 0.1*cm))
+
+    right_content.append(Spacer(1, 0.1 * cm))
     right_content.append(Paragraph("OFFICIAL PAYSLIP", title_style))
 
-    header_table = Table([[logo_cell, right_content]], colWidths=[2.5*cm, page_width - 2.5*cm])
-    header_table.setStyle(TableStyle([
-        ('VALIGN', (0,0), (-1,-1), 'TOP'),
-        ('LEFTPADDING', (0,0), (-1,-1), 0),
-        ('RIGHTPADDING', (0,0), (-1,-1), 0),
-        ('TOPPADDING', (0,0), (-1,-1), 0),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 0),
-    ]))
+    header_table = Table(
+        [[logo_cell, right_content]],
+        colWidths=[2.5 * cm, page_width - 2.5 * cm],
+    )
+    header_table.setStyle(
+        TableStyle(
+            [
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ("LEFTPADDING", (0, 0), (-1, -1), 0),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+                ("TOPPADDING", (0, 0), (-1, -1), 0),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
+            ]
+        )
+    )
     story.append(header_table)
-    story.append(Spacer(1, 0.3*cm))
+    story.append(Spacer(1, 0.3 * cm))
 
     # --- Employee Info ---
     emp_data = [
-        [Paragraph(f"<b>Employee:</b> {user.full_name}", normal_style),
-         Paragraph(f"<b>Period:</b> {data.get('month','N/A')}/{data.get('year','N/A')}", normal_style)],
-        [Paragraph(f"<b>Email:</b> {user.email or 'N/A'}", normal_style),
-         Paragraph(f"<b>Rate:</b> {data.get('hourly_rate',0.0)} {data.get('currency','')}/hr", normal_style)],
+        [
+            Paragraph(f"<b>Employee:</b> {user.full_name}", normal_style),
+            Paragraph(
+                f"<b>Period:</b> {data.get('month', 'N/A')}/{data.get('year', 'N/A')}",
+                normal_style,
+            ),
+        ],
+        [
+            Paragraph(f"<b>Email:</b> {user.email or 'N/A'}", normal_style),
+            Paragraph(
+                f"<b>Rate:</b> {data.get('hourly_rate', 0.0)} {data.get('currency', '')}/hr",
+                normal_style,
+            ),
+        ],
     ]
-    emp_table = Table(emp_data, colWidths=[page_width*0.65, page_width*0.35])
-    emp_table.setStyle(TableStyle([
-        ('LEFTPADDING', (0,0), (-1,-1), 0),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 4),
-    ]))
+    emp_table = Table(emp_data, colWidths=[page_width * 0.65, page_width * 0.35])
+    emp_table.setStyle(
+        TableStyle(
+            [
+                ("LEFTPADDING", (0, 0), (-1, -1), 0),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+            ]
+        )
+    )
     story.append(emp_table)
-    story.append(Spacer(1, 0.2*cm))
+    story.append(Spacer(1, 0.2 * cm))
 
     # --- Horizontal line above statutory numbers ---
     line_table = Table([[""]], colWidths=[page_width])
-    line_table.setStyle(TableStyle([
-        ('LINEABOVE', (0,0), (-1,0), 0.8, colors.grey),
-    ]))
+    line_table.setStyle(
+        TableStyle(
+            [
+                ("LINEABOVE", (0, 0), (-1, 0), 0.8, colors.grey),
+            ]
+        )
+    )
     story.append(line_table)
 
     # Reduced space below line
-    story.append(Spacer(1, 0.05*cm))
+    story.append(Spacer(1, 0.05 * cm))
 
     # --- KRA | NSSF | SHA in one straight line ---
     statutory_text = (
@@ -132,71 +197,119 @@ def _draw_payslip_page(story, user, data, org, styles):
         f"<b>SHA No:</b> {getattr(user, 'shif_sha_number', None) or 'N/A'}"
     )
 
-    statutory_table = Table([[Paragraph(statutory_text, small_style)]], colWidths=[page_width])
-    statutory_table.setStyle(TableStyle([
-        ('LEFTPADDING', (0,0), (-1,-1), 0),
-    ]))
+    statutory_table = Table(
+        [[Paragraph(statutory_text, small_style)]],
+        colWidths=[page_width],
+    )
+    statutory_table.setStyle(
+        TableStyle(
+            [
+                ("LEFTPADDING", (0, 0), (-1, -1), 0),
+            ]
+        )
+    )
 
     story.append(statutory_table)
-    story.append(Spacer(1, 0.3*cm))
+    story.append(Spacer(1, 0.3 * cm))
 
     # --- Financial Table ---
     table_data = []
 
-    table_data.append([
-        Paragraph('<b>DESCRIPTION</b>', normal_style),
-        Paragraph('<b>AMOUNT</b>', normal_style)
-    ])
+    table_data.append(
+        [
+            Paragraph("<b>DESCRIPTION</b>", normal_style),
+            Paragraph("<b>AMOUNT</b>", normal_style),
+        ]
+    )
 
     bg_rows = []
 
-    table_data.append([Paragraph('<b>A. EARNINGS</b>', bold_style), ''])
-    bg_rows.append(len(table_data)-1)
-    table_data.append([f"Base Pay ({data.get('total_hours',0):.2f} Hrs)", f"{data.get('total_base_pay',0.0):.2f}"])
-    table_data.append([f"Overtime Pay", f"{data.get('total_overtime',0.0):.2f}"])
-    table_data.append([Paragraph('<b>GROSS PAY</b>', bold_style), Paragraph(f"<b>{data.get('gross_pay',0.0):.2f}</b>", bold_style)])
-    table_data.append(['',''])
+    table_data.append([Paragraph("<b>A. EARNINGS</b>", bold_style), ""])
+    bg_rows.append(len(table_data) - 1)
+    table_data.append(
+        [
+            f"Base Pay ({data.get('total_hours', 0):.2f} Hrs)",
+            f"{data.get('total_base_pay', 0.0):.2f}",
+        ]
+    )
+    table_data.append(
+        [
+            "Overtime Pay",
+            f"{data.get('total_overtime', 0.0):.2f}",
+        ]
+    )
+    table_data.append(
+        [
+            Paragraph("<b>GROSS PAY</b>", bold_style),
+            Paragraph(f"<b>{data.get('gross_pay', 0.0):.2f}</b>", bold_style),
+        ]
+    )
+    table_data.append(["", ""])
 
-    table_data.append([Paragraph('<b>B. STATUTORY DEDUCTIONS</b>', bold_style), ''])
-    bg_rows.append(len(table_data)-1)
-    for d in data.get('deductions_breakdown', []):
-        table_data.append([d['name'].replace('_',' ').upper(), f"-{d['amount']:.2f}"])
-    table_data.append(['',''])
+    table_data.append([Paragraph("<b>B. STATUTORY DEDUCTIONS</b>", bold_style), ""])
+    bg_rows.append(len(table_data) - 1)
+    for d in data.get("deductions_breakdown", []):
+        table_data.append([d["name"].replace("_", " ").upper(), f"-{d['amount']:.2f}"])
+    table_data.append(["", ""])
 
-    table_data.append([Paragraph('<b>C. ADVANCES / LOANS</b>', bold_style), ''])
-    bg_rows.append(len(table_data)-1)
-    advances = data.get('advance_breakdown', [])
-    if advances:
-        for a in advances:
-            table_data.append([f"Advance ({a.get('date','N/A')})", f"-{a['amount']:.2f}"])
+    table_data.append([Paragraph("<b>C. ADVANCES / LOANS</b>", bold_style), ""])
+    bg_rows.append(len(table_data) - 1)
+
+    advances = data.get("advance_breakdown", []) or []
+    total_advances = sum(float(a.get("amount", 0) or 0) for a in advances)
+
+    if total_advances > 0:
+        table_data.append(["Total Advances", f"-{total_advances:.2f}"])
     else:
         table_data.append(["No Advances", "0.00"])
-    table_data.append(['',''])
 
-    table_data.append([
-        Paragraph('<b>NET PAYABLE</b>', bold_style),
-        Paragraph(f"<b>{data.get('net_pay',0.0):.2f} {data.get('currency','')}</b>", bold_style)
-    ])
-    bg_rows.append(len(table_data)-1)
+    table_data.append(["", ""])
 
-    t = Table(table_data, colWidths=[page_width*0.75, page_width*0.25])
-    t.setStyle(TableStyle([
-        ('GRID', (0,0), (-1,-1), 0.5, colors.grey),
-        ('ALIGN', (1,0), (1,-1), 'RIGHT'),
-        ('LEFTPADDING', (0,0), (-1,-1), 10),
-        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
-        *[(('BACKGROUND', (0,row), (-1,row), colors.whitesmoke)) for row in bg_rows],
-    ]))
+    table_data.append(
+        [
+            Paragraph("<b>NET PAYABLE</b>", bold_style),
+            Paragraph(
+                f"<b>{data.get('net_pay', 0.0):.2f} {data.get('currency', '')}</b>",
+                bold_style,
+            ),
+        ]
+    )
+    bg_rows.append(len(table_data) - 1)
+
+    t = Table(table_data, colWidths=[page_width * 0.75, page_width * 0.25])
+    t.setStyle(
+        TableStyle(
+            [
+                ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
+                ("ALIGN", (1, 0), (1, -1), "RIGHT"),
+                ("LEFTPADDING", (0, 0), (-1, -1), 10),
+                ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                *[
+                    (("BACKGROUND", (0, row), (-1, row), colors.whitesmoke))
+                    for row in bg_rows
+                ],
+            ]
+        )
+    )
     story.append(t)
 
-    story.append(Spacer(1, 1.5*cm))
-    sig_data = [['Employee Signature: ____________________', 'Authorized By: ____________________']]
-    sig_table = Table(sig_data, colWidths=[page_width/2, page_width/2])
-    sig_table.setStyle(TableStyle([
-        ('LEFTPADDING', (0,0), (-1,-1), 0),
-        ('FONTNAME', (0,0), (-1,-1), 'Helvetica'),
-        ('FONTSIZE', (0,0), (-1,-1), 10),
-    ]))
+    story.append(Spacer(1, 1.5 * cm))
+    sig_data = [
+        [
+            "Employee Signature: ____________________",
+            "Authorized By: ____________________",
+        ]
+    ]
+    sig_table = Table(sig_data, colWidths=[page_width / 2, page_width / 2])
+    sig_table.setStyle(
+        TableStyle(
+            [
+                ("LEFTPADDING", (0, 0), (-1, -1), 0),
+                ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
+                ("FONTSIZE", (0, 0), (-1, -1), 10),
+            ]
+        )
+    )
     story.append(sig_table)
     story.append(PageBreak())
 
@@ -303,20 +416,27 @@ def generate_user_payslip_pdf(request):
 def api_get_hour_corrections(request):
     """Fetch paginated hour adjustment records."""
     try:
-        user_id = request.query_params.get('user_id')
-        month = request.query_params.get('month')
-        year = request.query_params.get('year')
-        
+        user_id = request.query_params.get("user_id")
+        day = request.query_params.get("day")
+        month = request.query_params.get("month")
+        year = request.query_params.get("year")
+
         data = PayrollService.get_hour_corrections(
             user_id=user_id,
+            day=int(day) if day else None,
             month=int(month) if month else None,
             year=int(year) if year else None,
-            page=int(request.query_params.get('page', 1)),
-            per_page=int(request.query_params.get('per_page', 20))
+            page=int(request.query_params.get("page", 1)),
+            per_page=int(request.query_params.get("per_page", 20)),
         )
+
         return Response({"status": "success", "data": data})
-    except Exception as e:
-        return Response({"status": "error", "message": "server_error"}, status=500)
+
+    except Exception:
+        return Response(
+            {"status": "error", "message": "server_error"},
+            status=500,
+        )
 
 
 @api_view(['POST'])
@@ -327,19 +447,26 @@ def api_admin_record_hour_correction(request):
         user_id = request.data.get("user_id")
         hours = request.data.get("hours")
         reason = request.data.get("reason")
-        
+
         if not all([user_id, hours is not None, reason]):
             return Response({"status": "error", "message": "missing_parameters"}, status=400)
 
         user = get_object_or_404(CustomUser, user_id=user_id)
+
         result = PayrollService.record_hour_correction(
             user=user,
             hours=float(hours),
             reason=reason,
+            day=request.data.get("day"),
             month=request.data.get("month"),
             year=request.data.get("year"),
             corrected_by=request.user
         )
-        return Response(result, status=status.HTTP_200_OK if result["status"] == "success" else 400)
-    except Exception as e:
+
+        return Response(
+            result,
+            status=status.HTTP_200_OK if result["status"] == "success" else 400
+        )
+
+    except Exception:
         return Response({"status": "error", "message": "server_error"}, status=500)

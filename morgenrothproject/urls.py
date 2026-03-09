@@ -92,10 +92,11 @@ urlpatterns = [
 
 
     # Advance endpoints
-    # New ones ↓
     path('api/advances/all/', advance_view.api_get_all_advances, name='all_advances'),
     path('api/advances/user/', advance_view.api_get_user_advances, name='user_advances'),
     path('api/advances/admin/user/', advance_view.api_admin_get_user_advances, name='admin_user_advances'),
+    path('api/advances/get/', advance_view.api_get_advance_by_id, name='get_advance_by_id'),
+    path('api/advances/update/', advance_view.api_update_advance, name='update_advance'),
 
     path('api/advance/get-by-month/', advance_view.api_get_user_advances_by_month, name='user_get_advances_by_month'),
     path('api/advance/get-all/', advance_view.api_get_all_user_advances, name='user_get_all_advances'),
