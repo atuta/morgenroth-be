@@ -18,11 +18,13 @@ class OvertimeService:
         try:
             overtimes = OvertimeAllowance.objects.select_related("user", "approved_by").all()
 
-            # Optional date filtering
+            # Optional date filtering using the actual overtime date
             if start_date:
-                overtimes = overtimes.filter(created_at__date__gte=start_date)
+                overtimes = overtimes.filter(date__gte=start_date)
             if end_date:
-                overtimes = overtimes.filter(created_at__date__lte=end_date)
+                overtimes = overtimes.filter(date__lte=end_date)
+
+            overtimes = overtimes.order_by("-date", "-created_at")
 
             data = []
 
@@ -32,14 +34,14 @@ class OvertimeService:
                     "user_id": str(ot.user.user_id),
                     "user_full_name": ot.user.full_name,
                     "user_email": ot.user.email,
-                    "date": ot.date,
+                    "date": ot.date.isoformat() if ot.date else None,
                     "month": ot.month,
                     "year": ot.year,
-                    "hours": ot.hours,
-                    "amount": ot.amount,
+                    "hours": float(ot.hours) if ot.hours is not None else 0,
+                    "amount": float(ot.amount) if ot.amount is not None else 0,
                     "approved_by": ot.approved_by.full_name if ot.approved_by else None,
                     "remarks": ot.remarks,
-                    "created_at": ot.created_at,
+                    "created_at": ot.created_at.isoformat() if ot.created_at else None,
                 }
                 data.append(record)
 

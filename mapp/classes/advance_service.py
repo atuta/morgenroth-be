@@ -1,6 +1,7 @@
 from typing import Optional, List
 from django.utils import timezone
-from datetime import date
+from datetime import date, datetime
+from django.db.models import Q
 from django.core.paginator import Paginator
 from mapp.models import CustomUser, AdvancePayment
 from mapp.classes.logs.logs import Logs
@@ -173,6 +174,7 @@ class AdvanceService:
     def get_all_advances(cls, start_date=None, end_date=None, page=1, per_page=20):
         """
         Returns paginated advance payments.
+        Filters by the stored advance date fields: day, month, year.
         Optional filters:
             start_date: YYYY-MM-DD string or date object
             end_date: YYYY-MM-DD string or date object
@@ -183,11 +185,30 @@ class AdvanceService:
         try:
             advances = AdvancePayment.objects.select_related("user", "approved_by").all()
 
-            # Apply optional date filtering
+            # Parse incoming string dates if needed
+            if isinstance(start_date, str):
+                start_date = datetime.strptime(start_date, "%Y-%m-%d").date()
+
+            if isinstance(end_date, str):
+                end_date = datetime.strptime(end_date, "%Y-%m-%d").date()
+
+            # Filter using stored advance date fields (year, month, day)
             if start_date:
-                advances = advances.filter(created_at__date__gte=start_date)
+                advances = advances.filter(
+                    Q(year__gt=start_date.year) |
+                    Q(year=start_date.year, month__gt=start_date.month) |
+                    Q(year=start_date.year, month=start_date.month, day__gte=start_date.day)
+                )
+
             if end_date:
-                advances = advances.filter(created_at__date__lte=end_date)
+                advances = advances.filter(
+                    Q(year__lt=end_date.year) |
+                    Q(year=end_date.year, month__lt=end_date.month) |
+                    Q(year=end_date.year, month=end_date.month, day__lte=end_date.day)
+                )
+
+            # Order by actual stored advance date
+            advances = advances.order_by("-year", "-month", "-day", "-created_at")
 
             paginator = Paginator(advances, per_page)
             page_obj = paginator.get_page(page)
